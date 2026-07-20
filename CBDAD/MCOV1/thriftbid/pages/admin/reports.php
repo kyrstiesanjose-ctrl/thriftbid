@@ -2,16 +2,20 @@
 // pages/admin/reports.php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
+require_once __DIR__ . '/../../includes/currency.php';
 require_once __DIR__ . '/../../includes/layout.php';
-requireLogin('/pages/login.php');
-requireRole('admin', '/pages/login.php');
+requireLogin();
+requireRole('admin');
 
 $tab = $_GET['tab'] ?? 'platform';
 
-//  Platform KPIs 
+
 $totalRevenue      = DB::fetch('SELECT COALESCE(SUM(amount_paid),0) s FROM PAYMENTS WHERE payment_status="Completed"')['s'] ?? 0;
-$totalUsers        = DB::fetch('SELECT COUNT(*) c FROM USERS')['c'] ?? 0;
-$verifiedUsers     = DB::fetch('SELECT COUNT(*) c FROM USERS WHERE is_verified=1')['c'] ?? 0;
+$totalSellers      = DB::fetch('SELECT COUNT(*) c FROM SELLER')['c'] ?? 0;
+$totalBuyers       = DB::fetch('SELECT COUNT(*) c FROM BUYER')['c'] ?? 0;
+$totalUsers        = $totalSellers + $totalBuyers;
+$verifiedUsers     = (DB::fetch('SELECT COUNT(*) c FROM SELLER WHERE is_verified=1')['c'] ?? 0)
+                   + (DB::fetch('SELECT COUNT(*) c FROM BUYER WHERE is_verified=1')['c'] ?? 0);
 $totalOrders       = DB::fetch('SELECT COUNT(*) c FROM ORDERS')['c'] ?? 0;
 $completedOrders   = DB::fetch('SELECT COUNT(*) c FROM ORDERS WHERE status="Delivered"')['c'] ?? 0;
 $totalAuctions     = DB::fetch('SELECT COUNT(*) c FROM AUCTIONS')['c'] ?? 0;
@@ -20,14 +24,12 @@ $totalDisputes     = DB::fetch('SELECT COUNT(*) c FROM DISPUTES')['c'] ?? 0;
 $resolvedDisputes  = DB::fetch('SELECT COUNT(*) c FROM DISPUTES WHERE status="Resolved"')['c'] ?? 0;
 $avgAucDuration    = DB::fetch('SELECT COALESCE(AVG(TIMESTAMPDIFF(HOUR,start_time,end_time)),0) a FROM AUCTIONS WHERE status="Closed"')['a'] ?? 0;
 
-// Revenue by month (last 12)
 $revTrend = DB::fetchAll(
     'SELECT DATE_FORMAT(payment_date,"%b %Y") mo, YEAR(payment_date) yr, MONTH(payment_date) mn, SUM(amount_paid) total
      FROM PAYMENTS WHERE payment_status="Completed" AND payment_date>=DATE_SUB(NOW(),INTERVAL 12 MONTH)
      GROUP BY yr,mn,mo ORDER BY yr,mn'
 );
 
-// Top categories
 $topCats = DB::fetchAll(
     'SELECT c.name, COUNT(o.order_id) orders_cnt, COALESCE(SUM(p.amount_paid),0) revenue
      FROM ORDERS o JOIN LISTINGS l ON o.listing_id=l.listing_id
@@ -36,36 +38,33 @@ $topCats = DB::fetchAll(
      GROUP BY c.category_id,c.name ORDER BY revenue DESC LIMIT 8'
 );
 
-//  Seller KPIs 
 $topSellers = DB::fetchAll(
-    'SELECT u.username, COALESCE(SUM(p.amount_paid),0) revenue,
+    'SELECT COALESCE(s.shop_name, s.username) AS display_name, COALESCE(SUM(p.amount_paid),0) revenue,
             COUNT(DISTINCT o.order_id) orders_cnt,
             COALESCE(AVG(r.rating),0) avg_rating,
             s.offense_count
-     FROM SELLER s JOIN USERS u ON s.user_id=u.user_id
+     FROM SELLER s
      LEFT JOIN ORDERS o ON o.seller_id=s.seller_id
      LEFT JOIN PAYMENTS p ON o.order_id=p.order_id AND p.payment_status="Completed"
-     LEFT JOIN REVIEWS r ON r.seller_id=s.seller_id
-     GROUP BY s.seller_id,u.username,s.offense_count
+     LEFT JOIN REVIEWS r ON r.seller_id=s.seller_id AND r.deleted_at IS NULL
+     GROUP BY s.seller_id, display_name, s.offense_count
      ORDER BY revenue DESC LIMIT 10'
 );
 
-//  Buyer KPIs 
 $topBuyers = DB::fetchAll(
-    'SELECT u.username, COUNT(DISTINCT o.order_id) orders_cnt,
+    'SELECT bu.username, COUNT(DISTINCT o.order_id) orders_cnt,
             COALESCE(SUM(p.amount_paid),0) total_spent,
             COUNT(DISTINCT b2.bidding_id) total_bids
-     FROM BUYER by2 JOIN USERS u ON by2.user_id=u.user_id
-     LEFT JOIN ORDERS o    ON o.buyer_id=by2.buyer_id
+     FROM BUYER bu
+     LEFT JOIN ORDERS o    ON o.buyer_id=bu.buyer_id
      LEFT JOIN PAYMENTS p  ON o.order_id=p.order_id AND p.payment_status="Completed"
-     LEFT JOIN BIDDINGS b2 ON b2.buyer_id=by2.buyer_id
-     GROUP BY by2.buyer_id,u.username ORDER BY total_spent DESC LIMIT 10'
+     LEFT JOIN BIDDINGS b2 ON b2.buyer_id=bu.buyer_id AND b2.is_deleted=0
+     GROUP BY bu.buyer_id, bu.username ORDER BY total_spent DESC LIMIT 10'
 );
 
-// Dispute resolution rate
 $dispRes = $totalDisputes > 0 ? round($resolvedDisputes / $totalDisputes * 100, 1) : 0;
 
-renderHead('Platform Reports');
+renderHead('Platform Analytics');
 ?>
 <body class="flex flex-col" style="height:100vh;overflow:hidden">
 <?php renderNavbar('reports'); ?>
@@ -76,33 +75,30 @@ renderHead('Platform Reports');
 
   <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
     <div>
-      <h1 class="tb-page-title">Analytics &amp; Reports</h1>
-      <p class="tb-page-subtitle">Platform-wide KPIs, seller performance, and buyer activity.</p>
+      <h1 class="tb-page-title">Platform Analytics</h1>
+      <p class="tb-page-subtitle">Detailed platform-wide trends, top sellers/buyers, and category breakdowns — the Dashboard is for a quick daily glance, this is for deeper analysis.</p>
     </div>
     <span style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">Generated: <?= date('M d, Y H:i') ?></span>
   </div>
 
-  <!-- Report Tabs -->
   <div class="tb-tabs mb-8">
     <a href="?tab=platform" class="tb-tab-link <?= $tab==='platform'?'active':'' ?>">Platform</a>
     <a href="?tab=sellers"  class="tb-tab-link <?= $tab==='sellers'?'active':'' ?>">Seller Report</a>
     <a href="?tab=buyers"   class="tb-tab-link <?= $tab==='buyers'?'active':'' ?>">Buyer Report</a>
   </div>
 
-  <!--  PLATFORM TAB  -->
   <?php if ($tab === 'platform'): ?>
 
-  <!-- Summary KPI grid -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
     <?php $pkpis = [
-      ['icon'=>'payments',      'label'=>'Total Revenue',        'val'=>convertCurrency((float)$totalRevenue),'badge'=>'All time','bc'=>'coral'],
-      ['icon'=>'group',         'label'=>'Total Users',          'val'=>$totalUsers,                           'badge'=>$verifiedUsers.' verified','bc'=>'green'],
-      ['icon'=>'package_2',     'label'=>'Total Orders',         'val'=>$totalOrders,                          'badge'=>$completedOrders.' delivered','bc'=>'blue'],
-      ['icon'=>'gavel',         'label'=>'Total Auctions',       'val'=>$totalAuctions,                        'badge'=>$activeAuctions.' active','bc'=>'yellow'],
-      ['icon'=>'report_problem','label'=>'Disputes',             'val'=>$totalDisputes,                        'badge'=>$dispRes.'% resolved','bc'=>'red'],
-      ['icon'=>'timer',         'label'=>'Avg Auction Duration', 'val'=>round($avgAucDuration,1).'h',          'badge'=>'Closed auctions','bc'=>'gray'],
-      ['icon'=>'storefront',    'label'=>'Total Sellers',        'val'=>DB::fetch('SELECT COUNT(*) c FROM SELLER')['c']??0, 'badge'=>'Registered','bc'=>'blue'],
-      ['icon'=>'shopping_cart', 'label'=>'Total Buyers',         'val'=>DB::fetch('SELECT COUNT(*) c FROM BUYER')['c']??0,  'badge'=>'Registered','bc'=>'green'],
+      ['icon'=>'payments',      'label'=>'Total Revenue',        'val'=>convertCurrency((float)$totalRevenue),'badge'=>'All time'],
+      ['icon'=>'group',         'label'=>'Total Users',          'val'=>$totalUsers,                           'badge'=>$verifiedUsers.' verified'],
+      ['icon'=>'package_2',     'label'=>'Total Orders',         'val'=>$totalOrders,                          'badge'=>$completedOrders.' delivered'],
+      ['icon'=>'gavel',         'label'=>'Total Auctions',       'val'=>$totalAuctions,                        'badge'=>$activeAuctions.' active'],
+      ['icon'=>'report_problem','label'=>'Disputes',             'val'=>$totalDisputes,                        'badge'=>$dispRes.'% resolved'],
+      ['icon'=>'timer',         'label'=>'Avg Auction Duration', 'val'=>round($avgAucDuration,1).'h',          'badge'=>'Closed auctions'],
+      ['icon'=>'storefront',    'label'=>'Total Sellers',        'val'=>$totalSellers, 'badge'=>'Registered'],
+      ['icon'=>'shopping_cart', 'label'=>'Total Buyers',         'val'=>$totalBuyers,  'badge'=>'Registered'],
     ];
     foreach ($pkpis as $k): ?>
     <div class="tb-stat-card">
@@ -116,7 +112,6 @@ renderHead('Platform Reports');
     <?php endforeach; ?>
   </div>
 
-  <!-- Revenue trend chart -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
     <div class="tb-card tb-card-body lg:col-span-2">
       <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:20px">Revenue Trend (12 Months)</h3>
@@ -135,17 +130,19 @@ renderHead('Platform Reports');
           </div>
           <div class="tb-progress-bar"><div class="tb-progress-fill" style="width:<?= $dispRes ?>%"></div></div>
         </div>
-        <?php foreach ([['Open'=>DB::fetch('SELECT COUNT(*) c FROM DISPUTES WHERE status="Open"')['c']??0,'color'=>'tb-badge-red'],['Resolved'=>$resolvedDisputes,'color'=>'tb-badge-green'],['Rejected'=>DB::fetch('SELECT COUNT(*) c FROM DISPUTES WHERE status="Rejected"')['c']??0,'color'=>'tb-badge-gray']] as $row): foreach($row as $label=>$val): if(is_array($val)) continue; ?>
+        <?php
+        $openDisp = DB::fetch('SELECT COUNT(*) c FROM DISPUTES WHERE status="Open"')['c'] ?? 0;
+        $rejDisp  = DB::fetch('SELECT COUNT(*) c FROM DISPUTES WHERE status="Rejected"')['c'] ?? 0;
+        foreach ([['Open', $openDisp, 'tb-badge-red'], ['Resolved', $resolvedDisputes, 'tb-badge-green'], ['Rejected', $rejDisp, 'tb-badge-gray']] as [$label, $val, $color]): ?>
         <div class="flex justify-between items-center">
-          <span class="tb-badge <?= is_string($val)?$val:'' ?>" style="margin-right:auto"><?= $label ?></span>
+          <span class="tb-badge <?= $color ?>" style="margin-right:auto"><?= $label ?></span>
           <span style="font-weight:700;font-size:var(--fs-label-md)"><?= $val ?></span>
         </div>
-        <?php endforeach; endforeach; ?>
+        <?php endforeach; ?>
       </div>
     </div>
   </div>
 
-  <!-- Top Categories -->
   <div class="tb-card">
     <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Top Selling Categories</h3></div>
     <div class="overflow-x-auto">
@@ -170,7 +167,6 @@ renderHead('Platform Reports');
     </div>
   </div>
 
-  <!--  SELLER TAB  -->
   <?php elseif ($tab === 'sellers'): ?>
   <div class="tb-card">
     <div class="tb-card-header">
@@ -182,9 +178,9 @@ renderHead('Platform Reports');
         <thead><tr><th>#</th><th>Seller</th><th>Revenue</th><th>Orders</th><th>Avg Rating</th><th>Offenses</th><th>Status</th></tr></thead>
         <tbody>
           <?php foreach ($topSellers as $i => $s): ?>
-          <tr class="<?= $i===0?'tb-bid-leader':'' ?>">
+          <tr>
             <td style="font-weight:700;color:var(--clr-coral)"><?= $i+1 ?></td>
-            <td style="font-weight:700">@<?= htmlspecialchars($s['username']) ?></td>
+            <td style="font-weight:700"><?= htmlspecialchars($s['display_name']) ?></td>
             <td style="font-weight:700"><?= convertCurrency((float)$s['revenue']) ?></td>
             <td style="color:var(--clr-tertiary)"><?= $s['orders_cnt'] ?></td>
             <td>
@@ -196,13 +192,13 @@ renderHead('Platform Reports');
               <?php else: ?><span style="color:var(--clr-tertiary)">No reviews</span><?php endif; ?>
             </td>
             <td>
-              <span class="tb-badge <?= $s['offense_count']>=3?'tb-badge-red':($s['offense_count']>=1?'tb-badge-yellow':'tb-badge-green') ?>">
+              <span class="tb-badge <?= $s['offense_count']>=3?'tb-badge-red':($s['offense_count']>=1?'tb-badge-coral':'tb-badge-green') ?>">
                 <?= $s['offense_count'] ?> offense<?= $s['offense_count']!==1?'s':'' ?>
               </span>
             </td>
             <td>
-              <span class="tb-badge <?= $s['offense_count']>=3?'tb-badge-red':($s['offense_count']>=2?'tb-badge-yellow':'tb-badge-green') ?>">
-                <?= $s['offense_count']>=3?'Suspended':($s['offense_count']>=2?'Warned':'Good') ?>
+              <span class="tb-badge <?= $s['offense_count']>=3?'tb-badge-red':($s['offense_count']>=2?'tb-badge-coral':'tb-badge-green') ?>">
+                <?= $s['offense_count']>=3?'Banned':($s['offense_count']>=2?'Suspended':'Good') ?>
               </span>
             </td>
           </tr>
@@ -212,7 +208,6 @@ renderHead('Platform Reports');
     </div>
   </div>
 
-  <!--  BUYER TAB  -->
   <?php elseif ($tab === 'buyers'): ?>
   <div class="tb-card">
     <div class="tb-card-header">
@@ -226,9 +221,9 @@ renderHead('Platform Reports');
           <?php foreach ($topBuyers as $i => $b):
             $btr = $b['total_bids'] > 0 ? round($b['orders_cnt'] / $b['total_bids'] * 100, 1) : 0;
           ?>
-          <tr class="<?= $i===0?'tb-bid-leader':'' ?>">
+          <tr>
             <td style="font-weight:700;color:var(--clr-coral)"><?= $i+1 ?></td>
-            <td style="font-weight:700">@<?= htmlspecialchars($b['username']) ?></td>
+            <td style="font-weight:700"><?= htmlspecialchars($b['username']) ?></td>
             <td style="font-weight:700"><?= convertCurrency((float)$b['total_spent']) ?></td>
             <td style="color:var(--clr-tertiary)"><?= $b['orders_cnt'] ?></td>
             <td style="color:var(--clr-tertiary)"><?= $b['total_bids'] ?></td>

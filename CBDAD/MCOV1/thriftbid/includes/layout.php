@@ -51,26 +51,29 @@ tailwind.config = { theme:{ extend:{ colors:{
 //  Notification count 
 function getUnreadNotifCount(): int {
     if (!isLoggedIn()) return 0;
+    $user = currentUser();
+    $col = match ($user['role'] ?? '') {
+        'buyer'  => 'buyer_id',
+        'seller' => 'seller_id',
+        default  => null, // admins don't have NOTIFICATIONS rows in schema
+    };
+    if (!$col) return 0;
     try {
         require_once __DIR__ . '/db.php';
-        return (int)(DB::fetch('SELECT COUNT(*) c FROM NOTIFICATIONS WHERE user_id=? AND is_read=0', [$_SESSION['user_id']])['c'] ?? 0);
+        return (int)(DB::fetch("SELECT COUNT(*) c FROM NOTIFICATIONS WHERE $col=? AND is_read=0", [$user['id']])['c'] ?? 0);
     } catch (\Exception $e) { return 0; }
 }
 
-// Cart item count (cart items + active bids)
+// Cart item count (cart items + active bids), buyers only
 function getCartCount(): int {
     if (!isLoggedIn()) return 0;
+    $user = currentUser();
+    if (($user['role'] ?? '') !== 'buyer') return 0;
     try {
         require_once __DIR__ . '/db.php';
-        $uid = $_SESSION['user_id'];
-        // cart items (CART_ITEMS table if exists, else session-based)
-        $cart = (int)(DB::fetch('SELECT COUNT(*) c FROM CART_ITEMS WHERE user_id=?', [$uid])['c'] ?? 0);
-        // active bids
-        $bids = 0;
-        $buyer = DB::fetch('SELECT buyer_id FROM BUYER WHERE user_id=?', [$uid]);
-        if ($buyer) {
-            $bids = (int)(DB::fetch('SELECT COUNT(*) c FROM BIDDINGS b JOIN AUCTIONS a ON b.auction_id=a.auction_id WHERE b.buyer_id=? AND a.status="Active"', [$buyer['buyer_id']])['c'] ?? 0);
-        }
+        $buyerId = $user['buyer_id'] ?? $user['id'];
+        $cart = (int)(DB::fetch('SELECT COUNT(*) c FROM CART_ITEMS WHERE buyer_id=?', [$buyerId])['c'] ?? 0);
+        $bids = (int)(DB::fetch('SELECT COUNT(*) c FROM BIDDINGS b JOIN AUCTIONS a ON b.auction_id=a.auction_id WHERE b.buyer_id=? AND a.status="Active"', [$buyerId])['c'] ?? 0);
         return $cart + $bids;
     } catch (\Exception $e) { return 0; }
 }
@@ -95,17 +98,9 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
   <!-- Left nav links -->
   <nav class="tb-nav-links">
     <?php if ($role === 'admin'): ?>
-      <a href="../../pages/admin/dashboard.php"  class="tb-nav-link <?= $active==='home'?'active':'' ?>">Dashboard</a>
-      <a href="../../pages/admin/users.php"      class="tb-nav-link <?= $active==='users'?'active':'' ?>">Users</a>
-      <a href="../../pages/admin/listings.php"   class="tb-nav-link <?= $active==='listings'?'active':'' ?>">Listings</a>
-      <a href="../../pages/admin/disputes.php"   class="tb-nav-link <?= $active==='disputes'?'active':'' ?>">Disputes</a>
-      <a href="../../pages/admin/reports.php"    class="tb-nav-link <?= $active==='reports'?'active':'' ?>">Reports</a>
+      <!-- Admin top-nav links  -->
     <?php elseif ($role === 'seller' || $sellerMode): ?>
-      <a href="../../pages/seller/dashboard.php"       class="tb-nav-link <?= $active==='home'?'active':'' ?>">Overview</a>
-      <a href="../../pages/seller/create-listing.php"  class="tb-nav-link <?= $active==='create'?'active':'' ?>">New Listing</a>
-      <a href="../../pages/seller/active-auctions.php" class="tb-nav-link <?= $active==='auctions'?'active':'' ?>">Auctions</a>
-      <a href="../../pages/seller/to-ship.php"         class="tb-nav-link <?= $active==='ship'?'active':'' ?>">To Ship</a>
-      <a href="../../pages/seller/transactions.php"    class="tb-nav-link <?= $active==='transactions'?'active':'' ?>">Transactions</a>
+      <!-- Seller top-nav links  -->
     <?php else: ?>
       <a href="../../pages/customer/home.php"       class="tb-nav-link <?= $active==='home'?'active':'' ?>">Home</a>
       <a href="../../pages/customer/categories.php" class="tb-nav-link <?= $active==='categories'?'active':'' ?>">Categories</a>
@@ -114,39 +109,26 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
     <?php endif; ?>
   </nav>
 
-  <!-- Search bar (center) -->
+  <!-- Search bar  -->
+  <?php if ($role === 'buyer'): ?>
   <div class="tb-nav-search">
     <span class="material-symbols-outlined search-icon">search</span>
     <input type="text" id="navSearchInput" placeholder="Search curated vintage..."
       onkeydown="if(event.key==='Enter' && this.value.trim())location.href='../../pages/customer/categories.php?q='+encodeURIComponent(this.value)">
   </div>
+  <?php endif; ?>
 
   <!-- Right actions -->
   <div class="tb-nav-actions">
 
-    <!-- Cart  buyers only -->
+    <!-- Cart -->
     <?php if ($role === 'buyer'): ?>
-    <div class="tb-dropdown" id="cartWrap">
-      <button class="tb-nav-icon-btn" onclick="togglePopup('cartPopup')" title="Cart & Active Bids">
-        <span class="material-symbols-outlined icon-sm">shopping_cart</span>
-        <?php if ($cartCnt > 0): ?>
-        <span class="badge-count"><?= $cartCnt ?></span>
-        <?php endif; ?>
-      </button>
-      <div class="tb-cart-popup" id="cartPopup">
-        <div class="tb-cart-popup-header">
-          <span>Cart &amp; Active Bids</span>
-          <a href="../../pages/customer/orders.php" style="font-size:var(--fs-label-sm);color:var(--clr-coral);font-weight:600">View All</a>
-        </div>
-        <div class="tb-cart-popup-body" id="cartPopupBody">
-          <div style="padding:20px;text-align:center;color:var(--clr-tertiary);font-size:var(--fs-label-sm)">Loading...</div>
-        </div>
-        <div class="tb-cart-popup-footer">
-          <a href="../../pages/customer/orders.php?tab=topay" class="btn btn-primary btn-sm" style="flex:1">Checkout</a>
-          <a href="../../pages/customer/orders.php?tab=active" class="btn btn-ghost btn-sm" style="flex:1">My Bids</a>
-        </div>
-      </div>
-    </div>
+    <a href="../../pages/customer/orders.php?tab=cart" class="tb-nav-icon-btn" title="Cart">
+      <span class="material-symbols-outlined icon-sm">shopping_cart</span>
+      <?php if ($cartCnt > 0): ?>
+      <span class="badge-count"><?= $cartCnt ?></span>
+      <?php endif; ?>
+    </a>
     <?php endif; ?>
 
     <!-- Help -->
@@ -154,15 +136,70 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
       <button class="tb-nav-icon-btn" title="Help" onclick="togglePopup('helpMenu')">
         <span class="material-symbols-outlined icon-sm">help_outline</span>
       </button>
-      <div id="helpMenu" style="position:absolute;right:0;top:100%;margin-top:4px;background:var(--clr-white);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);min-width:200px;overflow:hidden;display:none;z-index:300">
+      <div id="helpMenu" style="position:absolute;right:0;top:100%;margin-top:4px;background:var(--clr-white);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);min-width:220px;overflow:hidden;display:none;z-index:300">
         <div class="tb-dropdown-header">Help &amp; Support</div>
-        <a href="#" class="tb-dropdown-item">How Bidding Works</a>
-        <a href="#" class="tb-dropdown-item">Payment Guide</a>
-        <a href="#" class="tb-dropdown-item">Shipping Policy</a>
+        <a href="javascript:void(0)" class="tb-dropdown-item" onclick="openHelpModal('bidding')">How Bidding Works</a>
+        <a href="javascript:void(0)" class="tb-dropdown-item" onclick="openHelpModal('listing')">How to Create a Listing</a>
+        <a href="javascript:void(0)" class="tb-dropdown-item" onclick="openHelpModal('payment')">Payment Guide</a>
+        <a href="javascript:void(0)" class="tb-dropdown-item" onclick="openHelpModal('policies')">Policies, Penalties &amp; Reporting</a>
         <div class="tb-dropdown-sep"></div>
-        <a href="#" class="tb-dropdown-item">Contact Support</a>
+        <a href="javascript:void(0)" class="tb-dropdown-item" onclick="openHelpModal('contact')">Contact Support</a>
       </div>
     </div>
+
+    <!-- Help & Support content modal -->
+    <div id="helpModalOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;align-items:center;justify-content:center;padding:20px" onclick="if(event.target===this) closeHelpModal()">
+      <div style="background:#fff;border-radius:var(--radius-lg);max-width:520px;width:100%;max-height:80vh;overflow-y:auto;box-shadow:var(--shadow-lg)">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--clr-outline)">
+          <h3 id="helpModalTitle" style="font-family:'Hanken Grotesk',sans-serif;font-weight:700;font-size:var(--fs-headline-sm);color:var(--clr-text)"></h3>
+          <button onclick="closeHelpModal()" style="background:none;border:none;cursor:pointer;color:var(--clr-tertiary)"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <div id="helpModalBody" style="padding:22px;font-size:var(--fs-body-md);color:var(--clr-text-variant);line-height:1.7"></div>
+      </div>
+    </div>
+
+    <script>
+    const HELP_CONTENT = {
+      bidding: {
+        title: 'How Bidding Works',
+        body: `<p>Buyers can place bids on active auction listings. Bids must exceed the current highest bid plus the minimum increment set by the seller.</p>
+               <p style="margin-top:12px">Once the auction timer hits zero, the highest bidder wins, an order is automatically generated, and the item moves to their "To Pay" tab so they can complete payment.</p>`
+      },
+      listing: {
+        title: 'How to Create a Listing',
+        body: `<p>Sellers navigate to the Seller Center and click "Create Listing." From there, input the item title, description, size, category, condition, and brand.</p>
+               <p style="margin-top:12px">Choose either "Fixed Price" or "Auction" as the listing type, upload real photos of the item, and publish. Luxury items also go through an authenticity review before they go live.</p>`
+      },
+      payment: {
+        title: 'Payment Guide',
+        body: `<p>Payments are processed securely at checkout. The money is held safely until the buyer marks the item as received or tracking confirms delivery.</p>
+               <p style="margin-top:12px">This protects both sides of the transaction: sellers know a sale is real once payment clears, and buyers know their money isn't released until the item actually arrives.</p>`
+      },
+      policies: {
+        title: 'Policies, Penalties &amp; Reporting',
+        body: `<p>Users can flag fraudulent items or suspicious behavior using the "Report Listing" feature on any listing page.</p>
+               <p style="margin-top:12px">Upheld fraud reports result in immediate listing removal and a Selling Suspension penalty applied to the seller's account. Repeated offenses escalate to longer suspensions and, eventually, a permanent ban.</p>`
+      },
+      contact: {
+        title: 'Contact Support',
+        body: `<p>Reach the ThriftBid administrative team directly:</p>
+               <div style="margin-top:14px;display:flex;flex-direction:column;gap:10px">
+                 <div style="padding:10px 14px;background:var(--clr-surface-low);border-radius:var(--radius-sm)"><strong>Dhens Espina</strong><br><a href="mailto:dhens_espina@dlsu.edu.ph" style="color:var(--clr-coral)">dhens_espina@dlsu.edu.ph</a></div>
+                 <div style="padding:10px 14px;background:var(--clr-surface-low);border-radius:var(--radius-sm)"><strong>Leila Lumbao</strong><br><a href="mailto:leila_lumbao@dlsu.edu.ph" style="color:var(--clr-coral)">leila_lumbao@dlsu.edu.ph</a></div>
+                 <div style="padding:10px 14px;background:var(--clr-surface-low);border-radius:var(--radius-sm)"><strong>Kyrstie San Jose</strong><br><a href="mailto:krystie_sanjose@dlsu.edu.ph" style="color:var(--clr-coral)">krystie_sanjose@dlsu.edu.ph</a></div>
+               </div>`
+      },
+    };
+    function openHelpModal(key){
+      const c = HELP_CONTENT[key];
+      if (!c) return;
+      document.getElementById('helpModalTitle').innerHTML = c.title;
+      document.getElementById('helpModalBody').innerHTML = c.body;
+      document.getElementById('helpModalOverlay').style.display = 'flex';
+      document.getElementById('helpMenu').style.display = 'none';
+    }
+    function closeHelpModal(){ document.getElementById('helpModalOverlay').style.display = 'none'; }
+    </script>
 
     <!-- Notifications -->
     <div style="position:relative" id="notifWrap">
@@ -206,38 +243,30 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
 </header>
 
 <script>
-// Universal popup toggle  handles notif, cart, profile, help
+// popup toggle for notif, profile, help 
+
 function togglePopup(id) {
 
-  const notifCart = ['notifPopup', 'cartPopup'];
-  const plainMenus = ['profileMenu', 'helpMenu'];
-
-  if (notifCart.includes(id)) {
+  if (id === 'notifPopup') {
     const el = document.getElementById(id);
     const isOpen = el.classList.contains('open');
-    // close everything
-    document.querySelectorAll('.tb-notif-popup,.tb-cart-popup').forEach(p => p.classList.remove('open'));
-    plainMenus.forEach(m => { const el2 = document.getElementById(m); if(el2) el2.style.display = 'none'; });
-    if (!isOpen) {
-      el.classList.add('open');
-      if (id === 'notifPopup') loadNotifs();
-      if (id === 'cartPopup')  loadCart();
-    }
+    document.querySelectorAll('.tb-notif-popup').forEach(p => p.classList.remove('open'));
+    ['profileMenu','helpMenu'].forEach(m => { const el2 = document.getElementById(m); if(el2) el2.style.display = 'none'; });
+    if (!isOpen) { el.classList.add('open'); loadNotifs(); }
   } else {
     const el = document.getElementById(id);
     if (!el) return;
     const isOpen = el.style.display === 'block';
-    // close everything
-    document.querySelectorAll('.tb-notif-popup,.tb-cart-popup').forEach(p => p.classList.remove('open'));
-    plainMenus.forEach(m => { const el2 = document.getElementById(m); if(el2) el2.style.display = 'none'; });
+    document.querySelectorAll('.tb-notif-popup').forEach(p => p.classList.remove('open'));
+    ['profileMenu','helpMenu'].forEach(m => { const el2 = document.getElementById(m); if(el2) el2.style.display = 'none'; });
     el.style.display = isOpen ? 'none' : 'block';
   }
 }
 // Close all popups on outside click
 document.addEventListener('click', e => {
-  const inside = ['notifWrap','cartWrap','profileWrap','helpWrap'];
+  const inside = ['notifWrap','profileWrap','helpWrap'];
   if (!inside.some(id => e.target.closest('#'+id))) {
-    document.querySelectorAll('.tb-notif-popup,.tb-cart-popup').forEach(p => p.classList.remove('open'));
+    document.querySelectorAll('.tb-notif-popup').forEach(p => p.classList.remove('open'));
     ['profileMenu','helpMenu'].forEach(m => { const el = document.getElementById(m); if(el) el.style.display='none'; });
   }
 });
@@ -260,24 +289,6 @@ function loadNotifs() {
       `).join('');
     }).catch(() => {});
 }
-function loadCart() {
-  fetch('../../api/cart-popup.php')
-    .then(r => r.json())
-    .then(data => {
-      const body = document.getElementById('cartPopupBody');
-      if (!data.length) { body.innerHTML = '<div style="padding:20px;text-align:center;color:var(--clr-tertiary);font-size:12px">Your cart is empty</div>'; return; }
-      body.innerHTML = data.map(i => `
-        <div class="tb-cart-row">
-          <div class="tb-cart-row-img">${i.image_url ? `<img src="${escHtml(i.image_url)}" alt="">` : '<span class="material-symbols-outlined icon-sm" style="color:var(--clr-tertiary)">checkroom</span>'}</div>
-          <div style="flex:1;min-width:0">
-            <div class="tb-cart-row-title line-clamp-1">${escHtml(i.title)}</div>
-            <div class="tb-cart-row-type">${escHtml(i.type)}</div>
-          </div>
-          <div class="tb-cart-row-price">${escHtml(i.price_display)}</div>
-        </div>
-      `).join('');
-    }).catch(() => {});
-}
 function iconForType(t) {
   return {BID:'gavel',ORDER:'package_2',AUCTION:'timer',SYSTEM:'notifications',PAYMENT:'payments'}[t]||'notifications';
 }
@@ -290,8 +301,8 @@ function renderSellerSidebar(string $active = 'overview'): void {
     $links = [
         'overview'     => ['icon'=>'dashboard',     'label'=>'Overview',        'href'=>'../../pages/seller/dashboard.php'],
         'create'       => ['icon'=>'add_circle',    'label'=>'Create Listing',  'href'=>'../../pages/seller/create-listing.php'],
-        'auctions'     => ['icon'=>'gavel',         'label'=>'Active Auctions', 'href'=>'../../pages/seller/active-auctions.php'],
-        'ship'         => ['icon'=>'local_shipping','label'=>'To Ship',         'href'=>'../../pages/seller/to-ship.php'],
+        'auctions'     => ['icon'=>'gavel',         'label'=>'My Listings & Auctions', 'href'=>'../../pages/seller/active-auctions.php'],
+        'ship'         => ['icon'=>'local_shipping','label'=>'Orders',         'href'=>'../../pages/seller/to-ship.php'],
         'transactions' => ['icon'=>'history',       'label'=>'Transactions',    'href'=>'../../pages/seller/transactions.php'],
         'analytics'    => ['icon'=>'analytics',     'label'=>'Analytics',       'href'=>'../../pages/seller/analytics.php'],
     ]; ?>
@@ -318,22 +329,42 @@ function renderSellerSidebar(string $active = 'overview'): void {
 
 //  Admin sidebar 
 function renderAdminSidebar(string $active = 'dashboard'): void {
-    $links = [
-        'dashboard' => ['icon'=>'dashboard',     'label'=>'Dashboard',  'href'=>'../../pages/admin/dashboard.php'],
-        'users'     => ['icon'=>'group',         'label'=>'Users',      'href'=>'../../pages/admin/users.php'],
-        'listings'  => ['icon'=>'storefront',    'label'=>'Listings',   'href'=>'../../pages/admin/listings.php'],
-        'auctions'  => ['icon'=>'gavel',         'label'=>'Auctions',   'href'=>'../../pages/admin/auctions.php'],
-        'disputes'  => ['icon'=>'report_problem','label'=>'Disputes',   'href'=>'../../pages/admin/disputes.php'],
-        'penalties' => ['icon'=>'block',         'label'=>'Penalties',  'href'=>'../../pages/admin/penalties.php'],
-        'reports'   => ['icon'=>'analytics',     'label'=>'Reports',    'href'=>'../../pages/admin/reports.php'],
+
+    $groups = [
+        '' => [
+            'dashboard' => ['icon'=>'dashboard', 'label'=>'Dashboard', 'href'=>'../../pages/admin/dashboard.php'],
+        ],
+        'Catalog' => [
+            'listings'     => ['icon'=>'storefront', 'label'=>'Listings',     'href'=>'../../pages/admin/listings.php'],
+            'auctions'     => ['icon'=>'gavel',       'label'=>'Auctions',    'href'=>'../../pages/admin/auctions.php'],
+            'authenticity' => ['icon'=>'verified',    'label'=>'Authenticity','href'=>'../../pages/admin/authenticity.php'],
+        ],
+        'People' => [
+            'users' => ['icon'=>'group', 'label'=>'User Management', 'href'=>'../../pages/admin/users.php'],
+        ],
+        'Trust & Safety' => [
+            'moderation' => ['icon'=>'shield', 'label'=>'Moderation',        'href'=>'../../pages/admin/moderation.php'],
+            'penalties'  => ['icon'=>'balance','label'=>'Rewards & Penalties','href'=>'../../pages/admin/penalties.php'],
+        ],
+        'Insights' => [
+            'reports' => ['icon'=>'query_stats', 'label'=>'Platform Analytics', 'href'=>'../../pages/admin/reports.php'],
+        ],
+        'Account' => [
+            'settings' => ['icon'=>'settings', 'label'=>'Settings', 'href'=>'../../pages/profile.php'],
+        ],
     ]; ?>
-<aside class="tb-sidebar" style="width:220px;min-width:220px">
+<aside class="tb-sidebar" style="width:224px;min-width:224px">
   <div class="tb-sidebar-title" style="font-size:16px">Admin Panel</div>
-  <nav class="tb-sidebar-nav" style="margin-top:16px">
+  <nav class="tb-sidebar-nav" style="margin-top:12px">
+    <?php foreach ($groups as $groupLabel => $links): ?>
+    <?php if ($groupLabel): ?>
+    <div style="font-size:10px;font-weight:700;color:var(--clr-tertiary);text-transform:uppercase;letter-spacing:0.08em;margin:16px 0 4px 12px"><?= $groupLabel ?></div>
+    <?php endif; ?>
     <?php foreach ($links as $k => $l): ?>
     <a href="<?= $l['href'] ?>" class="tb-sidebar-link <?= $active===$k?'active':'' ?>">
       <span class="material-symbols-outlined"><?= $l['icon'] ?></span><?= $l['label'] ?>
     </a>
+    <?php endforeach; ?>
     <?php endforeach; ?>
   </nav>
 </aside>
@@ -346,7 +377,7 @@ function renderFooter(): void { ?>
     <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
       <div>
         <span style="font-family:'Hanken Grotesk',sans-serif;font-size:18px;font-weight:800;color:var(--clr-coral)">ThriftBid</span>
-        <p style="margin-top:10px;font-size:var(--fs-label-sm);color:var(--clr-tertiary);line-height:1.6">Curated second-hand pieces from trusted sellers.</p>
+        <p style="margin-top:10px;font-size:var(--fs-label-sm);color:var(--clr-tertiary);line-height:1.6">Curated second-hand pieces from trusted sellers.<br>Engineered by Team Dynamite.</p>
       </div>
       <div>
         <p style="font-size:var(--fs-label-sm);font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--clr-tertiary);margin-bottom:12px">Shop</p>
@@ -371,22 +402,40 @@ function renderFooter(): void { ?>
       </div>
     </div>
     <div style="border-top:1px solid var(--clr-outline);padding-top:16px">
-      <p style="font-size:11px;color:var(--clr-tertiary)">© 2025 ThriftBid. All Rights Reserved.</p>
+      <p style="font-size:11px;color:var(--clr-tertiary)">&copy; 2026 ThriftBid. Designed &amp; Engineered by BSITS DLSU Laguna Campus (ID 124), Dhens Espina, Leila Lumbao, Kyrstie San Jose. All Rights Reserved.</p>
     </div>
   </div>
 </footer>
 <?php }
 
 //  Helpers
+function groupByDate(array $rows, string $dateField, string $format = 'F j, Y'): array {
+    $groups = [];
+    foreach ($rows as $row) {
+        $key = date($format, strtotime($row[$dateField]));
+        $groups[$key][] = $row;
+    }
+    return $groups;
+}
+
+// Optional $subtotal displays a total next to the date ("Revenue: ₱12,450.00").
+function renderDateHeader(string $label, ?string $subtotal = null): void {
+    echo '<div style="display:flex;align-items:baseline;justify-content:space-between;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--clr-outline)">'
+       . '<h3 style="font-size:var(--fs-label-sm);font-weight:800;color:var(--clr-tertiary);text-transform:uppercase;letter-spacing:0.06em">'
+       . htmlspecialchars($label) . '</h3>';
+    if ($subtotal !== null) {
+        echo '<span style="font-size:var(--fs-label-md);font-weight:700;color:var(--clr-success)">' . $subtotal . '</span>';
+    }
+    echo '</div>';
+}
+
 function flash(string $key, string $msg = ''): string {
     if ($msg) { $_SESSION['flash'][$key] = $msg; return ''; }
     $m = $_SESSION['flash'][$key] ?? ''; unset($_SESSION['flash'][$key]); return $m;
 }
-function convertCurrency(float $php, string $cur = 'PHP'): string {
-    $rates = ['PHP'=>1.0,'USD'=>0.0175,'KRW'=>23.5];
-    $c = $php * ($rates[$cur] ?? 1.0);
-    return match($cur) { 'USD'=>'$'.number_format($c,2), 'KRW'=>'₩'.number_format($c,0), default=>'₱'.number_format($c,2) };
-}
+
+// Handled by includes/currency.php via live exchange rates.
+// Calling pages already import it, removing duplication here.
 function formatTimeLeft(string $end): string {
     $d = strtotime($end) - time();
     if ($d <= 0) return 'Ended';

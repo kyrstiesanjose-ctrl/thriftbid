@@ -1,19 +1,20 @@
 <?php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
+require_once __DIR__ . '/../../includes/currency.php';
 require_once __DIR__ . '/../../includes/layout.php';
 requireLogin('../login.php');
 
 $auctions = DB::fetchAll(
-    'SELECT a.*,l.title,l.description,l.item_condition,l.image_url,l.listing_id,
-            c.name as cat_name,u.username as seller_name,s.seller_id,
-            (SELECT COUNT(*) FROM BIDDINGS WHERE auction_id=a.auction_id) as bid_count
+    'SELECT a.*, l.title, l.description, l.condition_grade, l.listing_id,
+            c.name AS cat_name, COALESCE(s.shop_name, s.username) AS seller_name, s.seller_id,
+            (SELECT image_url FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id ORDER BY is_primary DESC, image_id ASC LIMIT 1) AS cover_image,
+            (SELECT COUNT(*) FROM BIDDINGS WHERE auction_id=a.auction_id AND is_deleted=0) AS bid_count
      FROM AUCTIONS a
-     JOIN LISTINGS l  ON a.listing_id=l.listing_id
+     JOIN LISTINGS l   ON a.listing_id=l.listing_id
      JOIN CATEGORIES c ON l.category_id=c.category_id
-     JOIN SELLER s ON l.seller_id=s.seller_id
-     JOIN USERS u  ON s.user_id=u.user_id
-     WHERE a.status="Active" AND a.end_time>NOW()
+     JOIN SELLER s     ON l.seller_id=s.seller_id
+     WHERE a.status="Active" AND a.end_time>NOW() AND l.deleted_at IS NULL
      ORDER BY a.end_time ASC'
 );
 
@@ -23,19 +24,13 @@ renderHead('Live Auctions');
 <?php renderNavbar('livebids'); ?>
 
 <!-- Hero strip -->
-<div style="background:var(--clr-coral);padding:24px var(--sp-margin-desktop)">
+<div style="padding:24px var(--sp-margin-desktop)">
   <div style="max-width:var(--sp-container);margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px">
     <div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-        <span class="tb-badge" style="background:rgba(255,255,255,0.22);color:#fff;border:1px solid rgba(255,255,255,0.35)">
-          <span style="width:6px;height:6px;border-radius:50%;background:#fff;display:inline-block;margin-right:4px"></span>LIVE NOW
-        </span>
-        <span style="color:rgba(255,255,255,0.9);font-size:var(--fs-label-md);font-weight:600"><?= count($auctions) ?> Active Auction<?= count($auctions)!==1?'s':'' ?></span>
-      </div>
-      <h1 style="font-family:'Hanken Grotesk',sans-serif;font-size:var(--fs-headline-lg);color:#fff;font-weight:800">Live Bidding Room</h1>
-      <p style="color:rgba(255,255,255,0.82);margin-top:4px;font-size:var(--fs-label-md)">Anti-snipe protection active. Place bids before time runs out.</p>
+      <h1 style="font-family:'Hanken Grotesk',sans-serif;font-size:var(--fs-headline-lg);color:var(--clr-text);font-weight:800">Live Bidding Room</h1>
+      <p style="color:var(--clr-tertiary);margin-top:4px;font-size:var(--fs-label-md)">Place bids before time runs out.</p>
     </div>
-    <a href="categories.php?type=auction" class="btn btn-white">Browse All Auctions</a>
+    <a href="categories.php?type=auction" class="btn btn-outline">Browse All Auctions</a>
   </div>
 </div>
 
@@ -58,12 +53,11 @@ renderHead('Live Auctions');
       <div class="tb-card" style="display:flex;flex-direction:column;transition:box-shadow var(--transition)">
         <!-- Image -->
         <div style="position:relative;aspect-ratio:4/3;background:var(--clr-surface-mid);display:flex;align-items:center;justify-content:center;overflow:hidden">
-          <?php if ($a['image_url']): ?>
-          <img src="<?= htmlspecialchars($a['image_url']) ?>" alt="<?= htmlspecialchars($a['title']) ?>" style="width:100%;height:100%;object-fit:cover">
+          <?php if ($a['cover_image']): ?>
+          <img src="<?= htmlspecialchars($a['cover_image']) ?>" alt="<?= htmlspecialchars($a['title']) ?>" style="width:100%;height:100%;object-fit:cover">
           <?php else: ?>
           <span class="material-symbols-outlined icon-xl" style="color:var(--clr-outline)">checkroom</span>
           <?php endif; ?>
-          <!-- Badge: LIVE=yellow, urgent=red -->
           <?php if ($isUrgent): ?>
           <span class="tb-badge-float top-left" style="background:var(--clr-error);color:#fff">Ending Soon</span>
           <?php else: ?>
@@ -77,8 +71,8 @@ renderHead('Live Auctions');
             <span class="tb-badge tb-badge-gray" style="margin-bottom:6px"><?= htmlspecialchars($a['cat_name']) ?></span>
             <h3 style="font-weight:700;font-size:var(--fs-body-md);color:var(--clr-text);line-height:1.3;margin-bottom:2px"><?= htmlspecialchars($a['title']) ?></h3>
             <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">
-              by <a href="seller_profile.php?id=<?= $a['seller_id'] ?>" style="color:var(--clr-coral);font-weight:600">@<?= htmlspecialchars($a['seller_name']) ?></a>
-              &bull; <?= htmlspecialchars($a['item_condition']) ?>
+              by <a href="seller_profile.php?id=<?= $a['seller_id'] ?>" style="color:var(--clr-coral);font-weight:600"><?= htmlspecialchars($a['seller_name']) ?></a>
+              &bull; <?= htmlspecialchars($a['condition_grade']) ?>
             </p>
           </div>
 
@@ -96,7 +90,6 @@ renderHead('Live Auctions');
 
           <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)"><?= $a['bid_count'] ?> bid<?= $a['bid_count']!==1?'s':'' ?> &bull; Min. increment: <?= convertCurrency((float)$a['min_increment']) ?></p>
 
-          <!-- JOIN BID ,  goes to auction_room.php -->
           <a href="auction_room.php?id=<?= $a['auction_id'] ?>" class="btn btn-yellow btn-full" style="margin-top:auto">
             <span class="material-symbols-outlined icon-sm">gavel</span>Join Bid
           </a>
@@ -110,7 +103,6 @@ renderHead('Live Auctions');
 </main>
 <?php renderFooter(); ?>
 <script>
-// Live countdowns
 document.querySelectorAll('[data-end]').forEach(el => {
   function upd() {
     const d = parseInt(el.dataset.end) - Math.floor(Date.now()/1000);

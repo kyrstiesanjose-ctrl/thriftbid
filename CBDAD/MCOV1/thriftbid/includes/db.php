@@ -19,7 +19,7 @@ class DB {
         return self::$instance;
     }
 
-    // Convenience query helpers
+    // query helpers
     public static function query(string $sql, array $params = []): \PDOStatement {
         $stmt = self::get()->prepare($sql);
         $stmt->execute($params);
@@ -36,6 +36,43 @@ class DB {
 
     public static function insert(string $sql, array $params = []): int {
         self::query($sql, $params);
+        return (int) self::get()->lastInsertId();
+    }
+
+  
+    // Stored procedure helpers.
+
+
+
+    // For procedures that return exactly one row (like a stats summary).
+    public static function callOne(string $proc, array $params = []): array|false {
+        $placeholders = implode(',', array_fill(0, count($params), '?'));
+        $stmt = self::query("CALL $proc($placeholders)", $params);
+        $row = $stmt->fetch();
+        $stmt->closeCursor();
+        return $row;
+    }
+
+    // For procedures that return multiple rows (like  a top 10 list).
+    public static function callAll(string $proc, array $params = []): array {
+        $placeholders = implode(',', array_fill(0, count($params), '?'));
+        $stmt = self::query("CALL $proc($placeholders)", $params);
+        $rows = $stmt->fetchAll();
+        $stmt->closeCursor();
+        return $rows;
+    }
+
+    // For procedures that don't return a result set at all (they just
+    // INSERT/UPDATE). Still calls closeCursor() to be safe.
+    public static function callProc(string $proc, array $params = []): void {
+        $placeholders = implode(',', array_fill(0, count($params), '?'));
+        self::query("CALL $proc($placeholders)", $params)->closeCursor();
+    }
+
+   // For procedures that just insert a row and return the new ID.
+    public static function callProcGetLastId(string $proc, array $params = []): int {
+        $placeholders = implode(',', array_fill(0, count($params), '?'));
+        self::query("CALL $proc($placeholders)", $params)->closeCursor();
         return (int) self::get()->lastInsertId();
     }
 }

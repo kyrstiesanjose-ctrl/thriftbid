@@ -4,7 +4,7 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/layout.php';
 
 if (isLoggedIn()) {
-    $role = $_SESSION['user']['role'] ?? 'buyer';
+    $role = $_SESSION['auth']['role'] ?? 'buyer';
     header('Location: ' . match($role) { 'admin'=>'./admin/dashboard.php','seller'=>'./seller/dashboard.php',default=>'./customer/home.php' }); exit;
 }
 
@@ -13,13 +13,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = trim($_POST['email']??''); $password = $_POST['password']??'';
     if (!$email || !$password) { $error = 'Please fill in all fields.'; }
     else {
-        $u = DB::fetch('SELECT * FROM USERS WHERE email=?', [$email]);
-        if (!$u || !verifyPassword($password, $u['password_hash'])) { $error = 'Invalid email or password.'; }
-        else {
-            loginUser($u);
-            DB::query('INSERT INTO NOTIFICATIONS (user_id,title,message,notification_type) VALUES (?,?,?,?)',[$u['user_id'],'Welcome back!','You have logged in to ThriftBid.','SYSTEM']);
-            $role = $u['role'];
-            header('Location: '.match($role){'admin'=>'./admin/dashboard.php','seller'=>'./seller/dashboard.php',default=>'./customer/home.php'}); exit;
+        $found = findAccountByEmail($email);
+        if (!$found || !verifyPassword($password, $found['row']['password_hash'])) {
+            $error = 'Invalid email or password.';
+        } else {
+            $role = $found['role'];
+            $row  = $found['row'];
+
+            // Account status checks (per updated schema's seller_status /
+            // buyer_status ENUMs). Suspended/Banned accounts can't log in.
+            $statusCol = $role === 'seller' ? 'seller_status' : ($role === 'buyer' ? 'buyer_status' : null);
+            if ($statusCol && in_array($row[$statusCol] ?? 'Active', ['Suspended','Banned'], true)) {
+                $error = 'Your account is currently ' . strtolower($row[$statusCol]) . '. Please contact support.';
+            } else {
+                loginUser($row, $role);
+
+                if ($role === 'seller') {
+                    DB::query('INSERT INTO NOTIFICATIONS (seller_id,title,message,notification_type) VALUES (?,?,?,?)',
+                        [$row['seller_id'],'Welcome back!','You have logged in to ThriftBid.','SYSTEM']);
+                } elseif ($role === 'buyer') {
+                    DB::query('INSERT INTO NOTIFICATIONS (buyer_id,title,message,notification_type) VALUES (?,?,?,?)',
+                        [$row['buyer_id'],'Welcome back!','You have logged in to ThriftBid.','SYSTEM']);
+                }
+
+                header('Location: '.match($role){'admin'=>'./admin/dashboard.php','seller'=>'./seller/dashboard.php',default=>'./customer/home.php'}); exit;
+            }
         }
     }
 }
@@ -63,7 +81,7 @@ renderHeadRoot('Login');
     <div class="grid grid-cols-3 gap-2 mb-5">
       <button onclick="ql('ana@email.com')"                    class="btn btn-ghost btn-sm">Buyer</button>
       <button onclick="ql('seller_leila@thriftbid.com')"       class="btn btn-ghost btn-sm">Seller</button>
-      <button onclick="ql('admin@thriftbid.com')"              class="btn btn-ghost btn-sm">Admin</button>
+      <button onclick="ql('admin@thriftbid.com')"             class="btn btn-ghost btn-sm">Admin</button>
     </div>
 
     <p style="text-align:center;font-size:var(--fs-label-md);color:var(--clr-tertiary)">

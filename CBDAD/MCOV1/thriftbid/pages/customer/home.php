@@ -1,14 +1,38 @@
 <?php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
+require_once __DIR__ . '/../../includes/currency.php';
 require_once __DIR__ . '/../../includes/layout.php';
 requireLogin('../login.php');
 
 $user = currentUser();
-$liveAuctions = DB::fetchAll('SELECT a.*,l.title,l.item_condition,l.image_url,l.listing_id,c.name as cat_name FROM AUCTIONS a JOIN LISTINGS l ON a.listing_id=l.listing_id JOIN CATEGORIES c ON l.category_id=c.category_id WHERE a.status="Active" AND a.end_time>NOW() ORDER BY a.end_time ASC LIMIT 8');
-$fixedListings = DB::fetchAll('SELECT l.*,c.name as cat_name FROM LISTINGS l JOIN CATEGORIES c ON l.category_id=c.category_id WHERE l.is_active=1 AND l.listing_id NOT IN (SELECT listing_id FROM AUCTIONS WHERE status="Active") ORDER BY l.created_at DESC LIMIT 8');
-$categories    = DB::fetchAll('SELECT * FROM CATEGORIES ORDER BY category_id');
-$catIcons      = ['checkroom','layers','dry_cleaning','toggle_off','footprint','shopping_bag','diamond','hat_alt','star','museum','home','inventory_2'];
+
+$imgSub = '(SELECT image_url FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id ORDER BY is_primary DESC, image_id ASC LIMIT 1) AS cover_image';
+
+$liveAuctions = DB::fetchAll(
+    "SELECT a.*, l.title, l.condition_grade, l.listing_id, c.name AS cat_name, $imgSub
+     FROM AUCTIONS a
+     JOIN LISTINGS l ON a.listing_id=l.listing_id
+     JOIN CATEGORIES c ON l.category_id=c.category_id
+     WHERE a.status='Active' AND a.end_time>NOW() AND l.deleted_at IS NULL
+     ORDER BY a.end_time ASC LIMIT 8"
+);
+
+$fixedListings = DB::fetchAll(
+    "SELECT l.*, c.name AS cat_name, $imgSub
+     FROM LISTINGS l
+     JOIN CATEGORIES c ON l.category_id=c.category_id
+     WHERE l.is_active=1 AND l.deleted_at IS NULL
+       AND l.listing_id NOT IN (SELECT listing_id FROM AUCTIONS WHERE status='Active')
+     ORDER BY l.created_at DESC LIMIT 8"
+);
+
+// Parent categoriesin  "Browse by Category"
+$parentCats = DB::fetchAll('SELECT DISTINCT parent_category FROM PARENT_CATEGORIES ORDER BY parent_category');
+$catIcons   = [
+    'Tops'=>'checkroom','Bottoms'=>'layers','Dresses & Co_ords'=>'dry_cleaning','Footwear'=>'footprint',
+    'Bags & Purses'=>'shopping_bag','Accessories'=>'diamond','Others'=>'category',
+];
 
 renderHead('Home');
 ?>
@@ -40,17 +64,17 @@ renderHead('Home');
     </div>
   </section>
 
-  <!-- Categories scroll -->
+  <!-- Categories scroll (parent categories ) -->
   <section style="margin-bottom:40px">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
       <h2 style="font-family:'Hanken Grotesk',sans-serif;font-size:var(--fs-headline-md);font-weight:700">Browse by Category</h2>
       <a href="categories.php" style="font-size:var(--fs-label-md);color:var(--clr-coral);font-weight:600">View All</a>
     </div>
     <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:6px" class="no-scroll">
-      <?php foreach ($categories as $i => $cat): ?>
-      <a href="categories.php?cat=<?= $cat['category_id'] ?>" class="tb-cat-pill">
-        <span class="material-symbols-outlined"><?= $catIcons[$i] ?? 'category' ?></span>
-        <span class="label"><?= htmlspecialchars($cat['name']) ?></span>
+      <?php foreach ($parentCats as $pc): $name = $pc['parent_category']; ?>
+      <a href="categories.php?parent=<?= urlencode($name) ?>" class="tb-cat-pill">
+        <span class="material-symbols-outlined"><?= $catIcons[$name] ?? 'category' ?></span>
+        <span class="label"><?= htmlspecialchars($name) ?></span>
       </a>
       <?php endforeach; ?>
     </div>
@@ -79,12 +103,11 @@ renderHead('Home');
       ?>
       <div class="tb-listing-card">
         <div class="tb-listing-thumb">
-          <?php if ($a['image_url']): ?>
-            <img src="<?= htmlspecialchars($a['image_url']) ?>" alt="<?= htmlspecialchars($a['title']) ?>">
+          <?php if ($a['cover_image']): ?>
+            <img src="<?= htmlspecialchars($a['cover_image']) ?>" alt="<?= htmlspecialchars($a['title']) ?>">
           <?php else: ?>
             <span class="material-symbols-outlined icon-xl tb-listing-placeholder">checkroom</span>
           <?php endif; ?>
-          <!-- Badge: LIVE = yellow, urgent = ends-soon warning -->
           <?php if ($isUrgent): ?>
           <span class="tb-badge-float top-left" style="background:var(--clr-error);color:#fff">Ending Soon</span>
           <?php else: ?>
@@ -97,7 +120,6 @@ renderHead('Home');
           <div class="tb-listing-price"><?= convertCurrency((float)$a['current_highest_bid']) ?></div>
           <div class="tb-listing-meta"><?= htmlspecialchars($a['cat_name']) ?> &bull; <?= formatTimeLeft($a['end_time']) ?></div>
           <div class="tb-listing-cta">
-            <!-- "Join Bid" in list views,  goes to auction_room.php -->
             <a href="auction_room.php?id=<?= $a['auction_id'] ?>" class="btn btn-yellow btn-sm btn-full">Join Bid</a>
           </div>
         </div>
@@ -120,8 +142,8 @@ renderHead('Home');
       <?php foreach ($fixedListings as $l): ?>
       <div class="tb-listing-card">
         <div class="tb-listing-thumb">
-          <?php if ($l['image_url']): ?>
-            <img src="<?= htmlspecialchars($l['image_url']) ?>" alt="<?= htmlspecialchars($l['title']) ?>">
+          <?php if ($l['cover_image']): ?>
+            <img src="<?= htmlspecialchars($l['cover_image']) ?>" alt="<?= htmlspecialchars($l['title']) ?>">
           <?php else: ?>
             <span class="material-symbols-outlined icon-xl tb-listing-placeholder">checkroom</span>
           <?php endif; ?>
@@ -129,7 +151,7 @@ renderHead('Home');
         <div class="tb-listing-body">
           <div class="tb-listing-title"><?= htmlspecialchars($l['title']) ?></div>
           <div class="tb-listing-price"><?= convertCurrency((float)$l['price']) ?></div>
-          <div class="tb-listing-meta"><?= htmlspecialchars($l['cat_name']) ?> &bull; <?= htmlspecialchars($l['item_condition']) ?></div>
+          <div class="tb-listing-meta"><?= htmlspecialchars($l['cat_name']) ?> &bull; <?= htmlspecialchars($l['condition_grade']) ?></div>
           <div class="tb-listing-cta">
             <a href="listing.php?id=<?= $l['listing_id'] ?>" class="btn btn-primary btn-sm btn-full">View Item</a>
           </div>

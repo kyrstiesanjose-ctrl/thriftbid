@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
+require_once __DIR__ . '/../../includes/currency.php';
 require_once __DIR__ . '/../../includes/layout.php';
 requireLogin('../login.php');
 
@@ -8,104 +9,99 @@ $sellerId = (int)($_GET['id'] ?? 0);
 if (!$sellerId) { header('Location: categories.php'); exit; }
 
 $seller = DB::fetch(
-    'SELECT s.*,u.username,u.email,u.created_at as joined,
-            (SELECT COUNT(*) FROM LISTINGS WHERE seller_id=s.seller_id AND is_active=1) as listing_count,
-            (SELECT AVG(rating) FROM REVIEWS WHERE seller_id=s.seller_id) as avg_rating,
-            (SELECT COUNT(*) FROM REVIEWS WHERE seller_id=s.seller_id) as review_count,
-            (SELECT COUNT(*) FROM ORDERS WHERE seller_id=s.seller_id AND status="Delivered") as completed_orders
+    'SELECT s.*, s.created_at AS joined,
+            (SELECT COUNT(*) FROM LISTINGS WHERE seller_id=s.seller_id AND is_active=1 AND deleted_at IS NULL) AS listing_count,
+            (SELECT AVG(rating) FROM REVIEWS WHERE seller_id=s.seller_id AND deleted_at IS NULL) AS avg_rating,
+            (SELECT COUNT(*) FROM REVIEWS WHERE seller_id=s.seller_id AND deleted_at IS NULL) AS review_count,
+            (SELECT COUNT(*) FROM ORDERS WHERE seller_id=s.seller_id AND status="Delivered") AS completed_orders
      FROM SELLER s
-     JOIN USERS u ON s.user_id=u.user_id
      WHERE s.seller_id=?',
     [$sellerId]
 );
 if (!$seller) { header('Location: categories.php'); exit; }
 
-// Seller listings
 $listings = DB::fetchAll(
-    'SELECT l.*,c.name as cat_name,
-            a.auction_id, a.end_time, a.current_highest_bid, a.status as auction_status
+    "SELECT l.*, c.name AS cat_name,
+            a.auction_id, a.end_time, a.current_highest_bid, a.status AS auction_status,
+            (SELECT image_url FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id ORDER BY is_primary DESC, image_id ASC LIMIT 1) AS cover_image
      FROM LISTINGS l
      JOIN CATEGORIES c ON l.category_id=c.category_id
-     LEFT JOIN AUCTIONS a ON l.listing_id=a.listing_id AND a.status="Active"
-     WHERE l.seller_id=? AND l.is_active=1
-     ORDER BY l.created_at DESC LIMIT 24',
+     LEFT JOIN AUCTIONS a ON l.listing_id=a.listing_id AND a.status='Active'
+     WHERE l.seller_id=? AND l.is_active=1 AND l.deleted_at IS NULL
+     ORDER BY l.created_at DESC LIMIT 24",
     [$sellerId]
 );
 
-// Reviews
-$reviews = DB::fetchAll(
-    'SELECT r.*,u.username as buyer_name,l.title as item_title
-     FROM REVIEWS r
-     JOIN BUYER by2 ON r.buyer_id=by2.buyer_id
-     JOIN USERS u ON by2.user_id=u.user_id
-     JOIN ORDERS o ON r.order_id=o.order_id
-     JOIN LISTINGS l ON o.listing_id=l.listing_id
-     WHERE r.seller_id=?
-     ORDER BY r.review_date DESC LIMIT 20',
-    [$sellerId]
-);
-
-$currentUser = currentUser();
-$buyer = DB::fetch('SELECT buyer_id FROM BUYER WHERE user_id=?', [$currentUser['user_id']]);
-$buyerId = $buyer['buyer_id'] ?? 0;
-
-// Can leave review check
-$canReview = false;
-if ($buyerId) {
-    $completedOrder = DB::fetch(
-        'SELECT o.order_id FROM ORDERS o
+function loadReviews(int $sellerId): array {
+    return DB::fetchAll(
+        'SELECT r.*, bu.username AS buyer_name, l.title AS item_title
+         FROM REVIEWS r
+         JOIN BUYER bu ON r.buyer_id=bu.buyer_id
+         JOIN ORDERS o ON r.order_id=o.order_id
          JOIN LISTINGS l ON o.listing_id=l.listing_id
-         WHERE o.buyer_id=? AND l.seller_id=? AND o.status="Delivered"
-         AND o.order_id NOT IN (SELECT order_id FROM REVIEWS WHERE buyer_id=?)
-         LIMIT 1',
-        [$buyerId, $sellerId, $buyerId]
+         WHERE r.seller_id=? AND r.deleted_at IS NULL
+         ORDER BY r.review_date DESC LIMIT 20',
+        [$sellerId]
     );
-    $canReview = (bool)$completedOrder;
-    $reviewOrderId = $completedOrder['order_id'] ?? 0;
 }
+$reviews = loadReviews($sellerId);
+
+$user    = currentUser();
+$buyerId = $user['buyer_id'] ?? 0;
+
+// Finds the buyer's most recent delivered order for this seller.
+// Duplicate reviews are allowed; uses  the before_review_prevent_duplicate database trigger 
+// handles the rejection and returns the appropriate error message.
+$eligibleOrder = null;
+if ($buyerId) {
+    $eligibleOrder = DB::fetch(
+        'SELECT order_id FROM ORDERS WHERE buyer_id=? AND seller_id=? AND status="Delivered" ORDER BY order_date DESC LIMIT 1',
+        [$buyerId, $sellerId]
+    );
+}
+$canReview = (bool)$eligibleOrder;
 
 $reviewSuccess = $reviewError = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review']) && $canReview) {
     $rating = (int)($_POST['rating'] ?? 0);
     $text   = trim($_POST['review_text'] ?? '');
-    if ($rating < 1 || $rating > 5) { $reviewError = 'Please select a rating between 1 and 5.'; }
-    else {
-        DB::query('INSERT INTO REVIEWS (buyer_id,seller_id,order_id,rating,review_text) VALUES (?,?,?,?,?)',
-            [$buyerId, $sellerId, $reviewOrderId, $rating, $text ?: null]);
-        $canReview    = false;
-        $reviewSuccess = 'Your review has been submitted!';
-        $reviews = DB::fetchAll('SELECT r.*,u.username as buyer_name,l.title as item_title FROM REVIEWS r JOIN BUYER by2 ON r.buyer_id=by2.buyer_id JOIN USERS u ON by2.user_id=u.user_id JOIN ORDERS o ON r.order_id=o.order_id JOIN LISTINGS l ON o.listing_id=l.listing_id WHERE r.seller_id=? ORDER BY r.review_date DESC LIMIT 20', [$sellerId]);
+    if ($rating < 1 || $rating > 5) {
+        $reviewError = 'Please select a rating between 1 and 5.';
+    } else {
+        try {
+            DB::query('INSERT INTO REVIEWS (buyer_id, seller_id, order_id, rating, review_text) VALUES (?,?,?,?,?)',
+                [$buyerId, $sellerId, $eligibleOrder['order_id'], $rating, $text ?: null]);
+            $canReview     = false;
+            $reviewSuccess = 'Your review has been submitted!';
+            $reviews       = loadReviews($sellerId);
+        } catch (\PDOException $e) {
+            $reviewError = str_contains($e->getMessage(), '45000')
+                ? 'You have already reviewed this order.'
+                : 'Could not submit your review. Please try again.';
+        }
     }
 }
 
-renderHead('@' . $seller['username'] . ' — Seller Profile');
+renderHead(($seller['shop_name'] ?: $seller['username']) . ' — Seller Profile');
 ?>
 <body class="flex flex-col min-h-screen" style="background:var(--clr-bg)">
 <?php renderNavbar('categories'); ?>
 
 <main style="flex:1;max-width:var(--sp-container);margin:0 auto;padding:28px var(--sp-margin-desktop) 80px;width:100%">
 
-  <!-- Seller header card  -->
   <div style="background:var(--clr-white);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);padding:28px 32px;margin-bottom:28px;display:flex;align-items:center;gap:24px;flex-wrap:wrap">
-    <!-- Avatar -->
     <div style="width:88px;height:88px;border-radius:50%;background:var(--clr-surface-mid);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:2px solid var(--clr-outline)">
       <span class="material-symbols-outlined filled" style="font-size:52px;color:var(--clr-outline)">account_circle</span>
     </div>
-    <!-- Info -->
     <div style="flex:1;min-width:220px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
-        <h1 style="font-family:'Hanken Grotesk',sans-serif;font-size:var(--fs-headline-md);font-weight:800;color:var(--clr-text)">@<?= htmlspecialchars($seller['username']) ?></h1>
-        <span class="tb-badge tb-badge-active">Verified Seller</span>
+        <h1 style="font-family:'Hanken Grotesk',sans-serif;font-size:var(--fs-headline-md);font-weight:800;color:var(--clr-text)"><?= htmlspecialchars($seller['shop_name'] ?: $seller['username']) ?></h1>
+        <?php if ($seller['shop_name']): ?><p style="font-size:11px;color:var(--clr-tertiary)">@<?= htmlspecialchars($seller['username']) ?></p><?php endif; ?>
+        <?php if ($seller['is_verified']): ?><span class="tb-badge tb-badge-active">Verified Seller</span><?php endif; ?>
+        <?php if ($seller['seller_status'] !== 'Active'): ?><span class="tb-badge tb-badge-red"><?= $seller['seller_status'] ?></span><?php endif; ?>
       </div>
-      <?php if ($seller['store_loc']): ?>
-      <p style="font-size:var(--fs-label-md);color:var(--clr-tertiary);margin-bottom:8px">
-        <span class="material-symbols-outlined icon-sm" style="color:var(--clr-coral)">location_on</span>
-        <?= htmlspecialchars($seller['store_loc']) ?>
-      </p>
-      <?php endif; ?>
       <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">Member since <?= date('M Y', strtotime($seller['joined'])) ?></p>
     </div>
-    <!-- Stats strip -->
     <div style="display:flex;gap:28px;flex-wrap:wrap">
       <?php $stats = [
         ['val'=>$seller['listing_count'],'label'=>'Listings'],
@@ -122,13 +118,11 @@ renderHead('@' . $seller['username'] . ' — Seller Profile');
     </div>
   </div>
 
-  <!-- Tabs: Listings | Reviews -->
   <div class="tb-tabs" style="margin-bottom:24px;background:var(--clr-white);border:1px solid var(--clr-outline);border-radius:var(--radius-sm)">
     <a href="#listings" class="tb-tab-link active" id="tab-listings" onclick="switchTab('listings')">Listings (<?= count($listings) ?>)</a>
     <a href="#reviews"  class="tb-tab-link"         id="tab-reviews"  onclick="switchTab('reviews')">Reviews (<?= count($reviews) ?>)</a>
   </div>
 
-  <!-- LISTINGS tab -->
   <div id="section-listings">
     <?php if (empty($listings)): ?>
     <div style="text-align:center;padding:48px;background:var(--clr-white);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);color:var(--clr-tertiary)">
@@ -140,7 +134,7 @@ renderHead('@' . $seller['username'] . ' — Seller Profile');
       <?php foreach ($listings as $l): ?>
       <div class="tb-listing-card">
         <div class="tb-listing-thumb">
-          <?php if ($l['image_url']): ?><img src="<?= htmlspecialchars($l['image_url']) ?>" alt=""><?php else: ?><span class="material-symbols-outlined icon-xl tb-listing-placeholder">checkroom</span><?php endif; ?>
+          <?php if ($l['cover_image']): ?><img src="<?= htmlspecialchars($l['cover_image']) ?>" alt=""><?php else: ?><span class="material-symbols-outlined icon-xl tb-listing-placeholder">checkroom</span><?php endif; ?>
           <?php if ($l['auction_id']): ?><span class="tb-badge-float top-left" style="background:var(--badge-live-bg);color:var(--badge-live-text)">Live</span><?php endif; ?>
         </div>
         <div class="tb-listing-body">
@@ -150,7 +144,7 @@ renderHead('@' . $seller['username'] . ' — Seller Profile');
           <div class="tb-listing-meta"><?= htmlspecialchars($l['cat_name']) ?> &bull; <?= formatTimeLeft($l['end_time']) ?></div>
           <?php else: ?>
           <div class="tb-listing-price"><?= convertCurrency((float)$l['price']) ?></div>
-          <div class="tb-listing-meta"><?= htmlspecialchars($l['cat_name']) ?> &bull; <?= htmlspecialchars($l['item_condition']) ?></div>
+          <div class="tb-listing-meta"><?= htmlspecialchars($l['cat_name']) ?> &bull; <?= htmlspecialchars($l['condition_grade']) ?></div>
           <?php endif; ?>
           <div class="tb-listing-cta">
             <?php if ($l['auction_id']): ?>
@@ -166,13 +160,11 @@ renderHead('@' . $seller['username'] . ' — Seller Profile');
     <?php endif; ?>
   </div>
 
-  <!-- REVIEWS tab -->
   <div id="section-reviews" style="display:none">
 
     <?php if ($reviewSuccess): ?><div class="tb-alert tb-alert-success show" style="margin-bottom:16px"><span class="material-symbols-outlined icon-sm">check_circle</span><?= htmlspecialchars($reviewSuccess) ?></div><?php endif; ?>
     <?php if ($reviewError):   ?><div class="tb-alert tb-alert-error show"   style="margin-bottom:16px"><span class="material-symbols-outlined icon-sm">error</span><?= htmlspecialchars($reviewError) ?></div><?php endif; ?>
 
-    <!-- Leave a review  -->
     <?php if ($canReview): ?>
     <div style="background:var(--clr-white);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);padding:20px;margin-bottom:20px">
       <h3 style="font-family:'Hanken Grotesk',sans-serif;font-size:var(--fs-headline-sm);font-weight:700;margin-bottom:14px">Leave a Review</h3>
@@ -197,7 +189,6 @@ renderHead('@' . $seller['username'] . ' — Seller Profile');
     </div>
     <?php endif; ?>
 
-    <!-- Review list -->
     <?php if (empty($reviews)): ?>
     <div style="text-align:center;padding:48px;background:var(--clr-white);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);color:var(--clr-tertiary)">
       <span class="material-symbols-outlined icon-xl" style="color:var(--clr-outline)">rate_review</span>
@@ -213,7 +204,6 @@ renderHead('@' . $seller['username'] . ' — Seller Profile');
             <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-top:2px">for: <?= htmlspecialchars($rv['item_title']) ?></p>
           </div>
           <div style="text-align:right;flex-shrink:0">
-            <!-- Star rating -->
             <div style="display:flex;gap:2px">
               <?php for ($i=1;$i<=5;$i++): ?>
               <span style="color:<?= $i<=$rv['rating']?'#ffc107':'var(--clr-outline)' ?>;font-size:16px">★</span>
@@ -246,7 +236,6 @@ function setStars(n) {
     document.getElementById('star'+i).style.color = i<=n ? '#ffc107' : 'var(--clr-outline)';
   }
 }
-// Check URL hash for tab
 if (location.hash === '#reviews') switchTab('reviews');
 document.querySelectorAll('[href="#listings"],[href="#reviews"]').forEach(a => {
   a.addEventListener('click', e => { e.preventDefault(); switchTab(a.getAttribute('href').replace('#','')); });

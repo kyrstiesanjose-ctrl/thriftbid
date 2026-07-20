@@ -24,7 +24,7 @@ define('DB_NAME',        $_ENV['DB_NAME']        ?? 'thriftbid_db2');
 define('SESSION_SECRET', $_ENV['SESSION_SECRET'] ?? 'thriftbid_super_secret_key_2025');
 define('APP_URL',        $_ENV['APP_URL']        ?? 'http://localhost');
 
-// NEED PALA API TO AND NAG UUPDATE FROM TIME TO TIME NOT HARD CODED CHANGE THIS
+// see currency.php, updated api
 define('EXCHANGE_RATES', [
     'PHP' => 1.0,
     'USD' => 0.0175,
