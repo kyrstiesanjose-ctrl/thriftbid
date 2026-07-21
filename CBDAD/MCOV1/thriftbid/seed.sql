@@ -1,4 +1,25 @@
-
+-- ============================================================
+-- ThriftBid - Expanded Seed Data (2025 - 2026)
+-- ------------------------------------------------------------
+-- Run AFTER schema.sql (tables + triggers must already exist).
+-- All demo accounts use the password: Password123!
+--
+-- This is a much larger dataset than the earlier seed.sql:
+--   - 5 admins, 6 sellers, 8 buyers
+--   - 10-15+ listings in every one of the 23 categories
+--   - Order/payment/shipment/review history spread across
+--     Jan 2025 - Jul 2026 (with a Sep-Dec sales bump each year,
+--     matching the "BER months" seasonality the Forecast report
+--     talks about)
+--   - Enough auctions/bids, disputes, penalties, awards, and
+--     fraud flags to exercise every report and admin screen
+--
+-- IMAGES: listing photos are external placeholder URLs for this
+-- seed data only (see the note in the previous seed.sql, a SQL
+-- script has no device to upload a real local file from). Real
+-- sellers still upload from their device via create-listing.php,
+-- which saves to /uploads/listings/ locally.
+-- ============================================================
 
 USE thriftbid_db2;
 SET FOREIGN_KEY_CHECKS = 0;
