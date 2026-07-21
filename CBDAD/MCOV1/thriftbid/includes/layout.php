@@ -105,7 +105,7 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
       <a href="../../pages/customer/home.php"       class="tb-nav-link <?= $active==='home'?'active':'' ?>">Home</a>
       <a href="../../pages/customer/categories.php" class="tb-nav-link <?= $active==='categories'?'active':'' ?>">Categories</a>
       <a href="../../pages/customer/live-bids.php"  class="tb-nav-link <?= $active==='livebids'?'active':'' ?>">Live Bids</a>
-      <a href="../../pages/customer/orders.php"     class="tb-nav-link <?= $active==='orders'?'active':'' ?>">Orders</a>
+      <a href="../../pages/customer/orders.php"     class="tb-nav-link <?= $active==='orders'?'active':'' ?>">My Cart &amp; Orders</a>
     <?php endif; ?>
   </nav>
 

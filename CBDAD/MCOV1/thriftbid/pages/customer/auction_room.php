@@ -38,10 +38,16 @@ if (!$auction) { header('Location: live-bids.php'); exit; }
 $user    = currentUser();
 $buyerId = $user['buyer_id'] ?? 0; // session row IS the buyer row now (0 if an admin/seller is just viewing)
 
-
+// The seller who owns this listing (or an admin) gets a read-only
+// management view instead of the buyer's bid form: they can see every
+// bidder (not capped at 20) and edit the listing, but cannot bid on
+// their own auction.
 $isOwnerSeller = ($user['role'] === 'seller' && (int)($user['seller_id'] ?? 0) === (int)$auction['sid'])
               || $user['role'] === 'admin';
-
+// Narrower than $isOwnerSeller above: true only for the actual seller who
+// owns this listing, never for admin. Admins shouldn't get routed into
+// the seller's own edit-listing.php as if they own the item, they have
+// their own moderation tools for that (admin/listings.php, etc.).
 $isActualOwnerSeller = $user['role'] === 'seller' && (int)($user['seller_id'] ?? 0) === (int)$auction['sid'];
 
 $bids       = loadBids($auctionId, $isOwnerSeller ? 1000 : 20);
@@ -58,16 +64,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bid_amount'])) {
     } elseif (!$buyerId) {
         $bidError = 'Only registered buyers can place bids.';
     } else {
-// ------------------------------------------------------------
-// Auction rules are handled exclusively by database triggers 
-// (before_bid_validate_amount and after_bid_update_auction). This page 
-// only executes the INSERT and catches any raised SIGNAL exceptions.
-// ------------------------------------------------------------
+        // ------------------------------------------------------------
+        // We deliberately do NOT re-implement the auction rules here.
+        // before_bid_validate_amount (auction must be Active & amount
+        // must clear current_highest_bid + min_increment) and
+        // after_bid_update_auction (bumps current_highest_bid, applies
+        // the anti-snipe +2min/10x extension, logs BROWSING_HISTORY)
+        // are DB triggers, see database/triggers.sql. The INSERT below
+        // is the ONLY statement this page runs; everything else is the
+        // trigger's job. We just catch the SIGNAL it raises on failure.
+        // ------------------------------------------------------------
         try {
             DB::query('INSERT INTO BIDDINGS (bid_amount, bid_time, auction_id, buyer_id) VALUES (?, NOW(), ?, ?)',
                 [$bidAmount, $auctionId, $buyerId]);
 
-          // Outbid notice for the previous top bidder (app courtesy alert, not enforced by DB trigger).
+            // Outbid notice to the previous top bidder (not a trigger
+            // concern, this is a courtesy notification, not a rule).
             $prev = DB::fetch(
                 'SELECT bu.buyer_id FROM BIDDINGS b JOIN BUYER bu ON b.buyer_id=bu.buyer_id
                  WHERE b.auction_id=? AND b.is_deleted=0 ORDER BY b.bid_amount DESC LIMIT 1 OFFSET 1',
@@ -82,14 +94,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bid_amount'])) {
 
             $bidSuccess = 'Bid of ' . convertCurrency($bidAmount) . ' placed successfully!';
 
-            // Fetches fresh state; current_highest_bid, end_time, and extension_count were mutated by the DB trigger.
+            // Re-pull fresh state, current_highest_bid/end_time/extension_count
+            // were just mutated by the trigger, not by this script.
             $auction    = loadAuction($auctionId);
             $bids       = loadBids($auctionId, $isOwnerSeller ? 1000 : 20);
             $bidCount   = DB::fetch('SELECT COUNT(*) c FROM BIDDINGS WHERE auction_id=? AND is_deleted=0', [$auctionId])['c'] ?? 0;
             $minNextBid = max((float)$auction['current_highest_bid'] + (float)$auction['min_increment'], (float)$auction['start_bid']);
         } catch (\PDOException $e) {
             // SQLSTATE 45000 = the SIGNAL raised by before_bid_validate_amount
-            // ("auction closed" or "bid too low").
+            // ("auction closed" or "bid too low"). Surface it plainly.
             $bidError = str_contains($e->getMessage(), '45000')
                 ? preg_replace('/^.*45000\s*/', '', $e->getMessage())
                 : 'Could not place bid. Please try again.';
@@ -221,7 +234,7 @@ renderHead($auction['title'] . ' - Auction Room');
             <div style="display:flex;gap:8px">
               <div style="position:relative;flex:1">
                 <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--clr-tertiary)">₱</span>
-                <input class="tb-input" type="number" name="bid_amount" min="<?= $minNextBid ?>" step="<?= $auction['min_increment'] ?>" value="<?= $minNextBid ?>" style="padding-left:28px;font-size:18px;font-weight:700" required>
+                <input class="tb-input" type="number" name="bid_amount" min="<?= $minNextBid ?>" step="0.01" value="<?= $minNextBid ?>" style="padding-left:28px;font-size:18px;font-weight:700" required>
               </div>
               <button type="submit" class="btn btn-primary btn-lg" style="white-space:nowrap">Place Bid</button>
             </div>
