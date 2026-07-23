@@ -14,11 +14,13 @@ $type      = $_GET['type']          ?? 'all';
 $luxuryOnly = isset($_GET['luxury']);
 $sizeVal   = trim($_GET['size']    ?? '');
 $cond      = $_GET['condition']     ?? '';
+$colorFilter    = trim($_GET['color']    ?? '');
+$materialFilter = trim($_GET['material'] ?? '');
+$genderFilter   = $_GET['gender']        ?? '';
+$madeInFilter   = trim($_GET['made_in']  ?? '');
 $page      = max(1, (int)($_GET['page'] ?? 1));
 $per       = 16; $offset = ($page - 1) * $per;
 
-// Parent categories populate top-level tabs, while the categories table handles sub-types.
-// Foreign Key mapping: CATEGORIES.parent_category_id -> PARENT_CATEGORIES.parent_category_id.
 
 $parentCats = DB::fetchAll('SELECT parent_category_id, parent_category FROM PARENT_CATEGORIES ORDER BY parent_category');
 $categories = DB::fetchAll(
@@ -27,9 +29,10 @@ $categories = DB::fetchAll(
         : 'SELECT c.* FROM CATEGORIES c ORDER BY c.name',
     $parentCat ? [$parentCat] : []
 );
-
 $brands = DB::fetchAll('SELECT * FROM BRANDS ORDER BY brand_name');
-// Populates size options based on active view: filters by specific category or  parent category sizes, or all sizes.
+
+// Sizes adapt to current scope: exact category sizes, union of sizes across a parent tab 
+// (e.g. "Tops"), or all sizes for "All". Ensures dropdown is always usable before picking a subcategory.
 if ($catId) {
     $sizesForCat = DB::fetchAll('SELECT DISTINCT size_value FROM CATEGORY_SIZES WHERE category_id=? ORDER BY size_value', [$catId]);
 } elseif ($parentCat) {
@@ -46,6 +49,13 @@ if ($catId) {
 
 $conditions = ['Brand New','Like New','Lightly Used','Well Used','Heavily Used'];
 
+// Distinct values actually present in active listings, so the filter
+// dropdowns never show an option with zero matching results.
+$colorOptions    = DB::fetchAll('SELECT DISTINCT color FROM LISTINGS WHERE color IS NOT NULL AND is_active=1 ORDER BY color');
+$materialOptions = DB::fetchAll('SELECT DISTINCT material FROM LISTINGS WHERE material IS NOT NULL AND is_active=1 ORDER BY material');
+$madeInOptions   = DB::fetchAll('SELECT DISTINCT made_in FROM LISTINGS WHERE made_in IS NOT NULL AND is_active=1 ORDER BY made_in');
+$genderOptions   = ['Women','Men','Unisex','Kids'];
+
 $where  = 'l.is_active=1 AND l.deleted_at IS NULL'; $params = [];
 if ($catId)     { $where .= ' AND l.category_id=?'; $params[] = $catId; }
 elseif ($parentCat) { $where .= ' AND l.category_id IN (SELECT category_id FROM CATEGORIES WHERE parent_category_id=(SELECT parent_category_id FROM PARENT_CATEGORIES WHERE parent_category=?))'; $params[] = $parentCat; }
@@ -54,13 +64,16 @@ if ($q)         { $where .= ' AND (l.title LIKE ? OR l.description LIKE ? OR b.b
 if ($type === 'fixed')   $where .= ' AND l.listing_id NOT IN (SELECT listing_id FROM AUCTIONS WHERE status="Active")';
 if ($type === 'auction') $where .= ' AND l.listing_id IN (SELECT listing_id FROM AUCTIONS WHERE status="Active")';
 
-// Filters for tier "High" products. 
-// Valid because luxury listings only become active (is_active=1) after admin authenticity approval.
-// See changes in after_authentication_status_change trigger 
+// Filter by tier "High" for luxury. Safe because listings only become active 
+// (is_active=1) after admin approval via `after_authentication_status_change` 
 
 if ($luxuryOnly) $where .= ' AND pl.tier="High"';
 if ($sizeVal)   { $where .= ' AND l.size_id IN (SELECT size_id FROM CATEGORY_SIZES WHERE size_value=?)'; $params[] = $sizeVal; }
 if ($cond)      { $where .= ' AND l.condition_grade=?'; $params[] = $cond; }
+if ($colorFilter)    { $where .= ' AND l.color=?'; $params[] = $colorFilter; }
+if ($materialFilter) { $where .= ' AND l.material=?'; $params[] = $materialFilter; }
+if ($genderFilter)   { $where .= ' AND l.target_gender=?'; $params[] = $genderFilter; }
+if ($madeInFilter)   { $where .= ' AND l.made_in=?'; $params[] = $madeInFilter; }
 
 $orderBy = match($sort) {
     'price_asc'  => 'l.price ASC',
@@ -165,6 +178,38 @@ renderHead('Browse - ' . ($activeCatName ?: ($parentCat ?: 'All Items')));
           <?php endforeach; ?>
         </select>
 
+        <!-- Color -->
+        <select name="color" class="tb-input" style="width:auto" onchange="this.form.submit()">
+          <option value="">All Colors</option>
+          <?php foreach ($colorOptions as $co): ?>
+          <option value="<?= htmlspecialchars($co['color']) ?>" <?= $colorFilter===$co['color']?'selected':'' ?>><?= htmlspecialchars($co['color']) ?></option>
+          <?php endforeach; ?>
+        </select>
+
+        <!-- Material -->
+        <select name="material" class="tb-input" style="width:auto" onchange="this.form.submit()">
+          <option value="">All Materials</option>
+          <?php foreach ($materialOptions as $mo): ?>
+          <option value="<?= htmlspecialchars($mo['material']) ?>" <?= $materialFilter===$mo['material']?'selected':'' ?>><?= htmlspecialchars($mo['material']) ?></option>
+          <?php endforeach; ?>
+        </select>
+
+        <!-- Gender -->
+        <select name="gender" class="tb-input" style="width:auto" onchange="this.form.submit()">
+          <option value="">All Genders</option>
+          <?php foreach ($genderOptions as $ge): ?>
+          <option value="<?= $ge ?>" <?= $genderFilter===$ge?'selected':'' ?>><?= $ge ?></option>
+          <?php endforeach; ?>
+        </select>
+
+        <!-- Made In -->
+        <select name="made_in" class="tb-input" style="width:auto" onchange="this.form.submit()">
+          <option value="">All Countries</option>
+          <?php foreach ($madeInOptions as $mi): ?>
+          <option value="<?= htmlspecialchars($mi['made_in']) ?>" <?= $madeInFilter===$mi['made_in']?'selected':'' ?>><?= htmlspecialchars($mi['made_in']) ?></option>
+          <?php endforeach; ?>
+        </select>
+
         <!-- Sort -->
         <select name="sort" class="tb-input" style="width:auto" onchange="this.form.submit()">
           <option value="newest"     <?= $sort==='newest'?'selected':'' ?>>Newest First</option>
@@ -181,7 +226,7 @@ renderHead('Browse - ' . ($activeCatName ?: ($parentCat ?: 'All Items')));
         </label>
 
         <button type="submit" class="btn btn-primary btn-sm">Apply</button>
-        <?php if ($q || $sizeVal || $cond || $catId || $brandId || $type !== 'all' || $parentCat || $luxuryOnly): ?>
+        <?php if ($q || $sizeVal || $cond || $catId || $brandId || $type !== 'all' || $parentCat || $luxuryOnly || $colorFilter || $materialFilter || $genderFilter || $madeInFilter): ?>
         <a href="categories.php" class="btn btn-ghost btn-sm">Clear</a>
         <?php endif; ?>
       </form>

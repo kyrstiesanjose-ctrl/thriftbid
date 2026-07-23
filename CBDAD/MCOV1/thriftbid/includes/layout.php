@@ -55,7 +55,7 @@ function getUnreadNotifCount(): int {
     $col = match ($user['role'] ?? '') {
         'buyer'  => 'buyer_id',
         'seller' => 'seller_id',
-        default  => null, // admins don't have NOTIFICATIONS rows in schema
+        default  => null, // admins don't have NOTIFICATIONS rows in this schema
     };
     if (!$col) return 0;
     try {
@@ -98,18 +98,18 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
   <!-- Left nav links -->
   <nav class="tb-nav-links">
     <?php if ($role === 'admin'): ?>
-      <!-- Admin top-nav links  -->
+      <!-- Admin top-nav links removed, same links already live in the left sidebar (renderAdminSidebar) -->
     <?php elseif ($role === 'seller' || $sellerMode): ?>
-      <!-- Seller top-nav links  -->
+      <!-- Seller top-nav links removed, same links already live in the left sidebar (renderSellerSidebar) -->
     <?php else: ?>
       <a href="../../pages/customer/home.php"       class="tb-nav-link <?= $active==='home'?'active':'' ?>">Home</a>
       <a href="../../pages/customer/categories.php" class="tb-nav-link <?= $active==='categories'?'active':'' ?>">Categories</a>
       <a href="../../pages/customer/live-bids.php"  class="tb-nav-link <?= $active==='livebids'?'active':'' ?>">Live Bids</a>
-      <a href="../../pages/customer/orders.php"     class="tb-nav-link <?= $active==='orders'?'active':'' ?>">My Cart &amp; Orders</a>
+      <a href="../../pages/customer/orders.php"     class="tb-nav-link <?= $active==='orders'?'active':'' ?>">Orders</a>
     <?php endif; ?>
   </nav>
 
-  <!-- Search bar  -->
+  <!-- Search bar (center), buyers only; sellers/admins get their own tools, not the shopping search -->
   <?php if ($role === 'buyer'): ?>
   <div class="tb-nav-search">
     <span class="material-symbols-outlined search-icon">search</span>
@@ -121,7 +121,8 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
   <!-- Right actions -->
   <div class="tb-nav-actions">
 
-    <!-- Cart -->
+    <!-- Cart, buyers only, routes straight to the Cart tab, no popup,
+         per the "instantly routes to Cart tab" requirement. -->
     <?php if ($role === 'buyer'): ?>
     <a href="../../pages/customer/orders.php?tab=cart" class="tb-nav-icon-btn" title="Cart">
       <span class="material-symbols-outlined icon-sm">shopping_cart</span>
@@ -172,7 +173,7 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
       },
       payment: {
         title: 'Payment Guide',
-        body: `<p>Payments are processed securely at checkout. The money is held safely until the buyer marks the item as received or tracking confirms delivery.</p>
+        body: `<p>Payments are processed securely at checkout. Funds are held safely in escrow until the buyer marks the item as received, or the tracking log confirms delivery.</p>
                <p style="margin-top:12px">This protects both sides of the transaction: sellers know a sale is real once payment clears, and buyers know their money isn't released until the item actually arrives.</p>`
       },
       policies: {
@@ -243,8 +244,8 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
 </header>
 
 <script>
-// popup toggle for notif, profile, help 
-
+// Universal popup toggle, handles notif, profile, help (cart no longer
+// uses a popup, it's a direct link straight to the Cart tab now).
 function togglePopup(id) {
 
   if (id === 'notifPopup') {
@@ -329,7 +330,10 @@ function renderSellerSidebar(string $active = 'overview'): void {
 
 //  Admin sidebar 
 function renderAdminSidebar(string $active = 'dashboard'): void {
-
+    // Grouped IA: each section has a small header, related pages sit
+    // together underneath it, instead of one long flat list. Moderation
+    // (disputes + reported listings) is now a single merged page/nav
+    // entry, see pages/admin/moderation.php.
     $groups = [
         '' => [
             'dashboard' => ['icon'=>'dashboard', 'label'=>'Dashboard', 'href'=>'../../pages/admin/dashboard.php'],
@@ -409,6 +413,11 @@ function renderFooter(): void { ?>
 <?php }
 
 //  Helpers
+// Groups a flat list of rows into ['July 19, 2026' => [...], ...],
+// keyed off whichever date field is passed in. Orders/items that share
+// the same day land under one heading instead of repeating the date on
+// every row. Pass 'F Y' style granularity via $format for month-level
+// grouping (e.g. transaction history), default is day-level.
 function groupByDate(array $rows, string $dateField, string $format = 'F j, Y'): array {
     $groups = [];
     foreach ($rows as $row) {
@@ -418,7 +427,8 @@ function groupByDate(array $rows, string $dateField, string $format = 'F j, Y'):
     return $groups;
 }
 
-// Optional $subtotal displays a total next to the date ("Revenue: ₱12,450.00").
+// $subtotal, if provided, renders a right-aligned total next to the
+// date label (e.g. "Revenue: ₱12,450.00" for a transactions page).
 function renderDateHeader(string $label, ?string $subtotal = null): void {
     echo '<div style="display:flex;align-items:baseline;justify-content:space-between;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--clr-outline)">'
        . '<h3 style="font-size:var(--fs-label-sm);font-weight:800;color:var(--clr-tertiary);text-transform:uppercase;letter-spacing:0.06em">'
@@ -429,13 +439,77 @@ function renderDateHeader(string $label, ?string $subtotal = null): void {
     echo '</div>';
 }
 
+// ------------------------------------------------------------------
+// Report period filter (Daily / Weekly / Monthly / Yearly / Custom)
+// Reusable across any analytics chart that groups by a date column.
+// Reads $_GET['period'], $_GET['from'], $_GET['to']; submits via GET
+// so charts stay linkable/bookmarkable and survive a page refresh.
+// ------------------------------------------------------------------
+function renderPeriodFilter(string $currentPeriod, ?string $from = null, ?string $to = null): void {
+    $options = ['daily' => 'Daily', 'weekly' => 'Weekly', 'monthly' => 'Monthly', 'yearly' => 'Yearly', 'custom' => 'Custom'];
+    $tab = $_GET['tab'] ?? 'overview';
+    ?>
+    <form method="get" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:20px">
+      <input type="hidden" name="tab" value="<?= htmlspecialchars($tab) ?>">
+      <label style="font-size:var(--fs-label-sm);font-weight:700;color:var(--clr-tertiary)">Period:</label>
+      <select name="period"
+              onchange="this.closest('form').querySelector('.tb-custom-range').style.display = this.value==='custom' ? 'flex' : 'none'; if (this.value !== 'custom') this.form.submit();"
+              style="padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--clr-outline);font-size:var(--fs-label-sm)">
+        <?php foreach ($options as $val => $label): ?>
+        <option value="<?= $val ?>" <?= $currentPeriod === $val ? 'selected' : '' ?>><?= $label ?></option>
+        <?php endforeach; ?>
+      </select>
+      <div class="tb-custom-range" style="display:<?= $currentPeriod === 'custom' ? 'flex' : 'none' ?>;align-items:center;gap:8px">
+        <input type="date" name="from" value="<?= htmlspecialchars($from ?? '') ?>"
+               style="padding:5px 8px;border-radius:var(--radius-sm);border:1px solid var(--clr-outline);font-size:var(--fs-label-sm)">
+        <span style="color:var(--clr-tertiary);font-size:var(--fs-label-sm)">to</span>
+        <input type="date" name="to" value="<?= htmlspecialchars($to ?? '') ?>"
+               style="padding:5px 8px;border-radius:var(--radius-sm);border:1px solid var(--clr-outline);font-size:var(--fs-label-sm)">
+        <button type="submit" class="btn btn-outline btn-sm">Apply</button>
+      </div>
+    </form>
+    <?php
+}
+
+// Given a period key + a date column expression, returns the SQL pieces
+// any date-driven query needs to honor that filter:
+//   [$groupByExpr, $labelExpr, $whereClause, $whereParams]
+// $groupByExpr  -> put in GROUP BY / ORDER BY
+// $labelExpr    -> put in SELECT as the chart's x-axis label
+// $whereClause  -> append to WHERE (already includes the date bound)
+// $whereParams  -> bind params for $whereClause, in order
+function periodSqlParts(string $period, string $dateCol, ?string $from = null, ?string $to = null): array {
+    switch ($period) {
+        case 'daily':
+            return ["DATE($dateCol)", "DATE_FORMAT($dateCol,'%b %d, %Y')",
+                     "$dateCol >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)", []];
+        case 'weekly':
+            return ["YEARWEEK($dateCol, 3)",
+                     "CONCAT('Week of ', DATE_FORMAT(DATE_SUB($dateCol, INTERVAL WEEKDAY($dateCol) DAY),'%b %d, %Y'))",
+                     "$dateCol >= DATE_SUB(CURDATE(), INTERVAL 12 WEEK)", []];
+        case 'yearly':
+            return ["YEAR($dateCol)", "YEAR($dateCol)", "1=1", []];
+        case 'custom':
+            if ($from && $to) {
+                return ["DATE($dateCol)", "DATE_FORMAT($dateCol,'%b %d, %Y')",
+                         "$dateCol BETWEEN ? AND ?", [$from, $to]];
+            }
+            return ["DATE($dateCol)", "DATE_FORMAT($dateCol,'%b %d, %Y')", "1=1", []];
+        case 'monthly':
+        default:
+            return ["DATE_FORMAT($dateCol,'%Y-%m')", "DATE_FORMAT($dateCol,'%b %Y')",
+                     "$dateCol >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)", []];
+    }
+}
+
 function flash(string $key, string $msg = ''): string {
     if ($msg) { $_SESSION['flash'][$key] = $msg; return ''; }
     $m = $_SESSION['flash'][$key] ?? ''; unset($_SESSION['flash'][$key]); return $m;
 }
-
-// Handled by includes/currency.php via live exchange rates.
-// Calling pages already import it, removing duplication here.
+// convertCurrency() now lives in includes/currency.php (live exchange
+// rates instead of the hardcoded table that used to be here). Every page
+// that calls it already does `require_once __DIR__ . '/../../includes/currency.php'`
+// alongside layout.php, so it doesn't need to be duplicated in this file.
 function formatTimeLeft(string $end): string {
     $d = strtotime($end) - time();
     if ($d <= 0) return 'Ended';

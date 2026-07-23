@@ -21,6 +21,14 @@ if (!in_array($tab, $validTabs, true)) $tab = 'overview';
 
 function tabUrl(string $t): string { return '?tab=' . $t; }
 
+// Report period filter: Daily / Weekly / Monthly / Yearly / Custom.
+// Shared across tabs via layout.php's renderPeriodFilter()/periodSqlParts().
+$period = $_GET['period'] ?? 'monthly';
+$validPeriods = ['daily','weekly','monthly','yearly','custom'];
+if (!in_array($period, $validPeriods, true)) $period = 'monthly';
+$filterFrom = $_GET['from'] ?? null;
+$filterTo   = $_GET['to'] ?? null;
+
 // ------------------------------------------------------------------
 // Shared / Overview data
 // ------------------------------------------------------------------
@@ -46,7 +54,14 @@ $avgRating = DB::fetch(
 $penaltyCount = DB::fetch('SELECT COUNT(*) c FROM PENALTIES WHERE seller_id=?', [$sellerId])['c'] ?? 0;
 $activePenaltyCount = DB::fetch("SELECT COUNT(*) c FROM PENALTIES WHERE seller_id=? AND status='Active'", [$sellerId])['c'] ?? 0;
 
-$revByMonth = DB::callAll('sp_monthly_revenue_trend', [$sellerId, 6]);
+[$mrGroup, $mrLabel, $mrWhere, $mrParams] = periodSqlParts($period, 'p.payment_date', $filterFrom, $filterTo);
+$revByMonth = DB::fetchAll(
+    "SELECT $mrGroup AS grp, $mrLabel AS mo, SUM(p.amount_paid) AS total
+     FROM PAYMENTS p JOIN ORDERS o ON p.order_id=o.order_id
+     WHERE o.seller_id=? AND p.payment_status='Completed' AND $mrWhere
+     GROUP BY grp, mo ORDER BY grp",
+    array_merge([$sellerId], $mrParams)
+);
 
 $revByCat = DB::callAll('sp_revenue_by_category', [$sellerId]);
 
@@ -96,7 +111,51 @@ if ($tab === 'sales-drivers') {
 
     $avgSpendPerCustomer = $totalCustomers > 0 ? ($totalRevenue / $totalCustomers) : 0;
 
-    $topCustomers = DB::callAll('sp_top_customers_for_seller', [$sellerId, 6]);
+    // Customer Sales Drivers, top spenders within the selected period.
+    [$csGroup, $csLabel, $csWhere, $csParams] = periodSqlParts($period, 'p.payment_date', $filterFrom, $filterTo);
+    $topCustomers = DB::fetchAll(
+        "SELECT b.username, SUM(p.amount_paid) AS total, COUNT(o.order_id) AS order_volume
+         FROM BUYER b
+         JOIN ORDERS o ON b.buyer_id=o.buyer_id
+         JOIN PAYMENTS p ON o.order_id=p.order_id
+         WHERE o.seller_id=? AND p.payment_status='Completed' AND $csWhere
+         GROUP BY b.buyer_id, b.username
+         ORDER BY total DESC LIMIT 6",
+        array_merge([$sellerId], $csParams)
+    );
+
+    // Sales Bias Analysis, orders, distinct customers, and conversion
+    // rate (orders per customer) per period, to spot where sales cluster.
+    [$sbGroup, $sbLabel, $sbWhere, $sbParams] = periodSqlParts($period, 'o.order_date', $filterFrom, $filterTo);
+    $salesBias = DB::fetchAll(
+        "SELECT $sbGroup AS grp, $sbLabel AS label,
+                COUNT(o.order_id) AS orders,
+                COUNT(DISTINCT o.buyer_id) AS customers,
+                ROUND(COUNT(o.order_id) / NULLIF(COUNT(DISTINCT o.buyer_id),0), 2) AS conversion_rate
+         FROM ORDERS o
+         WHERE o.seller_id=? AND $sbWhere
+         GROUP BY grp, label ORDER BY grp",
+        array_merge([$sellerId], $sbParams)
+    );
+
+    // Currency Rate, PHP/USD/KRW trend from the CURRENCY_RATES table that
+    // includes/currency.php already keeps up to date (see persistRates()).
+    [$crGroup, $crLabel, $crWhere, $crParams] = periodSqlParts($period, 'recorded_date', $filterFrom, $filterTo);
+    $currencyRows = DB::fetchAll(
+        "SELECT $crGroup AS grp, $crLabel AS label, target_currency, exchange_rate
+         FROM CURRENCY_RATES
+         WHERE base_currency='PHP' AND $crWhere
+         ORDER BY grp",
+        $crParams
+    );
+    $currencyLabels = [];
+    $currencyByCcy  = ['USD' => [], 'KRW' => []];
+    foreach ($currencyRows as $row) {
+        if (!in_array($row['label'], $currencyLabels, true)) $currencyLabels[] = $row['label'];
+        if (isset($currencyByCcy[$row['target_currency']])) {
+            $currencyByCcy[$row['target_currency']][$row['label']] = (float)$row['exchange_rate'];
+        }
+    }
 
     $avgFollowers = DB::fetch(
         'SELECT COALESCE(AVG(la.follower_count),0) a
@@ -147,7 +206,7 @@ if ($tab === 'forecast') {
 
     // 12-month seasonality projection: baseline = trailing 3-month average,
     // with the same "BER months" (Sep-Dec) seasonal uplift used when the
-    // seed data was generated — transparent multipliers, not a black box.
+    // seed data was generated, transparent multipliers, not a black box.
     $seasonalMultipliers = [1=>0.95,2=>0.85,3=>0.85,4=>0.90,5=>0.90,6=>0.95,
                             7=>0.95,8=>1.00,9=>1.15,10=>1.25,11=>1.35,12=>1.45];
     $seasonalityForecast = [];
@@ -158,7 +217,7 @@ if ($tab === 'forecast') {
     }
 
     // Brand Pricing Predictor: per-listing actual price vs. the predicted
-    // price (midpoint of the brand/line's estimated price range) — same
+    // price (midpoint of the brand/line's estimated price range), same
     // "branded items cost more" assumption the reference report tests.
     $brandPricingPoints = DB::fetchAll(
         "SELECT l.price AS actual, (pl.estimated_price_min + pl.estimated_price_max)/2 AS predicted, pl.tier
@@ -217,7 +276,7 @@ if ($tab === 'optimization') {
     ) ?: ['photos'=>0,'details'=>0,'condition_s'=>0,'shipping'=>0,'pricing'=>0];
 
     // Top Listing Issues: how many listings fall below a healthy threshold
-    // on each dimension — this is what actually drives the recommendation
+    // on each dimension, this is what actually drives the recommendation
     // cards below (still just counts/links, not a full suggestion engine).
     $issueThresholds = [
         'photos'     => ['label' => 'Missing or low-quality photos',   'icon' => 'image',            'col' => 'photo_score'],
@@ -285,9 +344,11 @@ renderHead('Analytics');
     <?php endforeach; ?>
   </div>
 
+  <?php renderPeriodFilter($period, $filterFrom, $filterTo); ?>
+
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
     <div class="tb-card tb-card-body">
-      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:20px">Monthly Revenue</h3>
+      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:20px">Revenue Trend (<?= ucfirst($period) ?>)</h3>
       <?php if (!empty($revByMonth)): ?>
       <canvas id="revChart" height="180"></canvas>
       <?php else: ?>
@@ -383,7 +444,7 @@ renderHead('Analytics');
     <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Seller Performance</h3></div>
     <div class="tb-card-body">
       <canvas id="perfChart" height="140"></canvas>
-      <p style="text-align:center;font-size:11px;color:var(--clr-tertiary);margin-top:8px">Performance Scale (Higher is Better) — each metric normalized to 0–100</p>
+      <p style="text-align:center;font-size:11px;color:var(--clr-tertiary);margin-top:8px">Performance Scale (Higher is Better), each metric normalized to 0-100</p>
     </div>
   </div>
 
@@ -431,6 +492,7 @@ renderHead('Analytics');
 
   <?php elseif ($tab === 'sales-drivers'): ?>
   <!-- =================== SALES DRIVERS (Diagnostic Report) =================== -->
+  <?php renderPeriodFilter($period, $filterFrom, $filterTo); ?>
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
     <?php $kpis=[
       ['icon'=>'group',        'label'=>'Total Customers',       'val'=>$totalCustomers],
@@ -473,6 +535,27 @@ renderHead('Analytics');
     </div>
   </div>
 
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" style="margin-top:24px">
+    <div class="tb-card tb-card-body">
+      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Sales Bias Analysis</h3>
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Orders, customers, and conversion rate over the selected period.</p>
+      <?php if (empty($salesBias)): ?>
+      <div style="color:var(--clr-tertiary)">Not enough order data yet for this period.</div>
+      <?php else: ?>
+      <canvas id="salesBiasChart" height="180"></canvas>
+      <?php endif; ?>
+    </div>
+    <div class="tb-card tb-card-body">
+      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Currency Exchange Rates</h3>
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">PHP base rate against USD and KRW over the selected period.</p>
+      <?php if (empty($currencyLabels)): ?>
+      <div style="color:var(--clr-tertiary)">No recorded exchange rate history for this period yet.</div>
+      <?php else: ?>
+      <canvas id="currencyChart" height="180"></canvas>
+      <?php endif; ?>
+    </div>
+  </div>
+
   <?php elseif ($tab === 'forecast'): ?>
   <!-- =================== FORECAST (Predictive Report) =================== -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
@@ -492,7 +575,7 @@ renderHead('Analytics');
     <?php endforeach; ?>
   </div>
   <div class="tb-card mb-2">
-    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Seasonality Forecast — Next 12 Months</h3></div>
+    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Seasonality Forecast, Next 12 Months</h3></div>
     <div class="tb-card-body">
       <canvas id="seasonChart" height="110"></canvas>
       <p style="text-align:center;font-size:11px;color:var(--clr-tertiary);margin-top:8px">Peak season: "BER" months (Sep–Dec) &bull; based on your trailing 3-month sales average</p>
@@ -699,6 +782,33 @@ renderHead('Analytics');
       }]
     },
     options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{callback:v=>'₱'+v.toLocaleString()}}}}
+  });
+  <?php endif; ?>
+  <?php if (!empty($salesBias)): ?>
+  new Chart(document.getElementById('salesBiasChart'), {
+    type:'line',
+    data:{
+      labels:<?= json_encode(array_column($salesBias,'label')) ?>,
+      datasets:[
+        { label:'Orders', data:<?= json_encode(array_map(fn($r)=>(int)$r['orders'],$salesBias)) ?>, borderColor:'#ff6b6b', backgroundColor:'rgba(255,107,107,0.1)', tension:0.3, pointRadius:3 },
+        { label:'Customers', data:<?= json_encode(array_map(fn($r)=>(int)$r['customers'],$salesBias)) ?>, borderColor:'#4a7fc9', backgroundColor:'rgba(74,127,201,0.1)', tension:0.3, pointRadius:3 },
+        { label:'Conversion Rate', data:<?= json_encode(array_map(fn($r)=>(float)$r['conversion_rate'],$salesBias)) ?>, borderColor:'#66bb6a', backgroundColor:'rgba(102,187,106,0.1)', tension:0.3, pointRadius:3 },
+      ]
+    },
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true}}}
+  });
+  <?php endif; ?>
+  <?php if (!empty($currencyLabels)): ?>
+  new Chart(document.getElementById('currencyChart'), {
+    type:'line',
+    data:{
+      labels:<?= json_encode($currencyLabels) ?>,
+      datasets:[
+        { label:'USD', data:<?= json_encode(array_map(fn($l)=>$currencyByCcy['USD'][$l] ?? null, $currencyLabels)) ?>, borderColor:'#4a7fc9', backgroundColor:'rgba(74,127,201,0.1)', tension:0.3, pointRadius:3, spanGaps:true },
+        { label:'KRW', data:<?= json_encode(array_map(fn($l)=>$currencyByCcy['KRW'][$l] ?? null, $currencyLabels)) ?>, borderColor:'#8e6bff', backgroundColor:'rgba(142,107,255,0.1)', tension:0.3, pointRadius:3, spanGaps:true },
+      ]
+    },
+    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:false}}}
   });
   <?php endif; ?>
 

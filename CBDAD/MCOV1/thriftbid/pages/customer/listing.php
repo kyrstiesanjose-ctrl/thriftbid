@@ -54,11 +54,9 @@ $related = DB::fetchAll(
 $errorMsg = '';
 $successMsg = isset($_GET['added']) ? 'Item added to your cart.' : (isset($_GET['reported']) ? 'Thanks, our team will review this listing.' : '');
 
-// ------------------------------------------------------------
-// Buy Now: Creates order. The database trigger handles listing
-// deactivation and seller alerts. This script only sends the 
-// buyer-facing confirmation.
-// ------------------------------------------------------------
+// Buy Now order creation.
+// The DB trigger (`after_order_insert_deactivate_listing`, see database/schema.sql)
+// handles listing deactivation and seller notification post-INSERT.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now'])) {
     if (!$buyerId) {
         $errorMsg = 'Only registered buyers can purchase items.';
@@ -72,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now'])) {
     }
 }
 
-// Add to Cart (CART_ITEMS is a temporary table per the schema, plain insert, no trigger involved)
+// Add to Cart 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     if (!$buyerId) {
         $errorMsg = 'Only registered buyers can use the cart.';
@@ -202,7 +200,13 @@ renderHead($listing['title']);
         </div>
 
         <div class="grid grid-cols-3 gap-3">
-          <?php $meta = [['label'=>'Condition','val'=>$listing['condition_grade']],['label'=>'Category','val'=>$listing['cat_name']],['label'=>'Size','val'=>$listing['size_value']]]; ?>
+          <?php
+            $meta = [['label'=>'Condition','val'=>$listing['condition_grade']],['label'=>'Category','val'=>$listing['cat_name']],['label'=>'Size','val'=>$listing['size_value']]];
+            if (!empty($listing['color']))         $meta[] = ['label'=>'Color', 'val'=>$listing['color']];
+            if (!empty($listing['material']))      $meta[] = ['label'=>'Material', 'val'=>$listing['material']];
+            if (!empty($listing['target_gender'])) $meta[] = ['label'=>'Gender', 'val'=>$listing['target_gender']];
+            if (!empty($listing['made_in']))       $meta[] = ['label'=>'Made In', 'val'=>$listing['made_in']];
+          ?>
           <?php foreach ($meta as $m): ?>
           <div style="background:var(--clr-white);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);padding:10px 12px">
             <p class="tb-section-label" style="font-size:10px;margin-bottom:2px"><?= $m['label'] ?></p>

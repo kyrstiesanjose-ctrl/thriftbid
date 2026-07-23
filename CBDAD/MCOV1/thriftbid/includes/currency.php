@@ -3,6 +3,25 @@
  * ============================================================
  * ThriftBid - Live Currency Exchange Helper
  * ============================================================
+ * Replaces the old hardcoded convertCurrency() in layout.php.
+ *
+ * Strategy:
+ *  1. Try to read today's rate from CURRENCY_RATES (cache table from schema).
+ *  2. If today has no cached row yet, call a free, no-key exchange rate API
+ *     (open.er-api.com) and insert the result into CURRENCY_RATES for today.
+ *  3. If the API call fails for any reason (offline dev box, rate limit,
+ *     DNS, etc.) fall back to the most recent cached rate on file, and if
+ *     there is none at all, fall back to a safe static default so the UI
+ *     never breaks.
+ *
+ * Refresh cadence: once per calendar day, automatically, with zero manual
+ * steps. This matches how open.er-api.com itself updates (once every 24h),
+ * so caching more often than that wouldn't get you fresher numbers anyway.
+ * The very first page load of a new day (or the first ever) triggers the
+ * live call; every other request that same day reads the cached row.
+ *
+ * Requires: CURRENCY_RATES table from schema.sql
+ *   base_currency, target_currency, exchange_rate, recorded_date
  */
 
 require_once __DIR__ . '/db.php';
@@ -19,7 +38,7 @@ function getLiveCurrencyRates(): array {
 
     $rates = ['PHP' => 1.0];
 
-    // check todays cached row first
+    // 1. Try today's cached row first
     $cached = DB::fetchAll(
         'SELECT target_currency, exchange_rate, recorded_date
          FROM CURRENCY_RATES
@@ -44,7 +63,8 @@ function getLiveCurrencyRates(): array {
             $rates = array_merge($rates, $fetched);
             persistRates($fetched);
         } elseif (!empty($cached)) {
-            // API failed, use the most recent cached rate on file.
+            // API failed, but we still have *some* cached rate (possibly older
+            // than today) - fall back to the most recent row we have.
             $stale = DB::fetchAll(
                 'SELECT target_currency, exchange_rate
                  FROM CURRENCY_RATES
@@ -59,7 +79,7 @@ function getLiveCurrencyRates(): array {
         }
     }
 
-    // last resort static fallback so the page never breaks
+    // Absolute last resort static fallback so the page never breaks
     $rates += ['USD' => 0.0175, 'KRW' => 23.5];
 
     return $memo = $rates;
@@ -92,7 +112,7 @@ function persistRates(array $rates): void {
                 [$target, $rate]
             );
         } catch (\Throwable $e) {
-           
+            // Non-fatal: worst case we just refetch next request.
         }
     }
 }

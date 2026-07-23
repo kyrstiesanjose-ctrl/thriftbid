@@ -20,8 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $role = $found['role'];
             $row  = $found['row'];
 
-            // Account status checks (per updated schema's seller_status /
-            // buyer_status ENUMs). Suspended/Banned accounts can't log in.
+           
             $statusCol = $role === 'seller' ? 'seller_status' : ($role === 'buyer' ? 'buyer_status' : null);
             if ($statusCol && in_array($row[$statusCol] ?? 'Active', ['Suspended','Banned'], true)) {
                 $error = 'Your account is currently ' . strtolower($row[$statusCol]) . '. Please contact support.';
@@ -79,7 +78,7 @@ renderHeadRoot('Login');
 
     <div class="tb-divider" style="margin:20px 0">Quick Demo</div>
     <div class="grid grid-cols-3 gap-2 mb-5">
-      <button onclick="ql('ana@email.com')"                    class="btn btn-ghost btn-sm">Buyer</button>
+      <button onclick="ql('ana_delacruz@thriftbid.com')"       class="btn btn-ghost btn-sm">Buyer</button>
       <button onclick="ql('seller_leila@thriftbid.com')"       class="btn btn-ghost btn-sm">Seller</button>
       <button onclick="ql('admin@thriftbid.com')"             class="btn btn-ghost btn-sm">Admin</button>
     </div>

@@ -14,7 +14,7 @@ $brands       = DB::fetchAll('SELECT * FROM BRANDS ORDER BY brand_name');
 $productLines = DB::fetchAll('SELECT * FROM PRODUCT_LINES ORDER BY line_name');
 $allSizes     = DB::fetchAll('SELECT * FROM CATEGORY_SIZES ORDER BY size_id');
 
-// Group sizes & product lines 
+// Group sizes & product lines client-side 
 $sizesByCategory = [];
 foreach ($allSizes as $sz) $sizesByCategory[$sz['category_id']][] = $sz;
 $linesByBrand = [];
@@ -26,13 +26,13 @@ const UPLOAD_URL_BASE = '/uploads/listings/';
 $errors = [];
 $vals   = [];
 
-/** Find-or-create a product line for a brand so LISTINGS.product_line_id (NOT NULL) always has something to point to. */
+//Find or create a product line to satisfy LISTINGS.product_line_id (NOT NULL).
 function resolveProductLineId(int $brandId, int $chosenLineId): int {
     if ($chosenLineId > 0) {
         $line = DB::fetch('SELECT product_line_id FROM PRODUCT_LINES WHERE product_line_id=? AND brand_id=?', [$chosenLineId, $brandId]);
         if ($line) return (int)$line['product_line_id'];
     }
-// Fallback: matches by tier instead of line name to catch generic or 'Unknown' brand records.
+// Match on tier instead of hardcoding a line name, as generic fallbacks vary by brand (e.g., 'Unknown' or 'Generic / No Brand').
     $default = DB::fetch("SELECT product_line_id FROM PRODUCT_LINES WHERE brand_id=? AND tier='Unbranded' ORDER BY product_line_id LIMIT 1", [$brandId]);
     if ($default) return (int)$default['product_line_id'];
     // Still nothing? Any line at all for this brand beats creating a duplicate.
@@ -66,6 +66,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'product_line_id'=> (int)($_POST['product_line_id'] ?? 0),
         'size_id'       => (int)($_POST['size_id'] ?? 0),
         'condition_grade'=> $_POST['condition_grade'] ?? '',
+        'color'         => trim($_POST['color'] ?? ''),
+        'material'      => trim($_POST['material'] ?? ''),
+        'target_gender' => $_POST['target_gender'] ?? '',
+        'made_in'       => trim($_POST['made_in'] ?? ''),
         'listing_type'  => $_POST['listing_type'] ?? 'fixed',
         'price'         => (float)($_POST['price'] ?? 0),
         'original_price'=> (float)($_POST['original_price'] ?? 0),
@@ -106,13 +110,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $isActive = $vals['is_luxury'] ? 0 : 1;
 
         $listingId = DB::insert(
-            'INSERT INTO LISTINGS (title, description, price, original_price, condition_grade, is_active, category_id, seller_id, product_line_id, size_id)
-             VALUES (?,?,?,?,?,?,?,?,?,?)',
+            'INSERT INTO LISTINGS (title, description, price, original_price, condition_grade, color, material, target_gender, made_in, is_active, category_id, seller_id, product_line_id, size_id)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
             [$vals['title'], $vals['description'] ?: null, $price, $vals['original_price'] > 0 ? $vals['original_price'] : null,
-             $vals['condition_grade'], $isActive, $vals['category_id'], $sellerId, $productLineId, $vals['size_id']]
+             $vals['condition_grade'], $vals['color'] ?: null, $vals['material'] ?: null, $vals['target_gender'] ?: null, $vals['made_in'] ?: null,
+             $isActive, $vals['category_id'], $sellerId, $productLineId, $vals['size_id']]
         );
 
-        // Photos -> device upload, straight into LISTING_IMAGES (no more image URLs)
+        // Photos via device upload
         $isPrimary = 1;
         foreach ($_FILES['photos']['tmp_name'] as $i => $tmp) {
             if ($tmp === '') continue;
@@ -197,7 +202,7 @@ renderHead('Create Listing');
       <!-- Listing-view style layout: photo panel on the left (sticky), details on the right -->
       <div class="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-12">
 
-        <!-- LEFT: Photos -->
+        <!-- LEFT: Photos, listing page's image panel -->
         <div class="lg:sticky lg:top-6 self-start space-y-3">
           <label id="dropZone" for="photosInput" class="block cursor-pointer bg-surface-container border border-outline-variant rounded-xl overflow-hidden" style="aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;position:relative">
             <div id="dropZoneEmpty" class="text-center text-tertiary px-6">
@@ -213,7 +218,7 @@ renderHead('Create Listing');
           <p class="text-xs text-tertiary">3+ clear photos improve your listing's completeness score in Analytics.</p>
         </div>
 
-        <!-- RIGHT: Details -->
+        <!-- RIGHT: listing page's info panel -->
         <div class="space-y-6">
 
           <!-- Listing type -->
@@ -261,7 +266,7 @@ renderHead('Create Listing');
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
 
               <?php
-              //  dropdown
+              
               function tb_dropdown(string $name, string $id, string $placeholder, array $options, $selected, bool $required = false): void {
                   $selectedLabel = $placeholder;
                   foreach ($options as $opt) { if ((string)$opt['value'] === (string)$selected) { $selectedLabel = $opt['label']; break; } }
@@ -277,7 +282,7 @@ renderHead('Create Listing');
                       <div class="tb-dd-option" data-value="<?= htmlspecialchars($opt['value']) ?>"><?= htmlspecialchars($opt['label']) ?></div>
                       <?php endforeach; ?>
                     </div>
-                  
+                    
                     <input type="hidden" name="<?= $name ?>" id="<?= $id ?>" value="<?= htmlspecialchars($selected ?? '') ?>">
                   </div>
                   <?php
@@ -313,6 +318,28 @@ renderHead('Create Listing');
                 <?php tb_dropdown('condition_grade', 'conditionSelect', 'Select condition',
                   array_map(fn($c)=>['value'=>$c,'label'=>$c], ['Brand New','Like New','Lightly Used','Well Used','Heavily Used']),
                   $vals['condition_grade'] ?? '', true); ?>
+              </div>
+
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface" style="display:block">Color <span class="text-tertiary font-normal">(optional)</span></label>
+                <input type="text" name="color" value="<?= htmlspecialchars($vals['color'] ?? '') ?>" placeholder="e.g. Black, Multicolor" class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm">
+              </div>
+
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface" style="display:block">Material <span class="text-tertiary font-normal">(optional)</span></label>
+                <input type="text" name="material" value="<?= htmlspecialchars($vals['material'] ?? '') ?>" placeholder="e.g. Cotton, Leather" class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm">
+              </div>
+
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface" style="display:block">Target Gender <span class="text-tertiary font-normal">(optional)</span></label>
+                <?php tb_dropdown('target_gender', 'genderSelect', 'Not specified',
+                  array_map(fn($g)=>['value'=>$g,'label'=>$g], ['Women','Men','Unisex','Kids']),
+                  $vals['target_gender'] ?? ''); ?>
+              </div>
+
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface" style="display:block">Made In <span class="text-tertiary font-normal">(optional)</span></label>
+                <input type="text" name="made_in" value="<?= htmlspecialchars($vals['made_in'] ?? '') ?>" placeholder="e.g. Philippines, Italy" class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm">
               </div>
             </div>
           </section>
@@ -437,7 +464,7 @@ renderHead('Create Listing');
 const SIZES_BY_CATEGORY = <?= json_encode($sizesByCategory) ?>;
 const LINES_BY_BRAND     = <?= json_encode($linesByBrand) ?>;
 
-// --- Reusable custom dropdown (always opens downward, unlike native <select>) ---
+// --- custom dropdown  ---
 function buildDropdownOptions(dd, options, placeholder, keepValue) {
   const menu = dd.querySelector('.tb-dd-menu');
   const hidden = dd.querySelector('input[type=hidden]');
@@ -598,7 +625,8 @@ photosInput.addEventListener('change', function () {
   renderPhotoPreview();
 });
 
-// Custom dropdowns (Category, Size, etc.) 
+// Hidden inputs behind custom dropdowns broke native browser validation, silently blocking submits. 
+// validate required dropdowns manually here to give clear, visible feedback.
 document.getElementById('createForm').addEventListener('submit', function (e) {
   const missing = [];
   document.querySelectorAll('.tb-dd[data-required="1"]').forEach(dd => {
@@ -609,8 +637,7 @@ document.getElementById('createForm').addEventListener('submit', function (e) {
     }
   });
 
-// Validates the luxury certificate or box-match photo upload dynamically.
-// Manually enforces compliance for the active input section to bypass hidden required field validation bugs.
+  // Luxury certificate/box-match photo
   if (luxuryToggle.checked) {
     const visibleSection = certField.classList.contains('hidden') ? noCertSection : certField;
     const fileInput = visibleSection.querySelector('input[type="file"]');
