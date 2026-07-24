@@ -73,6 +73,22 @@ $awards    = DB::fetchAll('SELECT * FROM SELLER_AWARDS WHERE seller_id=? ORDER B
 // ------------------------------------------------------------------
 $authStats = ['Verified'=>0,'Pending'=>0,'Rejected'=>0];
 if ($tab === 'performance') {
+    // Period-filtered revenue & listings sold for the Seller Performance chart
+    [$pfGroup, $pfLabel, $pfWhere, $pfParams] = periodSqlParts($period, 'p.payment_date', $filterFrom, $filterTo);
+    $perfRevenue = DB::fetch(
+        "SELECT COALESCE(SUM(p.amount_paid),0) s FROM PAYMENTS p
+         JOIN ORDERS o ON p.order_id=o.order_id
+         WHERE o.seller_id=? AND p.payment_status='Completed' AND $pfWhere",
+        array_merge([$sellerId], $pfParams)
+    )['s'] ?? 0;
+
+    [$pfOGroup, $pfOLabel, $pfOWhere, $pfOParams] = periodSqlParts($period, 'o.order_date', $filterFrom, $filterTo);
+    $perfListingsSold = DB::fetch(
+        "SELECT COUNT(*) c FROM ORDERS o
+         WHERE o.seller_id=? AND o.status IN ('Delivered','Shipped','Out for Delivery') AND $pfOWhere",
+        array_merge([$sellerId], $pfOParams)
+    )['c'] ?? 0;
+
     $rows = DB::fetchAll(
         'SELECT a.authentication_status status, COUNT(*) c
          FROM AUTHENTICATION a JOIN LISTINGS l ON a.listing_id=l.listing_id
@@ -204,16 +220,57 @@ if ($tab === 'forecast') {
     );
     $bestMonth = $bestMonthRow['mo'] ?? 'N/A';
 
-    // 12-month seasonality projection: baseline = trailing 3-month average,
-    // with the same "BER months" (Sep-Dec) seasonal uplift used when the
-    // seed data was generated, transparent multipliers, not a black box.
+    // Seasonality projection: adapts to the selected period filter.
+    // Baseline = trailing 3-month average with "BER months" (Sep-Dec) uplift.
     $seasonalMultipliers = [1=>0.95,2=>0.85,3=>0.85,4=>0.90,5=>0.90,6=>0.95,
                             7=>0.95,8=>1.00,9=>1.15,10=>1.25,11=>1.35,12=>1.45];
     $seasonalityForecast = [];
-    for ($i = 0; $i < 12; $i++) {
-        $monthNum = (int)date('n', strtotime("+$i month"));
-        $label    = date('M', strtotime("+$i month"));
-        $seasonalityForecast[] = ['label' => $label, 'value' => round($baseRevenue * ($seasonalMultipliers[$monthNum] ?? 1.0))];
+
+    if ($period === 'daily') {
+        // Show next 30 days
+        for ($i = 0; $i < 30; $i++) {
+            $ts       = strtotime("+$i day");
+            $monthNum = (int)date('n', $ts);
+            $label    = date('M d', $ts);
+            $seasonalityForecast[] = ['label' => $label, 'value' => round(($baseRevenue / 30) * ($seasonalMultipliers[$monthNum] ?? 1.0))];
+        }
+        $forecastPeriodLabel = 'Next 30 Days';
+    } elseif ($period === 'weekly') {
+        // Show next 12 weeks
+        for ($i = 0; $i < 12; $i++) {
+            $ts       = strtotime("+$i week");
+            $monthNum = (int)date('n', $ts);
+            $label    = 'Wk of ' . date('M d', $ts);
+            $seasonalityForecast[] = ['label' => $label, 'value' => round(($baseRevenue / 4) * ($seasonalMultipliers[$monthNum] ?? 1.0))];
+        }
+        $forecastPeriodLabel = 'Next 12 Weeks';
+    } elseif ($period === 'custom' && $filterFrom && $filterTo) {
+        // Show day-by-day within custom range
+        $ts = strtotime($filterFrom);
+        $te = strtotime($filterTo);
+        while ($ts <= $te) {
+            $monthNum = (int)date('n', $ts);
+            $label    = date('M d', $ts);
+            $seasonalityForecast[] = ['label' => $label, 'value' => round(($baseRevenue / 30) * ($seasonalMultipliers[$monthNum] ?? 1.0))];
+            $ts = strtotime('+1 day', $ts);
+        }
+        $forecastPeriodLabel = date('M d, Y', strtotime($filterFrom)) . ' – ' . date('M d, Y', strtotime($filterTo));
+    } elseif ($period === 'yearly') {
+        // Show next 5 years
+        for ($i = 0; $i < 5; $i++) {
+            $yr    = (int)date('Y') + $i;
+            $label = (string)$yr;
+            $seasonalityForecast[] = ['label' => $label, 'value' => round($baseRevenue * 12 * ($i === 0 ? 1.0 : pow(1.08, $i)))];
+        }
+        $forecastPeriodLabel = 'Next 5 Years';
+    } else {
+        // Monthly (default), next 12 months
+        for ($i = 0; $i < 12; $i++) {
+            $monthNum = (int)date('n', strtotime("+$i month"));
+            $label    = date('M Y', strtotime("+$i month"));
+            $seasonalityForecast[] = ['label' => $label, 'value' => round($baseRevenue * ($seasonalMultipliers[$monthNum] ?? 1.0))];
+        }
+        $forecastPeriodLabel = 'Next 12 Months';
     }
 
     // Brand Pricing Predictor: per-listing actual price vs. the predicted
@@ -275,26 +332,36 @@ if ($tab === 'optimization') {
          WHERE l.seller_id=?', [$sellerId]
     ) ?: ['photos'=>0,'details'=>0,'condition_s'=>0,'shipping'=>0,'pricing'=>0];
 
-    // Top Listing Issues: how many listings fall below a healthy threshold
-    // on each dimension, this is what actually drives the recommendation
-    // cards below (still just counts/links, not a full suggestion engine).
-    $issueThresholds = [
-        'photos'     => ['label' => 'Missing or low-quality photos',   'icon' => 'image',            'col' => 'photo_score'],
-        'details'    => ['label' => 'Missing product details',         'icon' => 'description',      'col' => 'details_score'],
-        'condition_s'=> ['label' => 'Incomplete item condition',       'icon' => 'checklist',         'col' => 'condition_score'],
-        'shipping'   => ['label' => 'No shipping information',         'icon' => 'local_shipping',    'col' => 'shipping_score'],
-        'pricing'    => ['label' => 'Pricing not competitive',         'icon' => 'payments',          'col' => 'pricing_score'],
-    ];
-    $topIssues = [];
-    foreach ($issueThresholds as $key => $meta) {
-        $cnt = DB::fetch(
-            "SELECT COUNT(*) c FROM LISTING_ANALYTICS la JOIN LISTINGS l ON la.listing_id=l.listing_id
-             WHERE l.seller_id=? AND la.{$meta['col']} < 70",
-            [$sellerId]
-        )['c'] ?? 0;
-        $topIssues[] = ['label' => $meta['label'], 'icon' => $meta['icon'], 'count' => (int)$cnt];
-    }
-    usort($topIssues, fn($a,$b) => $b['count'] <=> $a['count']);
+    // Recommendation card counts
+    // 1. Listings with only 1 photo uploaded
+    $recPhotosCount = DB::fetch(
+        "SELECT COUNT(*) c FROM LISTINGS l
+         WHERE l.seller_id=? AND l.deleted_at IS NULL
+           AND (SELECT COUNT(*) FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id) <= 1",
+        [$sellerId]
+    )['c'] ?? 0;
+
+    // 2. Listings with incomplete item details (missing color, gender, material, or made_in)
+    $recDetailsCount = DB::fetch(
+        "SELECT COUNT(*) c FROM LISTINGS l
+         WHERE l.seller_id=? AND l.deleted_at IS NULL
+           AND (l.color IS NULL OR l.color='' OR l.target_gender IS NULL OR l.target_gender=''
+                OR l.material IS NULL OR l.material='' OR l.made_in IS NULL OR l.made_in='')",
+        [$sellerId]
+    )['c'] ?? 0;
+
+    // 3. Listings that share the same product line / title but have different prices
+    $recPricingCount = DB::fetch(
+        "SELECT COUNT(DISTINCT l.listing_id) c
+         FROM LISTINGS l
+         WHERE l.seller_id=? AND l.deleted_at IS NULL
+           AND l.product_line_id IN (
+               SELECT product_line_id FROM LISTINGS
+               WHERE seller_id=? AND deleted_at IS NULL
+               GROUP BY product_line_id HAVING MIN(price) <> MAX(price)
+           )",
+        [$sellerId, $sellerId]
+    )['c'] ?? 0;
 }
 
 renderHead('Analytics');
@@ -440,11 +507,13 @@ renderHead('Analytics');
     <?php endforeach; ?>
   </div>
 
+  <?php renderPeriodFilter($period, $filterFrom, $filterTo); ?>
+
   <div class="tb-card mb-6">
     <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Seller Performance</h3></div>
     <div class="tb-card-body">
       <canvas id="perfChart" height="140"></canvas>
-      <p style="text-align:center;font-size:11px;color:var(--clr-tertiary);margin-top:8px">Performance Scale (Higher is Better), each metric normalized to 0-100</p>
+      <p style="text-align:center;font-size:11px;color:var(--clr-tertiary);margin-top:8px">Performance Scale (Higher is Better), each metric normalized to 0-100 &bull; <?= ucfirst($period) ?> view</p>
     </div>
   </div>
 
@@ -512,7 +581,7 @@ renderHead('Analytics');
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <div class="tb-card tb-card-body">
-      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:16px">Top Customers by Spending</h3>
+      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:16px">Customer Sales Drivers, <?= ucfirst($period) ?> View</h3>
       <?php if (empty($topCustomers)): ?>
       <div style="color:var(--clr-tertiary)">No customer data yet</div>
       <?php else: ?>
@@ -574,8 +643,10 @@ renderHead('Analytics');
     </div>
     <?php endforeach; ?>
   </div>
+  <?php renderPeriodFilter($period, $filterFrom, $filterTo); ?>
+
   <div class="tb-card mb-2">
-    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Seasonality Forecast, Next 12 Months</h3></div>
+    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Seasonality Forecast, <?= htmlspecialchars($forecastPeriodLabel) ?></h3></div>
     <div class="tb-card-body">
       <canvas id="seasonChart" height="110"></canvas>
       <p style="text-align:center;font-size:11px;color:var(--clr-tertiary);margin-top:8px">Peak season: "BER" months (Sep–Dec) &bull; based on your trailing 3-month sales average</p>
@@ -638,74 +709,80 @@ renderHead('Analytics');
     <?php endforeach; ?>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-    <div class="tb-card tb-card-body">
-      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Listing Completeness Score</h3>
-      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Your listings' completeness score</p>
-      <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
-        <div style="position:relative;width:150px;height:150px;flex-shrink:0">
-          <canvas id="completenessGauge"></canvas>
-          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none">
-            <span style="font-size:26px;font-weight:800;color:var(--clr-text)"><?= number_format($avgCompleteness,0) ?></span>
-            <span style="font-size:11px;color:var(--clr-tertiary)">/ 100</span>
-            <span style="font-size:11px;font-weight:700;color:var(--clr-coral);margin-top:2px"><?= $avgCompleteness>=70?'Good':($avgCompleteness>=50?'Fair':'Needs Work') ?></span>
-          </div>
-        </div>
-        <div style="flex:1;min-width:180px;display:flex;flex-direction:column;gap:10px">
-          <?php $subScores=[
-            ['icon'=>'image','label'=>'Photos','val'=>$scoreBreakdown['photos']],
-            ['icon'=>'description','label'=>'Product Details','val'=>$scoreBreakdown['details']],
-            ['icon'=>'checklist','label'=>'Item Condition','val'=>$scoreBreakdown['condition_s']],
-            ['icon'=>'local_shipping','label'=>'Shipping Info','val'=>$scoreBreakdown['shipping']],
-            ['icon'=>'payments','label'=>'Pricing Info','val'=>$scoreBreakdown['pricing']],
-          ]; foreach ($subScores as $s): $pct=round($s['val']); ?>
-          <div style="display:flex;align-items:center;gap:8px;font-size:var(--fs-label-sm)">
-            <span class="material-symbols-outlined icon-sm" style="color:var(--clr-tertiary)"><?= $s['icon'] ?></span>
-            <span style="width:90px"><?= $s['label'] ?></span>
-            <div class="tb-progress-bar" style="flex:1"><div class="tb-progress-fill" style="width:<?= $pct ?>%;background:<?= $pct>=70?'var(--clr-success)':'var(--clr-yellow)' ?>"></div></div>
-            <span style="width:44px;text-align:right;color:var(--clr-tertiary)"><?= $pct ?>/100</span>
-          </div>
-          <?php endforeach; ?>
+  <div class="tb-card tb-card-body mb-6">
+    <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Listing Completeness Score</h3>
+    <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Your listings' completeness score across key dimensions</p>
+    <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+      <div style="position:relative;width:150px;height:150px;flex-shrink:0">
+        <canvas id="completenessGauge"></canvas>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none">
+          <span style="font-size:26px;font-weight:800;color:var(--clr-text)"><?= number_format($avgCompleteness,0) ?></span>
+          <span style="font-size:11px;color:var(--clr-tertiary)">/ 100</span>
+          <span style="font-size:11px;font-weight:700;color:var(--clr-coral);margin-top:2px"><?= $avgCompleteness>=70?'Good':($avgCompleteness>=50?'Fair':'Needs Work') ?></span>
         </div>
       </div>
-      <p style="font-size:11px;color:var(--clr-tertiary);margin-top:14px">A complete listing increases the chance of getting higher bids and more sales.</p>
-    </div>
-
-    <div class="tb-card tb-card-body">
-      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Top Listing Issues</h3>
-      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Common issues found in your listings</p>
-      <?php if ($listingsAnalyzed === 0): ?>
-      <div style="color:var(--clr-tertiary)">No listings analyzed yet.</div>
-      <?php else: foreach ($topIssues as $issue): ?>
-      <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--clr-outline)">
-        <span class="material-symbols-outlined icon-sm" style="color:var(--clr-tertiary)"><?= $issue['icon'] ?></span>
-        <span style="flex:1;font-size:var(--fs-label-md)"><?= $issue['label'] ?></span>
-        <span class="tb-badge tb-badge-coral"><?= $issue['count'] ?></span>
-        <a href="active-auctions.php" class="btn btn-outline btn-sm">View Listings</a>
+      <div style="flex:1;min-width:180px;display:flex;flex-direction:column;gap:10px">
+        <?php $subScores=[
+          ['icon'=>'image',      'label'=>'Photos',       'val'=>$scoreBreakdown['photos']],
+          ['icon'=>'description','label'=>'Item Details', 'val'=>$scoreBreakdown['details']],
+          ['icon'=>'payments',   'label'=>'Pricing Info', 'val'=>$scoreBreakdown['pricing']],
+        ]; foreach ($subScores as $s): $pct=round($s['val']); ?>
+        <div style="display:flex;align-items:center;gap:8px;font-size:var(--fs-label-sm)">
+          <span class="material-symbols-outlined icon-sm" style="color:var(--clr-tertiary)"><?= $s['icon'] ?></span>
+          <span style="width:90px"><?= $s['label'] ?></span>
+          <div class="tb-progress-bar" style="flex:1"><div class="tb-progress-fill" style="width:<?= $pct ?>%;background:<?= $pct>=70?'var(--clr-success)':'var(--clr-yellow)' ?>"></div></div>
+          <span style="width:44px;text-align:right;color:var(--clr-tertiary)"><?= $pct ?>/100</span>
+        </div>
+        <?php endforeach; ?>
       </div>
-      <?php endforeach; endif; ?>
-      <p style="font-size:11px;color:var(--clr-tertiary);margin-top:14px">Fixing these issues can significantly improve your listing performance.</p>
     </div>
+    <p style="font-size:11px;color:var(--clr-tertiary);margin-top:14px">A complete listing increases the chance of getting higher bids and more sales.</p>
   </div>
 
   <div class="tb-card tb-card-body">
     <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Listing Optimization Recommendations</h3>
     <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Actionable suggestions to improve your listings and increase the likelihood of a successful sale.</p>
-    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-      <?php $recs = [
-        ['color'=>'#e3f0ff','icon'=>'image','label'=>'Add More Photos','desc'=>'Listings with 3+ high quality photos get more views and higher bids.','cta'=>'Add Photos','href'=>'create-listing.php'],
-        ['color'=>'#e3f7e8','icon'=>'description','label'=>'Complete Buyer Details','desc'=>'Add brand, material, size, and other key details to build buyer trust.','cta'=>'Edit Details','href'=>'active-auctions.php'],
-        ['color'=>'#fff6de','icon'=>'checklist','label'=>'Specify Item Condition','desc'=>'Clear condition helps buyers make decisions with confidence.','cta'=>'Update Condition','href'=>'active-auctions.php'],
-        ['color'=>'#f1e9ff','icon'=>'local_shipping','label'=>'Add Shipping Info','desc'=>'Provide shipping cost and delivery time to avoid cart abandonment.','cta'=>'Add Shipping Info','href'=>'active-auctions.php'],
-        ['color'=>'#ffe3e3','icon'=>'payments','label'=>'Review Your Pricing','desc'=>'Consider some items that may be priced higher than similar listings.','cta'=>'Review Pricing','href'=>'active-auctions.php'],
-      ]; foreach ($recs as $r): ?>
-      <div style="background:<?= $r['color'] ?>;border-radius:var(--radius-lg);padding:16px">
-        <span class="material-symbols-outlined icon-md" style="color:var(--clr-text)"><?= $r['icon'] ?></span>
-        <p style="font-weight:700;font-size:var(--fs-label-md);margin-top:8px"><?= $r['label'] ?></p>
-        <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px;min-height:44px"><?= $r['desc'] ?></p>
-        <a href="<?= $r['href'] ?>" class="btn btn-outline btn-sm btn-full" style="background:#fff;margin-top:8px"><?= $r['cta'] ?></a>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+      <!-- 1. Add More Photos -->
+      <div style="background:#e3f0ff;border-radius:var(--radius-lg);padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span class="material-symbols-outlined icon-md" style="color:var(--clr-text)">image</span>
+          <?php if ($recPhotosCount > 0): ?>
+          <span class="tb-badge tb-badge-coral" style="font-size:12px"><?= $recPhotosCount ?> listing<?= $recPhotosCount!==1?'s':'' ?></span>
+          <?php endif; ?>
+        </div>
+        <p style="font-weight:700;font-size:var(--fs-label-md)">Add More Photos</p>
+        <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px;min-height:44px">Listings with 3+ high-quality photos get more views and higher bids. These have only 1 photo.</p>
+        <a href="active-auctions.php?photo_filter=low" class="btn btn-outline btn-sm btn-full" style="background:#fff;margin-top:8px">View Listings</a>
       </div>
-      <?php endforeach; ?>
+
+      <!-- 2. Complete Item Details -->
+      <div style="background:#e3f7e8;border-radius:var(--radius-lg);padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span class="material-symbols-outlined icon-md" style="color:var(--clr-text)">description</span>
+          <?php if ($recDetailsCount > 0): ?>
+          <span class="tb-badge tb-badge-coral" style="font-size:12px"><?= $recDetailsCount ?> listing<?= $recDetailsCount!==1?'s':'' ?></span>
+          <?php endif; ?>
+        </div>
+        <p style="font-weight:700;font-size:var(--fs-label-md)">Complete Item Details</p>
+        <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px;min-height:44px">Missing color, gender, material, or made-in fields reduce buyer confidence and search visibility.</p>
+        <a href="active-auctions.php?details_filter=incomplete" class="btn btn-outline btn-sm btn-full" style="background:#fff;margin-top:8px">View Incomplete Listings</a>
+      </div>
+
+      <!-- 3. Pricing Info -->
+      <div style="background:#fff6de;border-radius:var(--radius-lg);padding:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span class="material-symbols-outlined icon-md" style="color:var(--clr-text)">payments</span>
+          <?php if ($recPricingCount > 0): ?>
+          <span class="tb-badge tb-badge-coral" style="font-size:12px"><?= $recPricingCount ?> listing<?= $recPricingCount!==1?'s':'' ?></span>
+          <?php endif; ?>
+        </div>
+        <p style="font-weight:700;font-size:var(--fs-label-md)">Pricing Info</p>
+        <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px;min-height:44px">These listings share the same product line but have inconsistent prices across your shop.</p>
+        <a href="active-auctions.php?pricing_filter=inconsistent" class="btn btn-outline btn-sm btn-full" style="background:#fff;margin-top:8px">View Listings</a>
+      </div>
+
     </div>
     <p style="font-size:11px;color:var(--clr-tertiary);margin-top:16px">Small improvements can lead to big results. Follow these recommendations and watch your sales grow.</p>
   </div>
@@ -755,11 +832,11 @@ renderHead('Analytics');
   new Chart(document.getElementById('perfChart'), {
     type:'bar',
     data:{
-      labels:['Total Revenue','Listings Sold','Seller Rating','Penalty Count'],
+      labels:['Revenue (Period)','Listings Sold (Period)','Seller Rating','Penalty Count'],
       datasets:[{
         data:[
-          Math.min(100, <?= (float)$totalRevenue ?> / 2000),
-          Math.min(100, <?= (int)$listingsSold ?> * 2),
+          Math.min(100, <?= (float)$perfRevenue ?> / 2000),
+          Math.min(100, <?= (int)$perfListingsSold ?> * 2),
           <?= (float)$avgRating ?> * 20,
           Math.max(0, 100 - <?= (int)$penaltyCount ?> * 25)
         ],

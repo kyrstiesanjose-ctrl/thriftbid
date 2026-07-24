@@ -508,7 +508,7 @@ LIMIT 5;
 # ===============
 
 # =========================================================
-# OPTIMIZATION TAB
+# OPTIMIZATION TAB KPI
 # =========================================================
 
 TOTAL_LISTINGS_ANALYZED = """
@@ -541,6 +541,7 @@ WHERE completeness_score < 70;
 
 # ==========================================================
 # LISTING COMPLETENESS SCORE
+# Now returns only 3 sub-scores: Photos, Item Details, Pricing Info
 # ==========================================================
 
 LISTING_COMPLETENESS = """
@@ -548,31 +549,21 @@ SELECT
 ROUND(AVG(completeness_score),1),
 ROUND(AVG(photo_score),1),
 ROUND(AVG(details_score),1),
-ROUND(AVG(condition_score),1),
-ROUND(AVG(shipping_score),1),
 ROUND(AVG(pricing_score),1)
 FROM LISTING_ANALYTICS;
 """
 
 
-TOP_LISTING_ISSUES = """
-SELECT
-SUM(CASE WHEN photo_score < 60 THEN 1 ELSE 0 END) AS photos,
-SUM(CASE WHEN details_score < 60 THEN 1 ELSE 0 END) AS details,
-SUM(CASE WHEN condition_score < 60 THEN 1 ELSE 0 END) AS conditions,
-SUM(CASE WHEN shipping_score < 60 THEN 1 ELSE 0 END) AS shipping,
-SUM(CASE WHEN pricing_score < 60 THEN 1 ELSE 0 END) AS pricing
-FROM LISTING_ANALYTICS;
-"""
-
+# ==========================================================
+# LISTING OPTIMIZATION RECOMMENDATIONS
+# Now returns only 3 scores: Photos, Item Details, Pricing Info
+# ==========================================================
 
 LISTING_OPTIMIZATION_RECOMMENDATIONS = """
 SELECT
 
 ROUND(AVG(photo_score),1),
 ROUND(AVG(details_score),1),
-ROUND(AVG(condition_score),1),
-ROUND(AVG(shipping_score),1),
 ROUND(AVG(pricing_score),1)
 
 FROM LISTING_ANALYTICS;

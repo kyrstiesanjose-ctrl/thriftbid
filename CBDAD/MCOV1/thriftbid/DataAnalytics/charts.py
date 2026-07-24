@@ -313,29 +313,19 @@ def listing_completeness_chart(
     overall,
     photo,
     details,
-    condition,
-    shipping,
     pricing
 ):
 
     categories = [
-
         "Photos",
-        "Product Details",
-        "Item Condition",
-        "Shipping",
+        "Item Details",
         "Pricing Info"
-
     ]
 
     scores = [
-
         photo,
         details,
-        condition,
-        shipping,
         pricing
-
     ]
 
     colors = []
@@ -343,15 +333,10 @@ def listing_completeness_chart(
     for score in scores:
 
         if score >= 75:
-
             colors.append("#2ecc71")      # Green
-
         elif score >= 60:
-
             colors.append("#f39c12")      # Orange
-
         else:
-
             colors.append("#e74c3c")      # Red
 
     fig = plt.figure(figsize=(12,5))
@@ -363,67 +348,50 @@ def listing_completeness_chart(
     ax1 = plt.subplot(1,2,1)
 
     ax1.pie(
-
         [overall,100-overall],
         startangle=90,
         counterclock=False,
         wedgeprops=dict(width=0.28),
-
     )
 
     ax1.text(
-
         0,
         0.12,
         f"{overall:.0f}",
         ha="center",
         fontsize=34,
         fontweight="bold"
-
     )
 
     ax1.text(
-
         0,
         -0.12,
         "/100",
         ha="center",
         fontsize=14
-
     )
 
     if overall >= 80:
-
         label = "Excellent"
-
     elif overall >= 70:
-
         label = "Good"
-
     elif overall >= 60:
-
         label = "Average"
-
     else:
-
         label = "Needs Improvement"
 
     ax1.text(
-
         0,
         -0.42,
         label,
         ha="center",
         fontsize=12
-
     )
 
     ax1.set_title(
-
         "Listing Completeness Score",
         fontsize=14,
         fontweight="bold"
-
     )
 
     # ===================================================
@@ -434,21 +402,17 @@ def listing_completeness_chart(
     y = range(len(categories))
 
     ax2.barh(
-
         y,
         [100]*len(categories),
         color="#eeeeee",
         height=0.35
-
     )
 
     ax2.barh(
-
         y,
         scores,
         color=colors,
         height=0.35
-
     )
 
     ax2.set_yticks(y)
@@ -457,22 +421,18 @@ def listing_completeness_chart(
     ax2.set_xlim(0,100)
     ax2.set_xticks([])
     ax2.set_title(
-
         "Category Scores",
         fontsize=14,
         fontweight="bold"
-
     )
 
     for i, score in enumerate(scores):
-
         ax2.text(
             102,
             i,
             f"{score:.0f}/100",
             va="center",
             fontsize=10
-
         )
 
     # Remove borders
@@ -486,13 +446,9 @@ def listing_completeness_chart(
 
 
 def listing_optimization_recommendations(
-
     photo,
     details,
-    condition,
-    shipping,
     pricing
-
 ):
 
     print("\n")
@@ -501,37 +457,21 @@ def listing_optimization_recommendations(
     print("=" * 70)
 
     recommendations = [
-
         (
             "Add More Photos",
             photo,
             "Listings with 3+ high quality photos get more views and higher bids."
         ),
-
         (
-            "Complete Buyer Details",
+            "Complete Item Details",
             details,
-            "Add brand, material, size and other key details to build buyer trust."
+            "Add color, gender, material, and made-in fields to build buyer trust."
         ),
-
         (
-            "Specify Item Condition",
-            condition,
-            "Clear condition helps buyers make decisions with confidence."
-        ),
-
-        (
-            "Add Shipping Info",
-            shipping,
-            "Provide shipping cost and delivery time to avoid cart abandonment."
-        ),
-
-        (
-            "Review Your Pricing",
+            "Pricing Info",
             pricing,
-            "Consider some items that may be priced higher than similar listings."
+            "Review items with inconsistent pricing across the same product line."
         )
-
     ]
 
     for title, score, description in recommendations:
@@ -552,5 +492,3 @@ def listing_optimization_recommendations(
         print(f"Priority      : {status}")
 
     print("\nSmall improvements can lead to big results. Follow these recommendations and watch your sales grow.")
-
-

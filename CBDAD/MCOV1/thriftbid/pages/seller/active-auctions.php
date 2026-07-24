@@ -42,6 +42,13 @@ $q          = trim($_GET['q'] ?? '');
 $catFilter  = (int)($_GET['cat'] ?? 0);
 $luxuryOnly = isset($_GET['luxury']);
 $statusFilter = in_array($_GET['status'] ?? '', ['active','inactive'], true) ? $_GET['status'] : '';
+
+// Filters from analytics recommendations
+$photoFilter   = $_GET['photo_filter']   ?? '';   // 'low'         -> listings with ≤1 photo
+$detailsFilter = $_GET['details_filter'] ?? '';   // 'incomplete'  -> missing color/gender/material/made_in
+$detailsIncompleteBy = $_GET['incomplete_by'] ?? ''; // color|gender|material|made_in
+$pricingFilter = $_GET['pricing_filter'] ?? '';   // 'inconsistent'-> same product_line, different prices
+
 $sellerCategories = DB::fetchAll(
     'SELECT DISTINCT c.category_id, c.name FROM CATEGORIES c
      JOIN LISTINGS l ON l.category_id=c.category_id
@@ -55,6 +62,34 @@ if ($catFilter) { $filterSql .= ' AND l.category_id=?'; $filterParams[] = $catFi
 if ($luxuryOnly) { $filterSql .= ' AND pl.tier="High"'; }
 if ($statusFilter === 'active')   { $filterSql .= ' AND l.is_active=1'; }
 if ($statusFilter === 'inactive') { $filterSql .= ' AND l.is_active=0'; }
+
+// Analytics recommendation filters
+if ($photoFilter === 'low') {
+    $filterSql .= ' AND (SELECT COUNT(*) FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id) <= 1';
+}
+if ($detailsFilter === 'incomplete') {
+    if ($detailsIncompleteBy === 'color') {
+        $filterSql .= " AND (l.color IS NULL OR l.color='')";
+    } elseif ($detailsIncompleteBy === 'gender') {
+        $filterSql .= " AND (l.target_gender IS NULL OR l.target_gender='')";
+    } elseif ($detailsIncompleteBy === 'material') {
+        $filterSql .= " AND (l.material IS NULL OR l.material='')";
+    } elseif ($detailsIncompleteBy === 'made_in') {
+        $filterSql .= " AND (l.made_in IS NULL OR l.made_in='')";
+    } else {
+        // No sub-filter: show all incomplete (any missing field)
+        $filterSql .= " AND (l.color IS NULL OR l.color='' OR l.target_gender IS NULL OR l.target_gender=''
+                             OR l.material IS NULL OR l.material='' OR l.made_in IS NULL OR l.made_in='')";
+    }
+}
+if ($pricingFilter === 'inconsistent') {
+    $filterSql .= ' AND l.product_line_id IN (
+        SELECT product_line_id FROM LISTINGS
+        WHERE seller_id=? AND deleted_at IS NULL
+        GROUP BY product_line_id HAVING MIN(price) <> MAX(price)
+    )';
+    $filterParams[] = $sellerId;
+}
 
 // Groups a flat list of rows (each with a 'created_at' key) into
 // ['January 2026' => [...], 'December 2025' => [...], ...] ordered
@@ -160,9 +195,34 @@ renderHead('My Listings &amp; Auctions');
     <a href="?tab=closed&q=<?= urlencode($q) ?>&cat=<?= $catFilter ?><?= $luxuryOnly?'&luxury=1':'' ?>"  class="tb-tab-link <?= $tab==='closed'?'active':'' ?>">Closed (<?= count($closedAuctions) ?>)</a>
   </div>
 
+  <?php
+  // Show a contextual banner when arriving from an analytics recommendation
+  if ($photoFilter === 'low'): ?>
+  <div class="tb-alert tb-alert-warning show" style="margin-bottom:16px">
+    <span class="material-symbols-outlined icon-sm">image</span>
+    Showing listings with <strong>only 1 photo</strong>. Add more photos to improve visibility and bids.
+    <a href="?tab=<?= $tab ?>" style="margin-left:8px;font-weight:700">Clear filter &times;</a>
+  </div>
+  <?php elseif ($detailsFilter === 'incomplete'): ?>
+  <div class="tb-alert tb-alert-warning show" style="margin-bottom:16px">
+    <span class="material-symbols-outlined icon-sm">description</span>
+    Showing listings with <strong>incomplete item details</strong>. Fill in missing fields to boost buyer confidence.
+    <a href="?tab=<?= $tab ?>" style="margin-left:8px;font-weight:700">Clear filter &times;</a>
+  </div>
+  <?php elseif ($pricingFilter === 'inconsistent'): ?>
+  <div class="tb-alert tb-alert-warning show" style="margin-bottom:16px">
+    <span class="material-symbols-outlined icon-sm">payments</span>
+    Showing listings with <strong>inconsistent pricing</strong> across the same product line. Review and align your prices.
+    <a href="?tab=<?= $tab ?>" style="margin-left:8px;font-weight:700">Clear filter &times;</a>
+  </div>
+  <?php endif; ?>
+
   <!-- Filters -->
   <form method="GET" class="tb-filter-bar" style="margin-bottom:28px">
     <input type="hidden" name="tab" value="<?= htmlspecialchars($tab) ?>">
+    <?php if ($photoFilter):   ?><input type="hidden" name="photo_filter"   value="<?= htmlspecialchars($photoFilter) ?>"><?php endif; ?>
+    <?php if ($pricingFilter): ?><input type="hidden" name="pricing_filter" value="<?= htmlspecialchars($pricingFilter) ?>"><?php endif; ?>
+    <?php if ($detailsFilter): ?><input type="hidden" name="details_filter" value="<?= htmlspecialchars($detailsFilter) ?>"><?php endif; ?>
     <div style="position:relative;flex:1;min-width:200px;max-width:280px">
       <span class="material-symbols-outlined icon-sm" style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--clr-tertiary)">search</span>
       <input type="text" name="q" value="<?= htmlspecialchars($q) ?>" placeholder="Search your listings..." class="tb-input" style="padding-left:32px;font-size:var(--fs-label-md)">
@@ -178,13 +238,24 @@ renderHead('My Listings &amp; Auctions');
       <option value="active" <?= $statusFilter==='active'?'selected':'' ?>>Active</option>
       <option value="inactive" <?= $statusFilter==='inactive'?'selected':'' ?>>Inactive</option>
     </select>
+    <?php if ($detailsFilter === 'incomplete'): ?>
+    <select name="incomplete_by" class="tb-input" style="width:auto" onchange="this.form.submit()">
+      <option value="" <?= $detailsIncompleteBy===''?'selected':'' ?>>Incomplete by (All)</option>
+      <option value="color"    <?= $detailsIncompleteBy==='color'   ?'selected':'' ?>>Color</option>
+      <option value="gender"   <?= $detailsIncompleteBy==='gender'  ?'selected':'' ?>>Gender</option>
+      <option value="material" <?= $detailsIncompleteBy==='material'?'selected':'' ?>>Material</option>
+      <option value="made_in"  <?= $detailsIncompleteBy==='made_in' ?'selected':'' ?>>Made In</option>
+    </select>
+    <?php endif; ?>
     <label style="display:flex;align-items:center;gap:6px;padding:0 10px;border:1px solid var(--clr-outline);border-radius:var(--radius-sm);height:38px;cursor:pointer;background:<?= $luxuryOnly ? '#1a1a1a' : 'var(--clr-white)' ?>;color:<?= $luxuryOnly ? '#fff' : 'var(--clr-text)' ?>">
       <input type="checkbox" name="luxury" value="1" <?= $luxuryOnly?'checked':'' ?> onchange="this.form.submit()" style="accent-color:var(--clr-coral)">
       <span class="material-symbols-outlined icon-sm">verified</span>
       <span style="font-size:var(--fs-label-sm);font-weight:600">Luxury Only</span>
     </label>
     <button type="submit" class="btn btn-primary btn-sm">Apply</button>
-    <?php if ($q || $catFilter || $luxuryOnly || $statusFilter): ?><a href="?tab=<?= $tab ?>" class="btn btn-ghost btn-sm">Clear</a><?php endif; ?>
+    <?php if ($q || $catFilter || $luxuryOnly || $statusFilter || $photoFilter || $detailsFilter || $pricingFilter): ?>
+    <a href="?tab=<?= $tab ?>" class="btn btn-ghost btn-sm">Clear All</a>
+    <?php endif; ?>
   </form>
 
   <?php
