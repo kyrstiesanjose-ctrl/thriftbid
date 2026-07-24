@@ -597,9 +597,26 @@ renderHead('Analytics');
         <strong><?= number_format($avgFollowers) ?></strong>, with an average view-to-bid conversion of
         <strong><?= number_format($avgConversion,1) ?>%</strong>.
       </p>
+      <?php
+        // Real conditional read, not a fixed sentence: thresholds are
+        // set relative to the actual range these two metrics span
+        // across the platform (follower_count ~50-12,000, view_to_bid
+        // ~1.5-22%), not arbitrary numbers.
+        $followerTier   = $avgFollowers >= 3000 ? 'strong' : ($avgFollowers >= 500 ? 'moderate' : 'low');
+        $conversionTier = $avgConversion >= 12 ? 'strong' : ($avgConversion >= 5 ? 'moderate' : 'low');
+      ?>
       <p style="font-size:var(--fs-label-md);color:var(--clr-tertiary)">
-        Listings with higher follower counts tend to have better conversion rates. Focus on
-        increasing followers and engagement to boost sales.
+        <?php if ($followerTier === 'strong' && $conversionTier === 'strong'): ?>
+          Your follower reach and conversion are both performing well, keep doing what's working: consistent posting, clear photos, and responsive replies to bids.
+        <?php elseif ($followerTier === 'low' && $conversionTier === 'low'): ?>
+          Both your reach and conversion are on the lower side right now. Growing your following (cross-posting listings, engaging with buyers) tends to lift conversion too, they usually move together.
+        <?php elseif ($followerTier === 'low'): ?>
+          Your conversion rate is solid even with a smaller following, your listings themselves are working. Growing your reach could translate directly into more bids at this same conversion quality.
+        <?php elseif ($conversionTier === 'low'): ?>
+          You have a decent following, but conversion is lagging behind it, visitors are seeing your listings without bidding. Worth reviewing photos, pricing, and item details, since the audience is already there.
+        <?php else: ?>
+          Your reach and conversion are both in a reasonable middle range. Small, steady improvements to either one (more followers, or more complete listings) should compound.
+        <?php endif; ?>
       </p>
     </div>
   </div>
@@ -750,10 +767,20 @@ renderHead('Analytics');
           <span class="material-symbols-outlined icon-md" style="color:var(--clr-text)">image</span>
           <?php if ($recPhotosCount > 0): ?>
           <span class="tb-badge tb-badge-coral" style="font-size:12px"><?= $recPhotosCount ?> listing<?= $recPhotosCount!==1?'s':'' ?></span>
+          <?php else: ?>
+          <span class="tb-badge tb-badge-green" style="font-size:12px">All good</span>
           <?php endif; ?>
         </div>
         <p style="font-weight:700;font-size:var(--fs-label-md)">Add More Photos</p>
-        <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px;min-height:44px">Listings with 3+ high-quality photos get more views and higher bids. These have only 1 photo.</p>
+        <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px;min-height:44px">
+          <?php if ($recPhotosCount === 0): ?>
+          Every listing already has more than one photo. Nice, that's one less thing buyers have to guess about.
+          <?php elseif ($recPhotosCount === 1): ?>
+          1 listing has only a single photo. Listings with 3+ high-quality photos get more views and higher bids.
+          <?php else: ?>
+          <?= $recPhotosCount ?> listings have only a single photo each. Listings with 3+ high-quality photos get more views and higher bids.
+          <?php endif; ?>
+        </p>
         <a href="active-auctions.php?photo_filter=low" class="btn btn-outline btn-sm btn-full" style="background:#fff;margin-top:8px">View Listings</a>
       </div>
 
@@ -763,10 +790,20 @@ renderHead('Analytics');
           <span class="material-symbols-outlined icon-md" style="color:var(--clr-text)">description</span>
           <?php if ($recDetailsCount > 0): ?>
           <span class="tb-badge tb-badge-coral" style="font-size:12px"><?= $recDetailsCount ?> listing<?= $recDetailsCount!==1?'s':'' ?></span>
+          <?php else: ?>
+          <span class="tb-badge tb-badge-green" style="font-size:12px">All good</span>
           <?php endif; ?>
         </div>
         <p style="font-weight:700;font-size:var(--fs-label-md)">Complete Item Details</p>
-        <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px;min-height:44px">Missing color, gender, material, or made-in fields reduce buyer confidence and search visibility.</p>
+        <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px;min-height:44px">
+          <?php if ($recDetailsCount === 0): ?>
+          Color, material, gender, and made-in are filled in across every listing. That's the kind of detail that builds buyer trust.
+          <?php elseif ($recDetailsCount === 1): ?>
+          1 listing is missing color, gender, material, or made-in. These fields reduce buyer confidence and search visibility when left blank.
+          <?php else: ?>
+          <?= $recDetailsCount ?> listings are missing color, gender, material, or made-in. These fields reduce buyer confidence and search visibility when left blank.
+          <?php endif; ?>
+        </p>
         <a href="active-auctions.php?details_filter=incomplete" class="btn btn-outline btn-sm btn-full" style="background:#fff;margin-top:8px">View Incomplete Listings</a>
       </div>
 
@@ -776,15 +813,29 @@ renderHead('Analytics');
           <span class="material-symbols-outlined icon-md" style="color:var(--clr-text)">payments</span>
           <?php if ($recPricingCount > 0): ?>
           <span class="tb-badge tb-badge-coral" style="font-size:12px"><?= $recPricingCount ?> listing<?= $recPricingCount!==1?'s':'' ?></span>
+          <?php else: ?>
+          <span class="tb-badge tb-badge-green" style="font-size:12px">All good</span>
           <?php endif; ?>
         </div>
         <p style="font-weight:700;font-size:var(--fs-label-md)">Pricing Info</p>
-        <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px;min-height:44px">These listings share the same product line but have inconsistent prices across your shop.</p>
+        <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px;min-height:44px">
+          <?php if ($recPricingCount === 0): ?>
+          Prices are consistent across every product line in your shop, nothing here is likely to confuse a buyer comparing your listings.
+          <?php else: ?>
+          <?= $recPricingCount ?> listing<?= $recPricingCount!==1?'s':'' ?> share<?= $recPricingCount===1?'s':'' ?> a product line with inconsistent pricing across your shop. Worth reviewing so similar items don't look mispriced side by side.
+          <?php endif; ?>
+        </p>
         <a href="active-auctions.php?pricing_filter=inconsistent" class="btn btn-outline btn-sm btn-full" style="background:#fff;margin-top:8px">View Listings</a>
       </div>
 
     </div>
-    <p style="font-size:11px;color:var(--clr-tertiary);margin-top:16px">Small improvements can lead to big results. Follow these recommendations and watch your sales grow.</p>
+    <?php
+      $totalRecIssues = $recPhotosCount + $recDetailsCount + $recPricingCount;
+      if ($totalRecIssues === 0): ?>
+    <p style="font-size:11px;color:var(--clr-success);font-weight:600;margin-top:16px">No open recommendations right now, your listings are in good shape across photos, details, and pricing.</p>
+    <?php else: ?>
+    <p style="font-size:11px;color:var(--clr-tertiary);margin-top:16px"><?= $totalRecIssues ?> listing issue<?= $totalRecIssues!==1?'s':'' ?> flagged above. Fixing these tends to have an outsized effect on views and bids relative to the effort involved.</p>
+    <?php endif; ?>
   </div>
   <?php endif; ?>
 
