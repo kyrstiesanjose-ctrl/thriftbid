@@ -184,6 +184,55 @@ if ($tab === 'sales-drivers') {
          FROM LISTING_ANALYTICS la JOIN LISTINGS l ON la.listing_id=l.listing_id
          WHERE l.seller_id=?', [$sellerId]
     )['a'] ?? 0;
+
+    // Real diagnostic drill-down: conversion AND its likely drivers,
+    // broken down by parent category, not just one platform-wide
+    // average. This is what actually answers "why" instead of just
+    // restating "what": which category underperforms, and which of
+    // its supporting scores is the most likely cause.
+    $categoryDiagnostics = DB::fetchAll(
+        'SELECT pc.parent_category AS category,
+                COUNT(*) AS listing_count,
+                AVG(la.view_to_bid_score) AS conversion,
+                AVG(la.photo_score) AS photo_score,
+                AVG(la.details_score) AS details_score,
+                AVG(la.pricing_score) AS pricing_score,
+                AVG(la.condition_score) AS condition_score
+         FROM LISTING_ANALYTICS la
+         JOIN LISTINGS l ON la.listing_id=l.listing_id
+         JOIN CATEGORIES c ON l.category_id=c.category_id
+         JOIN PARENT_CATEGORIES pc ON c.parent_category_id=pc.parent_category_id
+         WHERE l.seller_id=?
+         GROUP BY pc.parent_category
+         HAVING COUNT(*) >= 2
+         ORDER BY conversion ASC',
+        [$sellerId]
+    );
+
+    $diagnosticFinding = null;
+    if (count($categoryDiagnostics) >= 2) {
+        $worst = $categoryDiagnostics[0];
+        $best  = $categoryDiagnostics[count($categoryDiagnostics) - 1];
+        // Only worth calling out as a real finding if there's a
+        // meaningful gap, a 1-2 point difference on a noisy small
+        // sample isn't a "cause," it's noise.
+        if ($best['conversion'] - $worst['conversion'] >= 3) {
+            // Root-cause candidate: whichever supporting score has the
+            // biggest gap between the worst and best category is the
+            // most likely explanation for the conversion gap itself.
+            $scoreFields = ['photo_score' => 'photo completeness', 'details_score' => 'listing detail completeness', 'pricing_score' => 'pricing consistency', 'condition_score' => 'condition accuracy'];
+            $biggestGapField = null; $biggestGap = -1;
+            foreach ($scoreFields as $field => $label) {
+                $gap = (float)$best[$field] - (float)$worst[$field];
+                if ($gap > $biggestGap) { $biggestGap = $gap; $biggestGapField = $label; }
+            }
+            $diagnosticFinding = [
+                'worst_category' => $worst['category'], 'worst_conversion' => (float)$worst['conversion'],
+                'best_category' => $best['category'], 'best_conversion' => (float)$best['conversion'],
+                'likely_cause' => $biggestGapField, 'gap' => round($biggestGap, 1),
+            ];
+        }
+    }
 }
 
 // ------------------------------------------------------------------
@@ -592,32 +641,42 @@ renderHead('Analytics');
     </div>
     <div class="tb-card tb-card-body">
       <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:12px">Insights</h3>
-      <p style="font-size:var(--fs-label-md);color:var(--clr-tertiary);margin-bottom:10px">
+      <p style="font-size:var(--fs-label-md);color:var(--clr-tertiary);margin-bottom:14px">
         Average Instagram follower count across your listings is
         <strong><?= number_format($avgFollowers) ?></strong>, with an average view-to-bid conversion of
         <strong><?= number_format($avgConversion,1) ?>%</strong>.
       </p>
-      <?php
-        // Real conditional read, not a fixed sentence: thresholds are
-        // set relative to the actual range these two metrics span
-        // across the platform (follower_count ~50-12,000, view_to_bid
-        // ~1.5-22%), not arbitrary numbers.
-        $followerTier   = $avgFollowers >= 3000 ? 'strong' : ($avgFollowers >= 500 ? 'moderate' : 'low');
-        $conversionTier = $avgConversion >= 12 ? 'strong' : ($avgConversion >= 5 ? 'moderate' : 'low');
-      ?>
-      <p style="font-size:var(--fs-label-md);color:var(--clr-tertiary)">
-        <?php if ($followerTier === 'strong' && $conversionTier === 'strong'): ?>
-          Your follower reach and conversion are both performing well, keep doing what's working: consistent posting, clear photos, and responsive replies to bids.
-        <?php elseif ($followerTier === 'low' && $conversionTier === 'low'): ?>
-          Both your reach and conversion are on the lower side right now. Growing your following (cross-posting listings, engaging with buyers) tends to lift conversion too, they usually move together.
-        <?php elseif ($followerTier === 'low'): ?>
-          Your conversion rate is solid even with a smaller following, your listings themselves are working. Growing your reach could translate directly into more bids at this same conversion quality.
-        <?php elseif ($conversionTier === 'low'): ?>
-          You have a decent following, but conversion is lagging behind it, visitors are seeing your listings without bidding. Worth reviewing photos, pricing, and item details, since the audience is already there.
-        <?php else: ?>
-          Your reach and conversion are both in a reasonable middle range. Small, steady improvements to either one (more followers, or more complete listings) should compound.
-        <?php endif; ?>
-      </p>
+
+      <?php if (count($categoryDiagnostics) >= 2): ?>
+      <p class="tb-section-label" style="margin-bottom:6px">Conversion by Category (Drill-Down)</p>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px">
+        <?php foreach ($categoryDiagnostics as $cd): ?>
+        <div style="display:flex;justify-content:space-between;font-size:var(--fs-label-sm)">
+          <span style="color:var(--clr-text)"><?= htmlspecialchars($cd['category']) ?> <span style="color:var(--clr-tertiary)">(<?= $cd['listing_count'] ?> listings)</span></span>
+          <span style="font-weight:700;color:<?= $cd['conversion'] < $avgConversion ? 'var(--clr-error)' : 'var(--clr-success)' ?>"><?= number_format($cd['conversion'],1) ?>%</span>
+        </div>
+        <?php endforeach; ?>
+      </div>
+      <?php endif; ?>
+
+      <?php if ($diagnosticFinding): ?>
+      <div style="background:var(--clr-error-bg);border-left:3px solid var(--clr-error);border-radius:var(--radius-sm);padding:10px 12px">
+        <p style="font-size:var(--fs-label-md);color:var(--clr-error);font-weight:700;margin-bottom:4px">Root Cause Identified</p>
+        <p style="font-size:var(--fs-label-sm);color:var(--clr-text)">
+          Your <strong><?= htmlspecialchars($diagnosticFinding['worst_category']) ?></strong> listings convert at
+          <strong><?= number_format($diagnosticFinding['worst_conversion'],1) ?>%</strong>, well below your
+          <strong><?= htmlspecialchars($diagnosticFinding['best_category']) ?></strong> listings at
+          <strong><?= number_format($diagnosticFinding['best_conversion'],1) ?>%</strong>.
+          The biggest measurable difference between them is <strong><?= htmlspecialchars($diagnosticFinding['likely_cause']) ?></strong>
+          (a <?= $diagnosticFinding['gap'] ?>-point gap), which is the most likely driver of the lower conversion in
+          <?= htmlspecialchars($diagnosticFinding['worst_category']) ?>, not follower count or luck.
+        </p>
+      </div>
+      <?php elseif (count($categoryDiagnostics) >= 2): ?>
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">Conversion is fairly consistent across your categories right now, no single category stands out as a clear outlier worth investigating yet.</p>
+      <?php else: ?>
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">Not enough listings per category yet for a reliable category-by-category comparison (need at least 2 per category). Check back once you have more listings spread across categories.</p>
+      <?php endif; ?>
     </div>
   </div>
 
@@ -670,40 +729,41 @@ renderHead('Analytics');
     </div>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="tb-card tb-card-body">
-      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Brand Pricing Predictor</h3>
-      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Tests the assumption that branded items are inherently more expensive.</p>
+  <div class="tb-card mb-2">
+    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Brand Pricing Predictor</h3></div>
+    <div class="tb-card-body">
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Tests the assumption that branded items are inherently more expensive. Both axes use a logarithmic scale, prices in this shop span from under \u20b1200 to over \u20b170,000, and a straight linear scale would crush every low-price listing into a single unreadable cluster near zero.</p>
       <?php if (empty($brandPricingPoints)): ?>
       <div style="color:var(--clr-tertiary)">Not enough brand data yet.</div>
       <?php else: ?>
-      <canvas id="brandScatter" height="200"></canvas>
+      <canvas id="brandScatter" height="90"></canvas>
       <?php endif; ?>
     </div>
-    <div class="tb-card">
-      <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Top Brand Predictions</h3></div>
-      <div class="tb-card-body" style="overflow-x:auto">
-        <?php if (empty($topBrandPredictions)): ?>
-        <div style="color:var(--clr-tertiary)">Not enough brand data yet.</div>
-        <?php else: ?>
-        <table class="tb-table">
-          <thead><tr><th>Brand</th><th>Tier</th><th>Avg Price</th><th>Predicted</th><th>Difference</th></tr></thead>
-          <tbody>
-            <?php foreach ($topBrandPredictions as $bp):
-              $diff = $bp['avg_predicted'] > 0 ? (($bp['avg_price'] - $bp['avg_predicted']) / $bp['avg_predicted']) * 100 : 0;
-            ?>
-            <tr>
-              <td style="font-weight:600"><?= htmlspecialchars($bp['brand_name']) ?></td>
-              <td><span class="tb-badge tb-badge-gray"><?= htmlspecialchars($bp['tier']) ?></span></td>
-              <td><?= convertCurrency((float)$bp['avg_price']) ?></td>
-              <td style="color:var(--clr-tertiary)"><?= convertCurrency((float)$bp['avg_predicted']) ?></td>
-              <td style="color:<?= $diff>=0?'var(--clr-success)':'var(--clr-error)' ?>;font-weight:600"><?= $diff>=0?'+':'' ?><?= number_format($diff,1) ?>%</td>
-            </tr>
-            <?php endforeach; ?>
-          </tbody>
-        </table>
-        <?php endif; ?>
-      </div>
+  </div>
+
+  <div class="tb-card">
+    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Top Brand Predictions</h3></div>
+    <div class="tb-card-body" style="overflow-x:auto">
+      <?php if (empty($topBrandPredictions)): ?>
+      <div style="color:var(--clr-tertiary)">Not enough brand data yet.</div>
+      <?php else: ?>
+      <table class="tb-table">
+        <thead><tr><th>Brand</th><th>Tier</th><th>Avg Price</th><th>Predicted</th><th>Difference</th></tr></thead>
+        <tbody>
+          <?php foreach ($topBrandPredictions as $bp):
+            $diff = $bp['avg_predicted'] > 0 ? (($bp['avg_price'] - $bp['avg_predicted']) / $bp['avg_predicted']) * 100 : 0;
+          ?>
+          <tr>
+            <td style="font-weight:600"><?= htmlspecialchars($bp['brand_name']) ?></td>
+            <td><span class="tb-badge tb-badge-gray"><?= htmlspecialchars($bp['tier']) ?></span></td>
+            <td><?= convertCurrency((float)$bp['avg_price']) ?></td>
+            <td style="color:var(--clr-tertiary)"><?= convertCurrency((float)$bp['avg_predicted']) ?></td>
+            <td style="color:<?= $diff>=0?'var(--clr-success)':'var(--clr-error)' ?>;font-weight:600"><?= $diff>=0?'+':'' ?><?= number_format($diff,1) ?>%</td>
+          </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+      <?php endif; ?>
     </div>
   </div>
 
@@ -969,11 +1029,28 @@ renderHead('Analytics');
         <?php endforeach; ?>
       ]
     },
-    options:{responsive:true,plugins:{legend:{position:'top'}},
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{position:'top'},
+        tooltip:{
+          callbacks:{
+            label:function(ctx){
+              return ctx.dataset.label + ': Actual \u20b1' + ctx.parsed.x.toLocaleString() + ', Predicted \u20b1' + ctx.parsed.y.toLocaleString();
+            }
+          }
+        }
+      },
       scales:{
-        x:{title:{display:true,text:'Actual Price (₱)'},ticks:{callback:v=>'₱'+v.toLocaleString()}},
-        y:{title:{display:true,text:'Predicted Price (₱)'},ticks:{callback:v=>'₱'+v.toLocaleString()}}
-      }}
+        // Logarithmic, not linear: prices in this shop range from
+        // under 200 to over 70,000. On a linear axis every low-price
+        // listing collapses into one indistinguishable cluster near
+        // the origin, exactly the "everything looks like 0" problem.
+        // Log scale gives low and high values comparable visual space.
+        x:{type:'logarithmic',title:{display:true,text:'Actual Price (\u20b1), log scale'},ticks:{callback:v=>{ const s=v.toString(); return (s[0]==='1'||s==='0')?'\u20b1'+v.toLocaleString():''; }}},
+        y:{type:'logarithmic',title:{display:true,text:'Predicted Price (\u20b1), log scale'},ticks:{callback:v=>{ const s=v.toString(); return (s[0]==='1'||s==='0')?'\u20b1'+v.toLocaleString():''; }}}
+      }
+    }
   });
   <?php endif; ?>
 <?php elseif ($tab === 'optimization'): ?>

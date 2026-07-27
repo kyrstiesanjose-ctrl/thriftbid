@@ -135,6 +135,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_active'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_listing'])) {
     if ($hasBids) {
         $errors[] = 'Cannot delete a listing with active bids.';
+    } elseif ($hasSold) {
+        $errors[] = 'Cannot delete a listing that has already been purchased.';
     } else {
         DB::callProc('sp_soft_delete_listing', [$listingId, $sellerId]);
         header('Location: active-auctions.php?tab=fixed&deleted=1'); exit;

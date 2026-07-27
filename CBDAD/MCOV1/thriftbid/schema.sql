@@ -191,8 +191,35 @@ CREATE TABLE LISTINGS (
     CONSTRAINT FK_LISTINGS_SIZE FOREIGN KEY (size_id) REFERENCES CATEGORY_SIZES(size_id)
 );
 
+-- =========================================================================
+-- LISTING_ARCHIVE (historical snapshot, separate from LISTINGS.deleted_at)
+-- =========================================================================
+-- LISTINGS.deleted_at already keeps the row in place (so ORDERS,
+-- LISTING_IMAGES, AUCTIONS, etc. never lose their foreign key target),
+-- this table is additive on top of that, a frozen, admin-facing
+-- snapshot of exactly what the listing looked like the moment it was
+-- deleted, the same pattern as a Sakila-style archive table, populated
+-- automatically by after_listing_soft_delete_archive further below.
+CREATE TABLE LISTING_ARCHIVE (
+    archive_id INT(12) NOT NULL AUTO_INCREMENT,
+    listing_id INT(12) NOT NULL,
+    seller_id INT(12) NOT NULL,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    price DECIMAL(10,2) NOT NULL,
+    original_price DECIMAL(10,2) DEFAULT NULL,
+    condition_grade VARCHAR(20) NOT NULL,
+    category_id INT(5) NOT NULL,
+    product_line_id INT(12) NOT NULL,
+    size_id INT(12) NOT NULL,
+    archived_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT PK_LISTING_ARCHIVE PRIMARY KEY (archive_id),
+    CONSTRAINT FK_LISTING_ARCHIVE_LISTING FOREIGN KEY (listing_id) REFERENCES LISTINGS(listing_id) ON DELETE CASCADE,
+    CONSTRAINT FK_LISTING_ARCHIVE_SELLER FOREIGN KEY (seller_id) REFERENCES SELLER(seller_id)
+);
 
--- == 
+
+-- ==
 -- LISTING_IMAGES
 -- ==
 CREATE TABLE LISTING_IMAGES (
@@ -949,6 +976,69 @@ FOR EACH ROW
 BEGIN
     INSERT INTO NOTIFICATIONS (seller_id, title, message, notification_type)
     VALUES (NEW.seller_id, 'You earned an award!', NEW.reason, 'SYSTEM');
+END$$
+
+-- ------------------------------------------------------------
+-- 17. BEFORE UPDATE ON LISTINGS, block an illegal soft-delete.
+--     Fires only when deleted_at is actually being set for the first
+--     time (OLD NULL -> NEW NOT NULL), so ordinary edits (price,
+--     description, photos) are never affected. Two separate business
+--     rules, two separate SIGNALs: a listing currently tied to a live
+--     auction can't be pulled out from under active bidders, and a
+--     listing that's already been bought can't be deleted out from
+--     under a buyer who already paid for it. This is the database-level
+--     backstop, it applies no matter which application code path (or
+--     future one) tries to set deleted_at, not just the current
+--     sp_soft_delete_listing procedure.
+-- ------------------------------------------------------------
+DROP TRIGGER IF EXISTS before_listing_delete_enforce_rules$$
+CREATE TRIGGER before_listing_delete_enforce_rules
+BEFORE UPDATE ON LISTINGS
+FOR EACH ROW
+BEGIN
+    DECLARE v_active_auctions INT;
+    DECLARE v_existing_orders INT;
+
+    IF OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL THEN
+
+        SELECT COUNT(*) INTO v_active_auctions
+        FROM AUCTIONS
+        WHERE listing_id = OLD.listing_id AND status = 'Active' AND deleted_at IS NULL;
+
+        IF v_active_auctions > 0 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Cannot delete a listing with an active auction currently accepting bids.';
+        END IF;
+
+        SELECT COUNT(*) INTO v_existing_orders
+        FROM ORDERS
+        WHERE listing_id = OLD.listing_id;
+
+        IF v_existing_orders > 0 THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Cannot delete a listing that has already been purchased.';
+        END IF;
+
+    END IF;
+END$$
+
+-- ------------------------------------------------------------
+-- 18. AFTER UPDATE ON LISTINGS, archive a frozen snapshot the moment
+--     a listing is actually soft-deleted. Runs AFTER the guard trigger
+--     above, so it only ever fires for a deletion that was actually
+--     allowed to go through.
+-- ------------------------------------------------------------
+DROP TRIGGER IF EXISTS after_listing_soft_delete_archive$$
+CREATE TRIGGER after_listing_soft_delete_archive
+AFTER UPDATE ON LISTINGS
+FOR EACH ROW
+BEGIN
+    IF OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL THEN
+        INSERT INTO LISTING_ARCHIVE (listing_id, seller_id, title, description, price, original_price,
+                                      condition_grade, category_id, product_line_id, size_id)
+        VALUES (OLD.listing_id, OLD.seller_id, OLD.title, OLD.description, OLD.price, OLD.original_price,
+                OLD.condition_grade, OLD.category_id, OLD.product_line_id, OLD.size_id);
+    END IF;
 END$$
 
 -- ================================================================
