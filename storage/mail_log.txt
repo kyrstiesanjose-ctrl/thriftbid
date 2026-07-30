@@ -41892,3 +41892,1789 @@ native mail(): FAILED (no local MTA configured)
 
 =====
 
+[2026-07-31 07:31:17] To: marco@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d2e1a72fcca58-84e9fe20e35sm3697303b3a.1 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d2e1a72fcca58-84e9fe20e35sm3697303b3a.1 - gsmtp
+> RCPT TO:<marco@gmail.com>
+250 2.1.5 OK d2e1a72fcca58-84e9fe20e35sm3697303b3a.1 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-84e9fe20e35sm3697303b3a.1 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Timeless Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #1).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:31:22] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022a45e54sm32366005ad.19 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022a45e54sm32366005ad.19 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022a45e54sm32366005ad.19 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022a45e54sm32366005ad.19 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Cropped Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #2).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:31:28] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP 41be03b00d2f7-cbdb55c5b7bsm2687713a12.0 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 41be03b00d2f7-cbdb55c5b7bsm2687713a12.0 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK 41be03b00d2f7-cbdb55c5b7bsm2687713a12.0 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-cbdb55c5b7bsm2687713a12.0 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Y2K Bershka Long sleeve</strong>" was just ordered by <strong>Kai</strong> (Order #3).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:31:34] To: marco@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022bfa240sm32855005ad.65 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022bfa240sm32855005ad.65 - gsmtp
+> RCPT TO:<marco@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022bfa240sm32855005ad.65 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022bfa240sm32855005ad.65 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Timeless Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #1).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:31:39] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022a76a5bsm32762905ad.35 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022a76a5bsm32762905ad.35 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022a76a5bsm32762905ad.35 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022a76a5bsm32762905ad.35 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Cropped Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #2).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:31:45] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP 98e67ed59e1d1-38facf7a59fsm99330a91.3 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 98e67ed59e1d1-38facf7a59fsm99330a91.3 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK 98e67ed59e1d1-38facf7a59fsm99330a91.3 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-38facf7a59fsm99330a91.3 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Y2K Bershka Long sleeve</strong>" was just ordered by <strong>Kai</strong> (Order #3).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:02] To: marco@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP 98e67ed59e1d1-38facf0e8e1sm128074a91.3 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 98e67ed59e1d1-38facf0e8e1sm128074a91.3 - gsmtp
+> RCPT TO:<marco@gmail.com>
+250 2.1.5 OK 98e67ed59e1d1-38facf0e8e1sm128074a91.3 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-38facf0e8e1sm128074a91.3 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Timeless Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #1).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:08] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022c2d5a4sm32356935ad.71 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022c2d5a4sm32356935ad.71 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022c2d5a4sm32356935ad.71 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022c2d5a4sm32356935ad.71 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Cropped Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #2).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:11] To: marco@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d2e1a72fcca58-84ea0301b3csm3628510b3a.34 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d2e1a72fcca58-84ea0301b3csm3628510b3a.34 - gsmtp
+> RCPT TO:<marco@gmail.com>
+250 2.1.5 OK d2e1a72fcca58-84ea0301b3csm3628510b3a.34 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-84ea0301b3csm3628510b3a.34 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Timeless Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #1).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:14] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP 41be03b00d2f7-cbdb79a3796sm2662497a12.3 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 41be03b00d2f7-cbdb79a3796sm2662497a12.3 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK 41be03b00d2f7-cbdb79a3796sm2662497a12.3 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-cbdb79a3796sm2662497a12.3 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Y2K Bershka Long sleeve</strong>" was just ordered by <strong>Kai</strong> (Order #3).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:17] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022a4f5fbsm32600325ad.32 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022a4f5fbsm32600325ad.32 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022a4f5fbsm32600325ad.32 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022a4f5fbsm32600325ad.32 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Cropped Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #2).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:21] To: marco@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d2e1a72fcca58-84e9fe20e35sm3698063b3a.1 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d2e1a72fcca58-84e9fe20e35sm3698063b3a.1 - gsmtp
+> RCPT TO:<marco@gmail.com>
+250 2.1.5 OK d2e1a72fcca58-84e9fe20e35sm3698063b3a.1 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-84e9fe20e35sm3698063b3a.1 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Timeless Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #1).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:22] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022bc6d56sm32809765ad.49 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022bc6d56sm32809765ad.49 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022bc6d56sm32809765ad.49 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022bc6d56sm32809765ad.49 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Y2K Bershka Long sleeve</strong>" was just ordered by <strong>Kai</strong> (Order #3).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:27] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP 41be03b00d2f7-cbdb824fd5csm2590322a12.13 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 41be03b00d2f7-cbdb824fd5csm2590322a12.13 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK 41be03b00d2f7-cbdb824fd5csm2590322a12.13 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-cbdb824fd5csm2590322a12.13 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Cropped Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #2).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:33] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022a4f5fbsm32602435ad.32 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022a4f5fbsm32602435ad.32 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022a4f5fbsm32602435ad.32 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022a4f5fbsm32602435ad.32 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Y2K Bershka Long sleeve</strong>" was just ordered by <strong>Kai</strong> (Order #3).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:33] To: marco@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022a465f7sm32619935ad.24 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022a465f7sm32619935ad.24 - gsmtp
+> RCPT TO:<marco@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022a465f7sm32619935ad.24 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022a465f7sm32619935ad.24 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Timeless Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #1).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:38] To: marco@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022c50f43sm32598195ad.83 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022c50f43sm32598195ad.83 - gsmtp
+> RCPT TO:<marco@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022c50f43sm32598195ad.83 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022c50f43sm32598195ad.83 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Timeless Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #1).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:38] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022a15303sm32654395ad.3 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022a15303sm32654395ad.3 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022a15303sm32654395ad.3 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022a15303sm32654395ad.3 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Cropped Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #2).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:44] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d024b114a5sm30845275ad.21 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d024b114a5sm30845275ad.21 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d024b114a5sm30845275ad.21 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d024b114a5sm30845275ad.21 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Y2K Bershka Long sleeve</strong>" was just ordered by <strong>Kai</strong> (Order #3).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:44] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP 41be03b00d2f7-cbdb7b8df4fsm2622527a12.2 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 41be03b00d2f7-cbdb7b8df4fsm2622527a12.2 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK 41be03b00d2f7-cbdb7b8df4fsm2622527a12.2 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-cbdb7b8df4fsm2622527a12.2 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Cropped Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #2).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:32:50] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022bc9fe9sm32179855ad.51 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022bc9fe9sm32179855ad.51 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022bc9fe9sm32179855ad.51 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022bc9fe9sm32179855ad.51 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Y2K Bershka Long sleeve</strong>" was just ordered by <strong>Kai</strong> (Order #3).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:33:44] To: marco@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d2e1a72fcca58-84e9fe238efsm3701147b3a.4 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d2e1a72fcca58-84e9fe238efsm3701147b3a.4 - gsmtp
+> RCPT TO:<marco@gmail.com>
+250 2.1.5 OK d2e1a72fcca58-84e9fe238efsm3701147b3a.4 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-84e9fe238efsm3701147b3a.4 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Timeless Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #1).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:33:51] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022a4f5fbsm32610845ad.32 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022a4f5fbsm32610845ad.32 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022a4f5fbsm32610845ad.32 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022a4f5fbsm32610845ad.32 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Cropped Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #2).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:33:57] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP 41be03b00d2f7-cbdba3520ccsm2794801a12.19 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 41be03b00d2f7-cbdba3520ccsm2794801a12.19 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK 41be03b00d2f7-cbdba3520ccsm2794801a12.19 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 41be03b00d2f7-cbdba3520ccsm2794801a12.19 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Y2K Bershka Long sleeve</strong>" was just ordered by <strong>Kai</strong> (Order #3).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:34:02] To: mintea.peaz@gmail.com | Subject: Verify your ThriftBid account | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022bf4c0bsm32397205ad.59 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022bf4c0bsm32397205ad.59 - gsmtp
+> RCPT TO:<mintea.peaz@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022bf4c0bsm32397205ad.59 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022bf4c0bsm32397205ad.59 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:480px;margin:0 auto"><h2 style="color:#ff6b6b">ThriftBid</h2><p>Hi Mintea,</p><p>Use the code below to verify your email and activate your account.</p><p style="font-size:32px;font-weight:800;letter-spacing:6px;color:#1a1a1a">712914</p><p style="color:#777;font-size:13px">This code expires in 5 minutes. If you didn't request this, you can ignore this email.</p></div>
+
+=====
+
+[2026-07-31 07:34:09] To: marco@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d2e1a72fcca58-84ea0374c15sm3684196b3a.51 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d2e1a72fcca58-84ea0374c15sm3684196b3a.51 - gsmtp
+> RCPT TO:<marco@gmail.com>
+250 2.1.5 OK d2e1a72fcca58-84ea0374c15sm3684196b3a.51 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-84ea0374c15sm3684196b3a.51 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Timeless Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #1).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:34:09] To: marco@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d2e1a72fcca58-84ea7344ca8sm3393147b3a.21 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d2e1a72fcca58-84ea7344ca8sm3393147b3a.21 - gsmtp
+> RCPT TO:<marco@gmail.com>
+250 2.1.5 OK d2e1a72fcca58-84ea7344ca8sm3393147b3a.21 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-84ea7344ca8sm3393147b3a.21 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Timeless Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #1).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:34:14] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022bc5afasm32841695ad.46 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022bc5afasm32841695ad.46 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022bc5afasm32841695ad.46 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022bc5afasm32841695ad.46 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Cropped Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #2).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:34:16] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d2e1a72fcca58-84ea03869d2sm3659849b3a.49 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d2e1a72fcca58-84ea03869d2sm3659849b3a.49 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d2e1a72fcca58-84ea03869d2sm3659849b3a.49 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-84ea03869d2sm3659849b3a.49 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Cropped Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #2).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:34:20] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022a46774sm32534205ad.27 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022a46774sm32534205ad.27 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022a46774sm32534205ad.27 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022a46774sm32534205ad.27 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Y2K Bershka Long sleeve</strong>" was just ordered by <strong>Kai</strong> (Order #3).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:34:22] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022a15303sm32668045ad.3 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022a15303sm32668045ad.3 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022a15303sm32668045ad.3 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022a15303sm32668045ad.3 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Y2K Bershka Long sleeve</strong>" was just ordered by <strong>Kai</strong> (Order #3).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:34:28] To: leila_lumbao@dlsu.edu.ph | Subject: Verify your ThriftBid account | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP 98e67ed59e1d1-38f9b9288a8sm1598581a91.4 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 98e67ed59e1d1-38f9b9288a8sm1598581a91.4 - gsmtp
+> RCPT TO:<leila_lumbao@dlsu.edu.ph>
+250 2.1.5 OK 98e67ed59e1d1-38f9b9288a8sm1598581a91.4 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-38f9b9288a8sm1598581a91.4 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:480px;margin:0 auto"><h2 style="color:#ff6b6b">ThriftBid</h2><p>Hi Leila,</p><p>Use the code below to verify your email and activate your account.</p><p style="font-size:32px;font-weight:800;letter-spacing:6px;color:#1a1a1a">381427</p><p style="color:#777;font-size:13px">This code expires in 5 minutes. If you didn't request this, you can ignore this email.</p></div>
+
+=====
+
+[2026-07-31 07:34:34] To: marco@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d2e1a72fcca58-84e9fe2153csm3706749b3a.3 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d2e1a72fcca58-84e9fe2153csm3706749b3a.3 - gsmtp
+> RCPT TO:<marco@gmail.com>
+250 2.1.5 OK d2e1a72fcca58-84e9fe2153csm3706749b3a.3 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-84e9fe2153csm3706749b3a.3 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Timeless Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #1).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:34:40] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022a468f7sm32744135ad.28 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022a468f7sm32744135ad.28 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022a468f7sm32744135ad.28 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022a468f7sm32744135ad.28 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Cropped Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #2).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:34:46] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022a46774sm32536905ad.27 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022a46774sm32536905ad.27 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022a46774sm32536905ad.27 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022a46774sm32536905ad.27 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Y2K Bershka Long sleeve</strong>" was just ordered by <strong>Kai</strong> (Order #3).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:37:27] To: marco@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d9443c01a7336-2d022bc9fddsm32398115ad.40 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d022bc9fddsm32398115ad.40 - gsmtp
+> RCPT TO:<marco@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d022bc9fddsm32398115ad.40 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d9443c01a7336-2d022bc9fddsm32398115ad.40 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Timeless Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #1).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:37:32] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP 98e67ed59e1d1-38faba6e510sm215908a91.0 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 98e67ed59e1d1-38faba6e510sm215908a91.0 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK 98e67ed59e1d1-38faba6e510sm215908a91.0 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 98e67ed59e1d1-38faba6e510sm215908a91.0 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Cropped Sandals</strong>" was just ordered by <strong>Ana</strong> (Order #2).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-07-31 07:37:38] To: jhen@gmail.com | Subject: You have a new order on ThriftBid! | NOT SENT — see attempts below
+SMTP: FAILED
+Server rejected the message body.
+220 smtp.gmail.com ESMTP d2e1a72fcca58-84ea00c367csm3682872b3a.23 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [124.104.80.246]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d2e1a72fcca58-84ea00c367csm3682872b3a.23 - gsmtp
+> RCPT TO:<jhen@gmail.com>
+250 2.1.5 OK d2e1a72fcca58-84ea00c367csm3682872b3a.23 - gsmtp
+> DATA
+550-5.4.5 Daily user sending limit exceeded. For more information on Gmail
+550-5.4.5 sending limits go to
+550 5.4.5  https://support.google.com/a/answer/166852 d2e1a72fcca58-84ea00c367csm3682872b3a.23 - gsmtp
+> QUIT
+
+native mail(): FAILED (no local MTA configured)
+
+--- message body ---
+<p>Your listing "<strong>Y2K Bershka Long sleeve</strong>" was just ordered by <strong>Kai</strong> (Order #3).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+

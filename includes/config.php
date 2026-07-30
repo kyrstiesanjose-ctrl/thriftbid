@@ -35,10 +35,15 @@ define('EXCHANGE_RATES', [
 ]);
 
 /* EMAIL (OTP delivery - registration verification + checkout OTP)
-   Sends via Gmail's own SMTP servers using an App Password  */
+   Sends via Gmail's own SMTP servers using an App Password - Gmail
+   signing its own outgoing mail with its own DKIM key is a completely
+   different situation than a third party (like Brevo) trying to send
+   AS gmail.com, which is what wasn't working before. */
 define('MAIL_FROM', $_ENV['MAIL_FROM'] ?? 'thriftbid05@gmail.com');
-
-define('DEV_SHOW_OTP', false);
+/* DEV MODE: was needed while email delivery was unreliable (. Now that Gmail SMTP sends
+   directly and delivery is confirmed working, this is OFF. Flip back to
+   true only if email breaks again and you need a fallback. */
+define('DEV_SHOW_OTP', true); /* temporarily back on - email delivery issue being diagnosed again */
 define('SMTP_HOST', $_ENV['SMTP_HOST'] ?? 'smtp.gmail.com');
 define('SMTP_PORT', (int)($_ENV['SMTP_PORT'] ?? 587));
 define('SMTP_USER', $_ENV['SMTP_USER'] ?? 'thriftbid05@gmail.com');
