@@ -1,19 +1,17 @@
 <?php
-// index.php — root redirect
+/* index.php - root redirect. Reached via .htaccess for '/' and any
+   non-existent path. Sends a logged-in visitor to their role's
+   dashboard, everyone else to the login page. */
 require_once __DIR__ . '/includes/auth.php';
 
-$subfolder = '/CBDAD/MCOV1/thriftbid';
-
 if (isLoggedIn()) {
-    $role = $_SESSION['user']['role'] ?? 'buyer';
-    header('Location: ' . match($role) {
-        'admin'     => $subfolder . '/pages/admin/dashboard.php',
-        'seller'    => $subfolder . '/pages/seller/dashboard.php',
-        'moderator' => $subfolder . '/pages/admin/disputes.php',
-        default     => $subfolder . '/pages/customer/home.php',
+    $role = currentUser()['role'] ?? 'buyer';
+    header('Location: ' . BASE_URL . match ($role) {
+        'admin'  => '/pages/admin/dashboard.php',
+        'seller' => '/pages/seller/dashboard.php',
+        default  => '/pages/customer/home.php',
     });
 } else {
-    header('Location: ' . $subfolder . '/pages/login.php');
+    header('Location: ' . BASE_URL . '/pages/login.php');
 }
 exit;
-?>
