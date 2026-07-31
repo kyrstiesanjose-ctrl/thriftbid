@@ -3,6 +3,7 @@
 // ThriftBid  layout.php  
 // ============================================================
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/bidbot_widget.php';
 
 // Communication: flush any pending order/shipment emails on every page
 // load (cheap no-op query when the queue's empty — see EMAIL_QUEUE in
@@ -444,7 +445,9 @@ function renderFooter(): void { ?>
     </div>
   </div>
 </footer>
-<?php }
+<?php
+renderBidBotWidget();
+}
 
 //  Helpers
 // Groups a flat list of rows into ['July 19, 2026' => [...], ...],

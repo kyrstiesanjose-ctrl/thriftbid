@@ -27,6 +27,12 @@ define('DB_NAME',        $_ENV['DB_NAME']        ?? 'thriftbid_db2');
 define('SESSION_SECRET', $_ENV['SESSION_SECRET'] ?? 'thriftbid_super_secret_key_2025');
 define('APP_URL',        $_ENV['APP_URL']        ?? 'http://localhost');
 
+/* BidBot (RAG chat) service. Defaults to a same-origin path that's
+   expected to be reverse-proxied to the FastAPI service in /bidbot -
+   see bidbot/README.md. Set BIDBOT_API_URL in .env to call it directly
+   (e.g. http://your-host:8000/api/chat) if proxying isn't available. */
+define('BIDBOT_API_URL', $_ENV['BIDBOT_API_URL'] ?? '/bidbot-api/chat');
+
 /* Static fallback only - live rates come from currency.php */
 define('EXCHANGE_RATES', [
     'PHP' => 1.0,
