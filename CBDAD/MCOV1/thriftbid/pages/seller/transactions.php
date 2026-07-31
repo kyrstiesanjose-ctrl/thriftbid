@@ -7,7 +7,7 @@ requireLogin();
 requireRole(['seller','admin']);
 
 $user     = currentUser();
-$sellerId = $user['seller_id'] ?? $user['id']; // session row IS the seller row now
+$sellerId = $user['seller_id'] ?? $user['id']; /* session row IS the seller row */
 
 $dateFrom = trim($_GET['from'] ?? '');
 $dateTo   = trim($_GET['to'] ?? '');
@@ -35,7 +35,7 @@ $orderBySql = match($sort) {
     default       => 't.transaction_date DESC',
 };
 
-// Export to CSV, matches the reference's "Download Statement" action.
+/* Export to CSV - triggered by the Download Statement button */
 
 if (($_GET['export'] ?? '') === 'csv') {
     $rows = DB::fetchAll(
@@ -128,27 +128,31 @@ renderHead('Transactions');
       <p class="tb-page-subtitle">Every completed payment tied to your orders, this is your revenue ledger.</p>
     </div>
     <div style="display:flex;gap:8px;flex-shrink:0">
-      <button type="button" onclick="document.getElementById('filterPanel').classList.toggle('hidden')" class="btn btn-outline btn-sm">
-        <span class="material-symbols-outlined icon-sm">calendar_month</span>
-        <?= ($dateFrom || $dateTo) ? 'Filtered' : 'Filter By Date' ?>
-      </button>
       <a href="?<?= http_build_query(array_merge($_GET, ['export' => 'csv'])) ?>" class="btn btn-primary btn-sm">
         <span class="material-symbols-outlined icon-sm">download</span>Download Statement
       </a>
     </div>
   </div>
 
-  <!-- Collapsible date filter panel -->
-  <form method="GET" id="filterPanel" class="<?= ($dateFrom || $dateTo) ? '' : 'hidden' ?>" style="display:flex;align-items:center;flex-wrap:wrap;gap:10px;background:var(--clr-white);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:16px">
-    <input type="date" name="from" value="<?= htmlspecialchars($dateFrom) ?>" class="tb-input" style="padding:6px 10px;font-size:var(--fs-label-sm)">
-    <span style="color:var(--clr-tertiary);font-size:var(--fs-label-sm)">to</span>
-    <input type="date" name="to" value="<?= htmlspecialchars($dateTo) ?>" class="tb-input" style="padding:6px 10px;font-size:var(--fs-label-sm)">
-    <input type="hidden" name="group" value="<?= $groupBy ?>">
-    <?php if ($q): ?><input type="hidden" name="q" value="<?= htmlspecialchars($q) ?>"><?php endif; ?>
-    <?php if ($method): ?><input type="hidden" name="method" value="<?= htmlspecialchars($method) ?>"><?php endif; ?>
-    <button type="submit" class="btn btn-primary btn-sm">Apply</button>
-    <?php if ($dateFrom || $dateTo): ?><a href="?<?= http_build_query(array_diff_key($_GET, ['from'=>1,'to'=>1])) ?>" style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">Clear dates</a><?php endif; ?>
-  </form>
+  <!-- Date filter: always visible with its own title. (Previously a
+       toggle button + hidden-class panel - didn't work because the form
+       had an inline style="display:flex", which always overrides a CSS
+       class, so toggling "hidden" had no visible effect either way.) -->
+  <div style="background:var(--clr-white);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:16px">
+    <p style="font-size:var(--fs-label-sm);font-weight:700;color:var(--clr-text);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:10px">
+      <span class="material-symbols-outlined icon-sm" style="vertical-align:middle;color:var(--clr-coral)">calendar_month</span> Filter by Date Range
+    </p>
+    <form method="GET" style="display:flex;align-items:center;flex-wrap:wrap;gap:10px">
+      <input type="date" name="from" value="<?= htmlspecialchars($dateFrom) ?>" class="tb-input" style="max-width:160px;padding:6px 10px;font-size:var(--fs-label-sm)">
+      <span style="color:var(--clr-tertiary);font-size:var(--fs-label-sm)">to</span>
+      <input type="date" name="to" value="<?= htmlspecialchars($dateTo) ?>" class="tb-input" style="max-width:160px;padding:6px 10px;font-size:var(--fs-label-sm)">
+      <input type="hidden" name="group" value="<?= $groupBy ?>">
+      <?php if ($q): ?><input type="hidden" name="q" value="<?= htmlspecialchars($q) ?>"><?php endif; ?>
+      <?php if ($method): ?><input type="hidden" name="method" value="<?= htmlspecialchars($method) ?>"><?php endif; ?>
+      <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+      <?php if ($dateFrom || $dateTo): ?><a href="?<?= http_build_query(array_diff_key($_GET, ['from'=>1,'to'=>1])) ?>" style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">Clear dates</a><?php endif; ?>
+    </form>
+  </div>
 
   <!-- Tight KPI banner cards: first one tinted, matching the reference's highlighted primary metric -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

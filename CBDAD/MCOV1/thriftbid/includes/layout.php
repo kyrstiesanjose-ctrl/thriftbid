@@ -4,6 +4,15 @@
 // ============================================================
 require_once __DIR__ . '/auth.php';
 
+// Communication: flush any pending order/shipment emails on every page
+// load (cheap no-op query when the queue's empty — see EMAIL_QUEUE in
+// schema.sql and flushEmailQueue() in mailer.php). Wrapped defensively so
+// a mail hiccup never breaks page rendering.
+try {
+    require_once __DIR__ . '/mailer.php';
+    flushEmailQueue(3); // small batch - a page load shouldn't risk a 120s timeout over background email
+} catch (\Throwable $e) { /* best-effort background flush, never fatal */ }
+
 //  Head 
 function renderHead(string $title = 'ThriftBid'): void { ?>
 <!DOCTYPE html>
@@ -12,7 +21,7 @@ function renderHead(string $title = 'ThriftBid'): void { ?>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= htmlspecialchars($title) ?> | ThriftBid</title>
-<link rel="stylesheet" href="../../public/style.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>/public/style.css">
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <script>
 tailwind.config = { theme:{ extend:{ colors:{
@@ -34,7 +43,7 @@ function renderHeadRoot(string $title = 'ThriftBid'): void { ?>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= htmlspecialchars($title) ?> | ThriftBid</title>
-<link rel="stylesheet" href="../public/style.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>/public/style.css">
 <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
 <script>
 tailwind.config = { theme:{ extend:{ colors:{
@@ -87,11 +96,19 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
     $cartCnt  = getCartCount();
 
     $homeHref = match($role) {
-        'admin'  => '../../pages/admin/dashboard.php',
-        'seller' => '../../pages/seller/dashboard.php',
-        default  => '../../pages/customer/home.php',
+        'admin'  => BASE_URL . '/pages/admin/dashboard.php',
+        'seller' => BASE_URL . '/pages/seller/dashboard.php',
+        default  => BASE_URL . '/pages/customer/home.php',
     }; ?>
 <header class="tb-navbar">
+  <!-- Mobile-only: toggles the off-canvas sidebar drawer (seller/admin
+       pages only — buyer pages use the top nav links instead). -->
+  <?php if ($role === 'seller' || $role === 'admin' || $sellerMode): ?>
+  <button type="button" class="tb-mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Open menu" style="background:none;border:none;cursor:pointer;color:#fff;margin-right:10px;align-items:center;justify-content:center">
+    <span class="material-symbols-outlined">menu</span>
+  </button>
+  <?php endif; ?>
+
   <!-- Brand -->
   <a href="<?= $homeHref ?>" class="tb-navbar-brand">ThriftBid</a>
 
@@ -102,10 +119,10 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
     <?php elseif ($role === 'seller' || $sellerMode): ?>
       <!-- Seller top-nav links removed, same links already live in the left sidebar (renderSellerSidebar) -->
     <?php else: ?>
-      <a href="../../pages/customer/home.php"       class="tb-nav-link <?= $active==='home'?'active':'' ?>">Home</a>
-      <a href="../../pages/customer/categories.php" class="tb-nav-link <?= $active==='categories'?'active':'' ?>">Categories</a>
-      <a href="../../pages/customer/live-bids.php"  class="tb-nav-link <?= $active==='livebids'?'active':'' ?>">Live Bids</a>
-      <a href="../../pages/customer/orders.php"     class="tb-nav-link <?= $active==='orders'?'active':'' ?>">Orders</a>
+      <a href="<?= BASE_URL ?>/pages/customer/home.php"       class="tb-nav-link <?= $active==='home'?'active':'' ?>">Home</a>
+      <a href="<?= BASE_URL ?>/pages/customer/categories.php" class="tb-nav-link <?= $active==='categories'?'active':'' ?>">Categories</a>
+      <a href="<?= BASE_URL ?>/pages/customer/live-bids.php"  class="tb-nav-link <?= $active==='livebids'?'active':'' ?>">Live Bids</a>
+      <a href="<?= BASE_URL ?>/pages/customer/orders.php"     class="tb-nav-link <?= $active==='orders'?'active':'' ?>">Orders</a>
     <?php endif; ?>
   </nav>
 
@@ -114,7 +131,7 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
   <div class="tb-nav-search">
     <span class="material-symbols-outlined search-icon">search</span>
     <input type="text" id="navSearchInput" placeholder="Search curated vintage..."
-      onkeydown="if(event.key==='Enter' && this.value.trim())location.href='../../pages/customer/categories.php?q='+encodeURIComponent(this.value)">
+      onkeydown="if(event.key==='Enter' && this.value.trim())location.href='<?= BASE_URL ?>/pages/customer/categories.php?q='+encodeURIComponent(this.value)">
   </div>
   <?php endif; ?>
 
@@ -124,7 +141,7 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
     <!-- Cart, buyers only, routes straight to the Cart tab, no popup,
          per the "instantly routes to Cart tab" requirement. -->
     <?php if ($role === 'buyer'): ?>
-    <a href="../../pages/customer/orders.php?tab=cart" class="tb-nav-icon-btn" title="Cart">
+    <a href="<?= BASE_URL ?>/pages/customer/orders.php?tab=cart" class="tb-nav-icon-btn" title="Cart">
       <span class="material-symbols-outlined icon-sm">shopping_cart</span>
       <?php if ($cartCnt > 0): ?>
       <span class="badge-count"><?= $cartCnt ?></span>
@@ -213,7 +230,7 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
       <div class="tb-notif-popup" id="notifPopup">
         <div class="tb-notif-popup-header">
           <span>Notifications</span>
-          <a href="../../pages/notifications.php" style="font-size:var(--fs-label-sm);color:var(--clr-coral)">See all</a>
+          <a href="<?= BASE_URL ?>/pages/notifications.php" style="font-size:var(--fs-label-sm);color:var(--clr-coral)">See all</a>
         </div>
         <div class="tb-notif-popup-body" id="notifPopupBody">
           <div style="padding:20px;text-align:center;color:var(--clr-tertiary);font-size:var(--fs-label-sm)">Loading...</div>
@@ -228,22 +245,39 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
       </button>
       <div id="profileMenu" style="position:absolute;right:0;top:100%;margin-top:4px;background:var(--clr-white);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);box-shadow:var(--shadow-lg);min-width:180px;overflow:hidden;display:none;z-index:300">
         <div class="tb-dropdown-header"><?= $username ?></div>
-        <a href="../../pages/profile.php"           class="tb-dropdown-item">My Profile</a>
+        <a href="<?= BASE_URL ?>/pages/profile.php"           class="tb-dropdown-item">My Profile</a>
         <?php if ($role === 'buyer'): ?>
-        <a href="../../pages/customer/orders.php"   class="tb-dropdown-item">My Orders</a>
+        <a href="<?= BASE_URL ?>/pages/customer/orders.php"   class="tb-dropdown-item">My Orders</a>
         <?php endif; ?>
         <?php if ($role === 'buyer'): ?>
-        <a href="../../pages/seller/dashboard.php"  class="tb-dropdown-item">Seller Center</a>
+        <a href="<?= BASE_URL ?>/pages/seller/dashboard.php"  class="tb-dropdown-item">Seller Center</a>
         <?php endif; ?>
         <div class="tb-dropdown-sep"></div>
-        <a href="../../api/logout.php"              class="tb-dropdown-item danger">Log Out</a>
+        <a href="<?= BASE_URL ?>/api/logout.php"              class="tb-dropdown-item danger">Log Out</a>
       </div>
     </div>
 
   </div><!-- /nav-actions -->
 </header>
 
+<!-- Mobile sidebar overlay: click to close the drawer -->
+<div class="tb-sidebar-overlay" id="tbSidebarOverlay" onclick="toggleMobileSidebar(false)"></div>
+
 <script>
+// Mobile sidebar drawer (seller/admin only — see the hamburger button
+// above). Pass true/false to force a state, or call with no argument to
+// just flip it.
+function toggleMobileSidebar(force) {
+  const sidebar = document.querySelector('.tb-sidebar');
+  const overlay = document.getElementById('tbSidebarOverlay');
+  if (!sidebar || !overlay) return;
+  const shouldOpen = typeof force === 'boolean' ? force : !sidebar.classList.contains('open');
+  sidebar.classList.toggle('open', shouldOpen);
+  overlay.classList.toggle('open', shouldOpen);
+}
+// Auto-close the drawer if the window is resized back to desktop width.
+window.addEventListener('resize', () => { if (window.innerWidth > 768) toggleMobileSidebar(false); });
+
 // Universal popup toggle, handles notif, profile, help (cart no longer
 // uses a popup, it's a direct link straight to the Cart tab now).
 function togglePopup(id) {
@@ -273,7 +307,7 @@ document.addEventListener('click', e => {
 });
 // Load notifications via fetch
 function loadNotifs() {
-  fetch('../../api/notifs-popup.php')
+  fetch('<?= BASE_URL ?>/api/notifs-popup.php')
     .then(r => r.json())
     .then(data => {
       const body = document.getElementById('notifPopupBody');
@@ -300,12 +334,12 @@ function escHtml(s) { const d=document.createElement('div'); d.textContent=s; re
 //  Seller sidebar 
 function renderSellerSidebar(string $active = 'overview'): void {
     $links = [
-        'overview'     => ['icon'=>'dashboard',     'label'=>'Overview',        'href'=>'../../pages/seller/dashboard.php'],
-        'create'       => ['icon'=>'add_circle',    'label'=>'Create Listing',  'href'=>'../../pages/seller/create-listing.php'],
-        'auctions'     => ['icon'=>'gavel',         'label'=>'My Listings & Auctions', 'href'=>'../../pages/seller/active-auctions.php'],
-        'ship'         => ['icon'=>'local_shipping','label'=>'Orders',         'href'=>'../../pages/seller/to-ship.php'],
-        'transactions' => ['icon'=>'history',       'label'=>'Transactions',    'href'=>'../../pages/seller/transactions.php'],
-        'analytics'    => ['icon'=>'analytics',     'label'=>'Analytics',       'href'=>'../../pages/seller/analytics.php'],
+        'overview'     => ['icon'=>'dashboard',     'label'=>'Overview',        'href'=>BASE_URL . '/pages/seller/dashboard.php'],
+        'create'       => ['icon'=>'add_circle',    'label'=>'Create Listing',  'href'=>BASE_URL . '/pages/seller/create-listing.php'],
+        'auctions'     => ['icon'=>'gavel',         'label'=>'My Listings & Auctions', 'href'=>BASE_URL . '/pages/seller/active-auctions.php'],
+        'ship'         => ['icon'=>'local_shipping','label'=>'Orders',         'href'=>BASE_URL . '/pages/seller/to-ship.php'],
+        'transactions' => ['icon'=>'history',       'label'=>'Transactions',    'href'=>BASE_URL . '/pages/seller/transactions.php'],
+        'analytics'    => ['icon'=>'analytics',     'label'=>'Analytics & Reports', 'href'=>BASE_URL . '/pages/seller/analytics.php'],
     ]; ?>
 <aside class="tb-sidebar">
   <div class="tb-sidebar-title">Merchant Center</div>
@@ -336,25 +370,25 @@ function renderAdminSidebar(string $active = 'dashboard'): void {
     // entry, see pages/admin/moderation.php.
     $groups = [
         '' => [
-            'dashboard' => ['icon'=>'dashboard', 'label'=>'Dashboard', 'href'=>'../../pages/admin/dashboard.php'],
+            'dashboard' => ['icon'=>'dashboard', 'label'=>'Dashboard', 'href'=>BASE_URL . '/pages/admin/dashboard.php'],
         ],
         'Catalog' => [
-            'listings'     => ['icon'=>'storefront', 'label'=>'Listings',     'href'=>'../../pages/admin/listings.php'],
-            'auctions'     => ['icon'=>'gavel',       'label'=>'Auctions',    'href'=>'../../pages/admin/auctions.php'],
-            'authenticity' => ['icon'=>'verified',    'label'=>'Authenticity','href'=>'../../pages/admin/authenticity.php'],
+            'listings'     => ['icon'=>'storefront', 'label'=>'Listings',     'href'=>BASE_URL . '/pages/admin/listings.php'],
+            'auctions'     => ['icon'=>'gavel',       'label'=>'Auctions',    'href'=>BASE_URL . '/pages/admin/auctions.php'],
+            'authenticity' => ['icon'=>'verified',    'label'=>'Authenticity','href'=>BASE_URL . '/pages/admin/authenticity.php'],
         ],
         'People' => [
-            'users' => ['icon'=>'group', 'label'=>'User Management', 'href'=>'../../pages/admin/users.php'],
+            'users' => ['icon'=>'group', 'label'=>'User Management', 'href'=>BASE_URL . '/pages/admin/users.php'],
         ],
         'Trust & Safety' => [
-            'moderation' => ['icon'=>'shield', 'label'=>'Moderation',        'href'=>'../../pages/admin/moderation.php'],
-            'penalties'  => ['icon'=>'balance','label'=>'Rewards & Penalties','href'=>'../../pages/admin/penalties.php'],
+            'moderation' => ['icon'=>'shield', 'label'=>'Moderation',        'href'=>BASE_URL . '/pages/admin/moderation.php'],
+            'penalties'  => ['icon'=>'balance','label'=>'Rewards & Penalties','href'=>BASE_URL . '/pages/admin/penalties.php'],
         ],
         'Insights' => [
-            'reports' => ['icon'=>'query_stats', 'label'=>'Platform Analytics', 'href'=>'../../pages/admin/reports.php'],
+            'reports' => ['icon'=>'query_stats', 'label'=>'Platform Analytics', 'href'=>BASE_URL . '/pages/admin/reports.php'],
         ],
         'Account' => [
-            'settings' => ['icon'=>'settings', 'label'=>'Settings', 'href'=>'../../pages/profile.php'],
+            'settings' => ['icon'=>'settings', 'label'=>'Settings', 'href'=>BASE_URL . '/pages/profile.php'],
         ],
     ]; ?>
 <aside class="tb-sidebar" style="width:224px;min-width:224px">
@@ -386,15 +420,15 @@ function renderFooter(): void { ?>
       <div>
         <p style="font-size:var(--fs-label-sm);font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--clr-tertiary);margin-bottom:12px">Shop</p>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <a href="../../pages/customer/categories.php" style="font-size:var(--fs-label-md);color:var(--clr-tertiary)">All Categories</a>
-          <a href="../../pages/customer/live-bids.php"  style="font-size:var(--fs-label-md);color:var(--clr-tertiary)">Live Auctions</a>
+          <a href="<?= BASE_URL ?>/pages/customer/categories.php" style="font-size:var(--fs-label-md);color:var(--clr-tertiary)">All Categories</a>
+          <a href="<?= BASE_URL ?>/pages/customer/live-bids.php"  style="font-size:var(--fs-label-md);color:var(--clr-tertiary)">Live Auctions</a>
         </div>
       </div>
       <div>
         <p style="font-size:var(--fs-label-sm);font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--clr-tertiary);margin-bottom:12px">Sell</p>
         <div style="display:flex;flex-direction:column;gap:8px">
-          <a href="../../pages/seller/dashboard.php"      style="font-size:var(--fs-label-md);color:var(--clr-tertiary)">Seller Center</a>
-          <a href="../../pages/seller/create-listing.php" style="font-size:var(--fs-label-md);color:var(--clr-tertiary)">Create Listing</a>
+          <a href="<?= BASE_URL ?>/pages/seller/dashboard.php"      style="font-size:var(--fs-label-md);color:var(--clr-tertiary)">Seller Center</a>
+          <a href="<?= BASE_URL ?>/pages/seller/create-listing.php" style="font-size:var(--fs-label-md);color:var(--clr-tertiary)">Create Listing</a>
         </div>
       </div>
       <div>
@@ -506,10 +540,7 @@ function flash(string $key, string $msg = ''): string {
     if ($msg) { $_SESSION['flash'][$key] = $msg; return ''; }
     $m = $_SESSION['flash'][$key] ?? ''; unset($_SESSION['flash'][$key]); return $m;
 }
-// convertCurrency() now lives in includes/currency.php (live exchange
-// rates instead of the hardcoded table that used to be here). Every page
-// that calls it already does `require_once __DIR__ . '/../../includes/currency.php'`
-// alongside layout.php, so it doesn't need to be duplicated in this file.
+// convertCurrency() now lives in includes/currency.php
 function formatTimeLeft(string $end): string {
     $d = strtotime($end) - time();
     if ($d <= 0) return 'Ended';

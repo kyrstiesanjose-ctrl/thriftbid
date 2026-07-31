@@ -7,14 +7,15 @@ requireLogin();
 requireRole(['seller','admin']);
 
 $user     = currentUser();
-$sellerId = $user['seller_id'] ?? $user['id']; // session row IS the seller row now (no USERS lookup needed)
+$sellerId = $user['seller_id'] ?? $user['id']; /* session row IS the seller row, no separate USERS lookup needed */
 
 $categories   = DB::fetchAll('SELECT * FROM CATEGORIES ORDER BY name');
 $brands       = DB::fetchAll('SELECT * FROM BRANDS ORDER BY brand_name');
 $productLines = DB::fetchAll('SELECT * FROM PRODUCT_LINES ORDER BY line_name');
 $allSizes     = DB::fetchAll('SELECT * FROM CATEGORY_SIZES ORDER BY size_id');
 
-// Group sizes & product lines client-side 
+/* Grouped here so the category -> size and brand -> product line
+   dropdowns can filter client-side without extra requests */
 $sizesByCategory = [];
 foreach ($allSizes as $sz) $sizesByCategory[$sz['category_id']][] = $sz;
 $linesByBrand = [];
@@ -26,16 +27,20 @@ const UPLOAD_URL_BASE = '/uploads/listings/';
 $errors = [];
 $vals   = [];
 
-//Find or create a product line to satisfy LISTINGS.product_line_id (NOT NULL).
+/* LISTINGS.product_line_id is NOT NULL, so every listing needs one even
+   when the seller didn't pick a specific product line - falls back in order:
+   1) the line they picked, 2) that brand's 'Unbranded' tier line,
+   3) any line for that brand, 4) create a new placeholder line */
 function resolveProductLineId(int $brandId, int $chosenLineId): int {
     if ($chosenLineId > 0) {
         $line = DB::fetch('SELECT product_line_id FROM PRODUCT_LINES WHERE product_line_id=? AND brand_id=?', [$chosenLineId, $brandId]);
         if ($line) return (int)$line['product_line_id'];
     }
-// Match on tier instead of hardcoding a line name, as generic fallbacks vary by brand (e.g., 'Unknown' or 'Generic / No Brand').
+    /* generic fallback names vary by brand ('Unknown', 'Generic / No Brand'),
+       so match on tier='Unbranded' instead of a hardcoded line name */
     $default = DB::fetch("SELECT product_line_id FROM PRODUCT_LINES WHERE brand_id=? AND tier='Unbranded' ORDER BY product_line_id LIMIT 1", [$brandId]);
     if ($default) return (int)$default['product_line_id'];
-    // Still nothing? Any line at all for this brand beats creating a duplicate.
+    /* any existing line for this brand beats creating a duplicate */
     $any = DB::fetch('SELECT product_line_id FROM PRODUCT_LINES WHERE brand_id=? ORDER BY product_line_id LIMIT 1', [$brandId]);
     if ($any) return (int)$any['product_line_id'];
     return DB::insert("INSERT INTO PRODUCT_LINES (brand_id, line_name, tier) VALUES (?, 'Unknown', 'Unbranded')", [$brandId]);
@@ -48,7 +53,7 @@ function saveUploadedPhoto(array $file): ?string {
     $allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
     $mime = mime_content_type($file['tmp_name']);
     if (!isset($allowed[$mime])) return null;
-    if ($file['size'] > 6 * 1024 * 1024) return null; // 6MB cap
+    if ($file['size'] > 6 * 1024 * 1024) return null; /* 6MB cap */
 
     if (!is_dir(UPLOAD_DIR)) mkdir(UPLOAD_DIR, 0775, true);
     $name = bin2hex(random_bytes(12)) . '.' . $allowed[$mime];
@@ -105,8 +110,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $productLineId = resolveProductLineId($vals['brand_id'], $vals['product_line_id']);
         $price = $vals['listing_type'] === 'fixed' ? $vals['price'] : $vals['start_bid'];
 
-        // Luxury items stay OFF (pending admin authentication) until approved.
-        // Everything else auto-publishes immediately.
+        /* is_active=0 for luxury items - stays hidden from buyers until an
+           admin verifies authenticity (see AUTHENTICATION table + Rule 15).
+           Everything else publishes immediately. */
         $isActive = $vals['is_luxury'] ? 0 : 1;
 
         $listingId = DB::insert(
@@ -117,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
              $isActive, $vals['category_id'], $sellerId, $productLineId, $vals['size_id']]
         );
 
-        // Photos via device upload
+        /* First uploaded photo becomes the cover (is_primary=1) */
         $isPrimary = 1;
         foreach ($_FILES['photos']['tmp_name'] as $i => $tmp) {
             if ($tmp === '') continue;
@@ -133,7 +139,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Auction record
+        /* Only auction-type listings get an AUCTIONS row; fixed-price
+           listings sell directly off LISTINGS.price */
         if ($vals['listing_type'] === 'auction') {
             $endTime = date('Y-m-d H:i:s', time() + ($vals['end_hours'] * 3600));
             DB::query(
@@ -143,7 +150,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
         }
 
-        // Luxury authentication workflow
+        /* Rule 15: luxury listings need an AUTHENTICATION row (status
+           'Pending') before an admin can verify them - certificate photo
+           if the seller has one, otherwise a box/serial match photo */
         if ($vals['is_luxury']) {
             $certUrl = null;
             if ($vals['has_certificate'] === 'yes') {
@@ -460,11 +469,12 @@ renderHead('Create Listing');
 </style>
 
 <script>
-// Server-provided lookup data
+/* PHP-computed lookup tables, passed to JS so category->size and
+   brand->product line dropdowns can filter without another request */
 const SIZES_BY_CATEGORY = <?= json_encode($sizesByCategory) ?>;
 const LINES_BY_BRAND     = <?= json_encode($linesByBrand) ?>;
 
-// --- custom dropdown  ---
+/* Custom dropdown widget: builds/rebuilds the option list for one dropdown */
 function buildDropdownOptions(dd, options, placeholder, keepValue) {
   const menu = dd.querySelector('.tb-dd-menu');
   const hidden = dd.querySelector('input[type=hidden]');
@@ -520,7 +530,8 @@ brandHidden.addEventListener('change', () => refreshLines(false));
 if (categoryHidden.value) refreshSizes(true);
 if (brandHidden.value) refreshLines(true);
 
-// Listing type toggle
+/* Switches the form between Fixed Price and Auction fields depending on
+   which listing-type card is selected */
 const typeCards = document.querySelectorAll('.listing-type-card');
 const fixedField    = document.getElementById('fixedPriceField');
 const auctionFields = document.getElementById('auctionFields');
@@ -544,7 +555,8 @@ typeCards.forEach(card => {
 const checkedType = document.querySelector('input[name=listing_type]:checked');
 if (checkedType) applyType(checkedType.value);
 
-// Luxury / certificate toggles
+/* Shows the luxury authentication fields, and within those, either the
+   certificate upload or the no-certificate box-match upload */
 const luxuryToggle  = document.getElementById('luxuryToggle');
 const luxurySection = document.getElementById('luxurySection');
 const certField     = document.getElementById('certUploadField');
@@ -564,7 +576,8 @@ applyLuxury();
 applyCertChoice();
 applyLuxury(); applyCertChoice();
 
-// Photo preview, cover image shown large (listing-view style), rest as thumbnails. 
+/* Cover photo shown large (matches how it'll look on the listing page),
+   remaining photos as thumbnails below it */
 const photosInput = document.getElementById('photosInput');
 let selectedFiles = [];
 
@@ -618,15 +631,16 @@ function syncFileInput() {
 }
 
 photosInput.addEventListener('change', function () {
-  // Newly picked files are appended to whatever's already selected, up to 6 total
+  /* Appends newly picked files to whatever's already selected, capped at 6 */
   const incoming = [...this.files];
   selectedFiles = [...selectedFiles, ...incoming].slice(0, 6);
   syncFileInput();
   renderPhotoPreview();
 });
 
-// Hidden inputs behind custom dropdowns broke native browser validation, silently blocking submits. 
-// validate required dropdowns manually here to give clear, visible feedback.
+/* The custom dropdowns store their value in a hidden input, which the
+   browser's native "required" validation doesn't see - so required
+   dropdowns are checked manually here before letting the form submit */
 document.getElementById('createForm').addEventListener('submit', function (e) {
   const missing = [];
   document.querySelectorAll('.tb-dd[data-required="1"]').forEach(dd => {
@@ -637,7 +651,7 @@ document.getElementById('createForm').addEventListener('submit', function (e) {
     }
   });
 
-  // Luxury certificate/box-match photo
+  /* Whichever upload is currently visible (certificate or box-match) is required */
   if (luxuryToggle.checked) {
     const visibleSection = certField.classList.contains('hidden') ? noCertSection : certField;
     const fileInput = visibleSection.querySelector('input[type="file"]');

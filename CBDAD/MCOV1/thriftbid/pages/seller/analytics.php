@@ -1,37 +1,35 @@
 <?php
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
-require_once __DIR__ . '/../../includes/currency.php'; // live exchange rates (replaces old hardcoded convertCurrency)
+require_once __DIR__ . '/../../includes/currency.php'; /* live exchange rates */
 require_once __DIR__ . '/../../includes/layout.php';
 requireLogin();
-requireRole(['seller','admin']);
+requireRole('seller'); 
 
 $user     = currentUser();
-$sellerId = $user['seller_id'] ?? $user['id']; // session row IS the seller row now
+$sellerId = $user['seller_id'] ?? $user['id']; /* session row IS the seller row */
 
-// Which report tab are we on? Mapping per product spec:
-//   overview     -> landing summary
-//   performance  -> Descriptive Report
-//   sales-drivers-> Diagnostic Report
-//   forecast     -> Predictive Report
-//   optimization -> Prescriptive Report (KPIs only for now, full recommendation engine TBD)
+/* Tab -> report type mapping:
+   overview      -> summary
+   performance   -> Descriptive Report
+   sales-drivers -> Diagnostic Report
+   forecast      -> Predictive Report
+   optimization  -> Prescriptive Report */
 $tab = $_GET['tab'] ?? 'overview';
 $validTabs = ['overview','performance','sales-drivers','forecast','optimization'];
 if (!in_array($tab, $validTabs, true)) $tab = 'overview';
 
 function tabUrl(string $t): string { return '?tab=' . $t; }
 
-// Report period filter: Daily / Weekly / Monthly / Yearly / Custom.
-// Shared across tabs via layout.php's renderPeriodFilter()/periodSqlParts().
+/* Period filter (Daily/Weekly/Monthly/Yearly/Custom), shared across
+   tabs via layout.php's renderPeriodFilter()/periodSqlParts() */
 $period = $_GET['period'] ?? 'monthly';
 $validPeriods = ['daily','weekly','monthly','yearly','custom'];
 if (!in_array($period, $validPeriods, true)) $period = 'monthly';
 $filterFrom = $_GET['from'] ?? null;
 $filterTo   = $_GET['to'] ?? null;
 
-// ------------------------------------------------------------------
-// Shared / Overview data
-// ------------------------------------------------------------------
+/* OVERVIEW tab data */
 $totalRevenue = DB::fetch(
     'SELECT COALESCE(SUM(p.amount_paid),0) s FROM PAYMENTS p
      JOIN ORDERS o ON p.order_id=o.order_id
@@ -39,17 +37,31 @@ $totalRevenue = DB::fetch(
     [$sellerId]
 )['s'] ?? 0;
 
+/* Today's revenue only. SET time_zone = '+08:00'  */
+$todayRevenue = DB::fetch(
+    'SELECT COALESCE(SUM(p.amount_paid),0) s FROM PAYMENTS p
+     JOIN ORDERS o ON p.order_id=o.order_id
+     WHERE o.seller_id=? AND p.payment_status="Completed" AND DATE(p.payment_date)=CURDATE()',
+    [$sellerId]
+)['s'] ?? 0;
+
+/* All orders, all time (not just paid ones) */
 $totalOrders = DB::fetch('SELECT COUNT(*) c FROM ORDERS WHERE seller_id=?', [$sellerId])['c'] ?? 0;
 
+/* Orders that reached Shipped/Out for Delivery/Delivered */
 $listingsSold = DB::fetch(
     "SELECT COUNT(*) c FROM ORDERS WHERE seller_id=? AND status IN ('Delivered','Shipped','Out for Delivery')",
     [$sellerId]
 )['c'] ?? 0;
 
+/* REVIEWS is soft-deleted (deleted_at), not hard-deleted, hence the filter */
 $avgRating = DB::fetch(
     'SELECT COALESCE(AVG(rating),0) a FROM REVIEWS WHERE seller_id=? AND deleted_at IS NULL',
     [$sellerId]
 )['a'] ?? 0;
+
+/* PENALTIES rows come from the after_penalty_insert_escalate trigger
+   (Rule 6, shipping) and the Rule 7 non-paying-buyer event, nothing here writes to PENALTIES directly */
 
 $penaltyCount = DB::fetch('SELECT COUNT(*) c FROM PENALTIES WHERE seller_id=?', [$sellerId])['c'] ?? 0;
 $activePenaltyCount = DB::fetch("SELECT COUNT(*) c FROM PENALTIES WHERE seller_id=? AND status='Active'", [$sellerId])['c'] ?? 0;
@@ -68,12 +80,11 @@ $revByCat = DB::callAll('sp_revenue_by_category', [$sellerId]);
 $penalties = DB::fetchAll('SELECT * FROM PENALTIES WHERE seller_id=? ORDER BY issued_at DESC LIMIT 5', [$sellerId]);
 $awards    = DB::fetchAll('SELECT * FROM SELLER_AWARDS WHERE seller_id=? ORDER BY issued_at DESC LIMIT 3', [$sellerId]);
 
-// ------------------------------------------------------------------
-// PERFORMANCE tab -- Descriptive Report KPIs
-// ------------------------------------------------------------------
+/* PERFORMANCE tab data */
 $authStats = ['Verified'=>0,'Pending'=>0,'Rejected'=>0];
 if ($tab === 'performance') {
-    // Period-filtered revenue & listings sold for the Seller Performance chart
+
+    /* Revenue and listings sold, filtered to the selected period - feeds the Seller Performance chart */
     [$pfGroup, $pfLabel, $pfWhere, $pfParams] = periodSqlParts($period, 'p.payment_date', $filterFrom, $filterTo);
     $perfRevenue = DB::fetch(
         "SELECT COALESCE(SUM(p.amount_paid),0) s FROM PAYMENTS p
@@ -99,7 +110,7 @@ if ($tab === 'performance') {
     $authTotal = array_sum($authStats);
 
     $authDetails = DB::fetchAll(
-        'SELECT b.brand_name brand, l.title item, a.manufacture_year, a.authentication_status status,
+        'SELECT l.listing_id, b.brand_name brand, l.title item, a.manufacture_year, a.authentication_status status,
                 a.verified_by_admin_id, a.date_verified
          FROM AUTHENTICATION a
          JOIN LISTINGS l ON a.listing_id=l.listing_id
@@ -111,9 +122,8 @@ if ($tab === 'performance') {
     );
 }
 
-// ------------------------------------------------------------------
-// SALES DRIVERS tab -- Diagnostic Report KPIs
-// ------------------------------------------------------------------
+/* SALES DRIVERS tab data */
+
 if ($tab === 'sales-drivers') {
     $totalCustomers = DB::fetch(
         'SELECT COUNT(DISTINCT buyer_id) c FROM ORDERS WHERE seller_id=?', [$sellerId]
@@ -127,7 +137,7 @@ if ($tab === 'sales-drivers') {
 
     $avgSpendPerCustomer = $totalCustomers > 0 ? ($totalRevenue / $totalCustomers) : 0;
 
-    // Customer Sales Drivers, top spenders within the selected period.
+    /* Top spenders within the selected period */
     [$csGroup, $csLabel, $csWhere, $csParams] = periodSqlParts($period, 'p.payment_date', $filterFrom, $filterTo);
     $topCustomers = DB::fetchAll(
         "SELECT b.username, SUM(p.amount_paid) AS total, COUNT(o.order_id) AS order_volume
@@ -140,8 +150,8 @@ if ($tab === 'sales-drivers') {
         array_merge([$sellerId], $csParams)
     );
 
-    // Sales Bias Analysis, orders, distinct customers, and conversion
-    // rate (orders per customer) per period, to spot where sales cluster.
+    /* Orders, distinct customers, and conversion rate per period -
+       shows where sales activity clusters over time. */
     [$sbGroup, $sbLabel, $sbWhere, $sbParams] = periodSqlParts($period, 'o.order_date', $filterFrom, $filterTo);
     $salesBias = DB::fetchAll(
         "SELECT $sbGroup AS grp, $sbLabel AS label,
@@ -154,8 +164,8 @@ if ($tab === 'sales-drivers') {
         array_merge([$sellerId], $sbParams)
     );
 
-    // Currency Rate, PHP/USD/KRW trend from the CURRENCY_RATES table that
-    // includes/currency.php already keeps up to date (see persistRates()).
+    /* PHP to USD/KRW exchange rate trend, from the CURRENCY_RATES table */
+
     [$crGroup, $crLabel, $crWhere, $crParams] = periodSqlParts($period, 'recorded_date', $filterFrom, $filterTo);
     $currencyRows = DB::fetchAll(
         "SELECT $crGroup AS grp, $crLabel AS label, target_currency, exchange_rate
@@ -185,11 +195,8 @@ if ($tab === 'sales-drivers') {
          WHERE l.seller_id=?', [$sellerId]
     )['a'] ?? 0;
 
-    // Real diagnostic drill-down: conversion AND its likely drivers,
-    // broken down by parent category, not just one platform-wide
-    // average. This is what actually answers "why" instead of just
-    // restating "what": which category underperforms, and which of
-    // its supporting scores is the most likely cause.
+
+    /* Conversion rate and its likely driver, broken down by parent category */
     $categoryDiagnostics = DB::fetchAll(
         'SELECT pc.parent_category AS category,
                 COUNT(*) AS listing_count,
@@ -213,13 +220,12 @@ if ($tab === 'sales-drivers') {
     if (count($categoryDiagnostics) >= 2) {
         $worst = $categoryDiagnostics[0];
         $best  = $categoryDiagnostics[count($categoryDiagnostics) - 1];
-        // Only worth calling out as a real finding if there's a
-        // meaningful gap, a 1-2 point difference on a noisy small
-        // sample isn't a "cause," it's noise.
+        
+        /* Only flag a finding if the gap is at least 3 points - a 1-2
+           point difference on a small sample is noise, not a real cause.
+           The score with the biggest gap between best and worst category
+           is reported as the likely cause. */
         if ($best['conversion'] - $worst['conversion'] >= 3) {
-            // Root-cause candidate: whichever supporting score has the
-            // biggest gap between the worst and best category is the
-            // most likely explanation for the conversion gap itself.
             $scoreFields = ['photo_score' => 'photo completeness', 'details_score' => 'listing detail completeness', 'pricing_score' => 'pricing consistency', 'condition_score' => 'condition accuracy'];
             $biggestGapField = null; $biggestGap = -1;
             foreach ($scoreFields as $field => $label) {
@@ -235,12 +241,10 @@ if ($tab === 'sales-drivers') {
     }
 }
 
-// ------------------------------------------------------------------
-// FORECAST tab -- Predictive Report KPIs
-// ------------------------------------------------------------------
+/* FORECAST tab data */
 if ($tab === 'forecast') {
-    // Simple trailing-average extrapolation (transparent, no black-box ML):
-    // average of last 3 completed months x a modest seasonal growth factor.
+    /* Projection = average of the last 3 completed months x a seasonal
+       growth factor. No ML model, kept simple and explainable. */
     $last3 = DB::fetchAll(
         'SELECT SUM(p.amount_paid) total, COUNT(DISTINCT o.order_id) orders
          FROM PAYMENTS p JOIN ORDERS o ON p.order_id=o.order_id
@@ -250,7 +254,7 @@ if ($tab === 'forecast') {
     );
     $baseRevenue = ((float)($last3[0]['total'] ?? 0)) / 3;
     $baseOrders  = ((float)($last3[0]['orders'] ?? 0)) / 3;
-    $growthFactor = 1.10; // placeholder seasonal uplift, matches "BER months" bump in schema notes
+    $growthFactor = 1.10; /* seasonal uplift factor, matches "BER months" bump used elsewhere */
     $projectedRevenue = $baseRevenue * $growthFactor;
     $projectedOrders  = round($baseOrders * $growthFactor);
 
@@ -269,14 +273,14 @@ if ($tab === 'forecast') {
     );
     $bestMonth = $bestMonthRow['mo'] ?? 'N/A';
 
-    // Seasonality projection: adapts to the selected period filter.
-    // Baseline = trailing 3-month average with "BER months" (Sep-Dec) uplift.
+    /* Projection follows the period filter. Baseline = 3-month average,
+       with a Sep-Dec ("BER month") demand uplift applied. */
     $seasonalMultipliers = [1=>0.95,2=>0.85,3=>0.85,4=>0.90,5=>0.90,6=>0.95,
                             7=>0.95,8=>1.00,9=>1.15,10=>1.25,11=>1.35,12=>1.45];
     $seasonalityForecast = [];
 
     if ($period === 'daily') {
-        // Show next 30 days
+        /* Next 30 days */
         for ($i = 0; $i < 30; $i++) {
             $ts       = strtotime("+$i day");
             $monthNum = (int)date('n', $ts);
@@ -285,7 +289,7 @@ if ($tab === 'forecast') {
         }
         $forecastPeriodLabel = 'Next 30 Days';
     } elseif ($period === 'weekly') {
-        // Show next 12 weeks
+        /* Next 12 weeks */
         for ($i = 0; $i < 12; $i++) {
             $ts       = strtotime("+$i week");
             $monthNum = (int)date('n', $ts);
@@ -294,7 +298,7 @@ if ($tab === 'forecast') {
         }
         $forecastPeriodLabel = 'Next 12 Weeks';
     } elseif ($period === 'custom' && $filterFrom && $filterTo) {
-        // Show day-by-day within custom range
+        /* Day-by-day within the custom date range */
         $ts = strtotime($filterFrom);
         $te = strtotime($filterTo);
         while ($ts <= $te) {
@@ -305,7 +309,7 @@ if ($tab === 'forecast') {
         }
         $forecastPeriodLabel = date('M d, Y', strtotime($filterFrom)) . ' – ' . date('M d, Y', strtotime($filterTo));
     } elseif ($period === 'yearly') {
-        // Show next 5 years
+        /* Next 5 years */
         for ($i = 0; $i < 5; $i++) {
             $yr    = (int)date('Y') + $i;
             $label = (string)$yr;
@@ -313,7 +317,7 @@ if ($tab === 'forecast') {
         }
         $forecastPeriodLabel = 'Next 5 Years';
     } else {
-        // Monthly (default), next 12 months
+        /* Default: monthly, next 12 months */
         for ($i = 0; $i < 12; $i++) {
             $monthNum = (int)date('n', strtotime("+$i month"));
             $label    = date('M Y', strtotime("+$i month"));
@@ -322,9 +326,7 @@ if ($tab === 'forecast') {
         $forecastPeriodLabel = 'Next 12 Months';
     }
 
-    // Brand Pricing Predictor: per-listing actual price vs. the predicted
-    // price (midpoint of the brand/line's estimated price range), same
-    // "branded items cost more" assumption the reference report tests.
+    /* Actual listing price vs. predicted price (midpoint of the brand/tier's estimated price range) */
     $brandPricingPoints = DB::fetchAll(
         "SELECT l.price AS actual, (pl.estimated_price_min + pl.estimated_price_max)/2 AS predicted, pl.tier
          FROM LISTINGS l JOIN PRODUCT_LINES pl ON l.product_line_id=pl.product_line_id
@@ -332,7 +334,7 @@ if ($tab === 'forecast') {
         [$sellerId]
     );
 
-    // Top Brand Predictions table: aggregated by brand
+    /* Same data as above, aggregated per brand instead of per listing */
     $topBrandPredictions = DB::fetchAll(
         "SELECT b.brand_name, pl.tier, AVG(l.price) AS avg_price,
                 AVG((pl.estimated_price_min + pl.estimated_price_max)/2) AS avg_predicted
@@ -346,9 +348,7 @@ if ($tab === 'forecast') {
     );
 }
 
-// ------------------------------------------------------------------
-// OPTIMIZATION tab -- Prescriptive Report
-// ------------------------------------------------------------------
+/* OPTIMIZATION tab data */
 if ($tab === 'optimization') {
     $listingsAnalyzed = DB::fetch(
         'SELECT COUNT(*) c FROM LISTING_ANALYTICS la JOIN LISTINGS l ON la.listing_id=l.listing_id
@@ -372,7 +372,7 @@ if ($tab === 'optimization') {
          WHERE l.seller_id=? AND la.completeness_score < 70', [$sellerId]
     )['c'] ?? 0;
 
-    // Sub-score breakdown for the completeness donut/bars
+    /* Sub-scores that make up the completeness donut and bars below */
     $scoreBreakdown = DB::fetch(
         'SELECT COALESCE(AVG(la.photo_score),0) photos, COALESCE(AVG(la.details_score),0) details,
                 COALESCE(AVG(la.condition_score),0) condition_s, COALESCE(AVG(la.shipping_score),0) shipping,
@@ -381,16 +381,17 @@ if ($tab === 'optimization') {
          WHERE l.seller_id=?', [$sellerId]
     ) ?: ['photos'=>0,'details'=>0,'condition_s'=>0,'shipping'=>0,'pricing'=>0];
 
-    // Recommendation card counts
-    // 1. Listings with only 1 photo uploaded
+    /* Recommendation card counts. Same 3 thresholds as
+       optimization-review.php's photos/details/pricing filters — change
+       one, change both, or the card count and the filtered list won't agree. */
     $recPhotosCount = DB::fetch(
         "SELECT COUNT(*) c FROM LISTINGS l
          WHERE l.seller_id=? AND l.deleted_at IS NULL
-           AND (SELECT COUNT(*) FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id) <= 1",
+           AND (SELECT COUNT(*) FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id) < 3",
         [$sellerId]
     )['c'] ?? 0;
 
-    // 2. Listings with incomplete item details (missing color, gender, material, or made_in)
+    /* missing color/gender/material/made_in */
     $recDetailsCount = DB::fetch(
         "SELECT COUNT(*) c FROM LISTINGS l
          WHERE l.seller_id=? AND l.deleted_at IS NULL
@@ -399,7 +400,8 @@ if ($tab === 'optimization') {
         [$sellerId]
     )['c'] ?? 0;
 
-    // 3. Listings that share the same product line / title but have different prices
+    /* same product_line_id, different price - not a market comparison,
+       just catches typos/inconsistency within the seller's own shop */
     $recPricingCount = DB::fetch(
         "SELECT COUNT(DISTINCT l.listing_id) c
          FROM LISTINGS l
@@ -442,18 +444,19 @@ renderHead('Analytics');
 
   <?php if ($tab === 'overview'): ?>
   <!-- =================== OVERVIEW =================== -->
-  <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+  <div style="display:flex;flex-wrap:wrap;gap:16px;margin-bottom:32px">
     <?php $kpis=[
       ['icon'=>'payments',   'label'=>'Total Revenue',  'val'=>convertCurrency((float)$totalRevenue)],
+      ['icon'=>'today',      'label'=>'Revenue Today', 'val'=>convertCurrency((float)$todayRevenue)],
       ['icon'=>'package_2',  'label'=>'Listings Sold',  'val'=>$listingsSold],
       ['icon'=>'receipt_long','label'=>'Total Orders',  'val'=>$totalOrders],
       ['icon'=>'star',       'label'=>'Avg Seller Rating','val'=>($avgRating?number_format($avgRating,1).'/5':'N/A')],
       ['icon'=>'block',      'label'=>'Penalty Count',  'val'=>$penaltyCount],
     ]; foreach($kpis as $k): ?>
-    <div class="tb-stat-card">
+    <div class="tb-stat-card" style="flex:0 1 200px">
       <div class="tb-stat-icon"><span class="material-symbols-outlined"><?= $k['icon'] ?></span></div>
       <div>
-        <div class="tb-stat-label"><?= $k['label'] ?></div>
+        <div class="tb-stat-label" style="white-space:nowrap"><?= $k['label'] ?></div>
         <div class="tb-stat-value"><?= $k['val'] ?></div>
       </div>
     </div>
@@ -462,7 +465,7 @@ renderHead('Analytics');
 
   <?php renderPeriodFilter($period, $filterFrom, $filterTo); ?>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8" style="align-items:start">
     <div class="tb-card tb-card-body">
       <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:20px">Revenue Trend (<?= ucfirst($period) ?>)</h3>
       <?php if (!empty($revByMonth)): ?>
@@ -472,22 +475,26 @@ renderHead('Analytics');
       <?php endif; ?>
     </div>
     <div class="tb-card tb-card-body">
-      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:20px">Revenue by Category</h3>
-      <?php if (!empty($revByCat)): ?>
+      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Revenue by Category</h3>
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Share of your total revenue contributed by each category in the selected period.</p>
+      <?php if (!empty($revByCat)):
+        $catTotal = array_sum(array_column($revByCat, 'total'));
+      ?>
       <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
         <div style="position:relative;width:180px;height:180px;flex-shrink:0">
           <canvas id="catDonut"></canvas>
           <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none">
             <span style="font-size:11px;color:var(--clr-tertiary)">Total Revenue</span>
-            <span style="font-size:15px;font-weight:800;color:var(--clr-text)"><?= convertCurrency((float)array_sum(array_column($revByCat,'total'))) ?></span>
+            <span style="font-size:15px;font-weight:800;color:var(--clr-text)"><?= convertCurrency((float)$catTotal) ?></span>
           </div>
         </div>
-        <div style="flex:1;min-width:160px;display:flex;flex-direction:column;gap:8px">
+        <div style="flex:1;min-width:160px;max-width:280px;display:flex;flex-direction:column;gap:8px">
           <?php $catColors=['#ff6b6b','#66bb6a','#ffc107','#4a7fc9','#8e6bff','#26c6da','#ef5350','#78909c'];
-          foreach ($revByCat as $i => $rc): ?>
+          foreach ($revByCat as $i => $rc): $pct = $catTotal > 0 ? ($rc['total'] / $catTotal) * 100 : 0; ?>
           <div style="display:flex;align-items:center;gap:8px;font-size:var(--fs-label-sm)">
             <span style="width:9px;height:9px;border-radius:50%;background:<?= $catColors[$i % count($catColors)] ?>;flex-shrink:0"></span>
             <span style="flex:1"><?= htmlspecialchars($rc['name']) ?></span>
+            <span style="color:var(--clr-tertiary);font-weight:700;width:44px;text-align:right"><?= number_format($pct,1) ?>%</span>
             <span style="color:var(--clr-tertiary);font-weight:600"><?= convertCurrency((float)$rc['total']) ?></span>
           </div>
           <?php endforeach; ?>
@@ -541,12 +548,12 @@ renderHead('Analytics');
   <!-- =================== PERFORMANCE (Descriptive Report) =================== -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
     <?php $kpis=[
-      ['icon'=>'payments',    'label'=>'Total Revenue',  'val'=>convertCurrency((float)$totalRevenue)],
-      ['icon'=>'package_2',   'label'=>'Listings Sold',  'val'=>$listingsSold],
-      ['icon'=>'star',        'label'=>'Seller Rating',  'val'=>($avgRating?number_format($avgRating,1).'/5':'N/A')],
-      ['icon'=>'block',       'label'=>'Penalty Count',  'val'=>$penaltyCount],
+      ['icon'=>'payments',    'label'=>'Total Revenue',  'val'=>convertCurrency((float)$totalRevenue), 'tip'=>'Total income from all completed sales in the selected period.'],
+      ['icon'=>'package_2',   'label'=>'Listings Sold',  'val'=>$listingsSold, 'tip'=>'Number of listings successfully sold and paid for in the selected period.'],
+      ['icon'=>'star',        'label'=>'Seller Rating',  'val'=>($avgRating?number_format($avgRating,1).'/5':'N/A'), 'tip'=>'Your average buyer rating across all completed orders.'],
+      ['icon'=>'block',       'label'=>'Penalty Count',  'val'=>$penaltyCount, 'tip'=>'Total penalties issued to your account for policy violations (e.g. late shipping).'],
     ]; foreach($kpis as $k): ?>
-    <div class="tb-stat-card">
+    <div class="tb-stat-card" title="<?= htmlspecialchars($k['tip']) ?>">
       <div class="tb-stat-icon"><span class="material-symbols-outlined"><?= $k['icon'] ?></span></div>
       <div>
         <div class="tb-stat-label"><?= $k['label'] ?></div>
@@ -559,10 +566,10 @@ renderHead('Analytics');
   <?php renderPeriodFilter($period, $filterFrom, $filterTo); ?>
 
   <div class="tb-card mb-6">
-    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Seller Performance</h3></div>
+    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Seller Performance Overview</h3></div>
     <div class="tb-card-body">
       <canvas id="perfChart" height="140"></canvas>
-      <p style="text-align:center;font-size:11px;color:var(--clr-tertiary);margin-top:8px">Performance Scale (Higher is Better), each metric normalized to 0-100 &bull; <?= ucfirst($period) ?> view</p>
+      <p style="text-align:center;font-size:11px;color:var(--clr-tertiary);margin-top:8px">Revenue, listings sold, rating, and penalties, each rescaled to a common 0–100 score so they can be compared side by side.</p>
     </div>
   </div>
 
@@ -585,7 +592,7 @@ renderHead('Analytics');
   </div>
 
   <div class="tb-card">
-    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Product Authentication Details</h3></div>
+    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Authenticity Verification History</h3></div>
     <div class="tb-card-body" style="overflow-x:auto">
       <?php if (empty($authDetails)): ?>
       <div style="color:var(--clr-tertiary)">No branded items submitted for authentication yet.</div>
@@ -594,7 +601,7 @@ renderHead('Analytics');
         <thead><tr><th>Brand</th><th>Item</th><th>Year Manufactured</th><th>Status</th><th>Date Verified</th></tr></thead>
         <tbody>
         <?php foreach ($authDetails as $d): ?>
-        <tr>
+        <tr class="tb-row-clickable" onclick="location.href='edit-listing.php?id=<?= $d['listing_id'] ?>&return=<?= urlencode('analytics.php?tab=performance') ?>'" style="cursor:pointer">
           <td><?= htmlspecialchars($d['brand']) ?></td>
           <td><?= htmlspecialchars($d['item']) ?></td>
           <td><?= $d['manufacture_year'] ?: '-' ?></td>
@@ -604,6 +611,7 @@ renderHead('Analytics');
         <?php endforeach; ?>
         </tbody>
       </table>
+      <style>.tb-row-clickable:hover{background:var(--clr-surface-low)}</style>
       <?php endif; ?>
     </div>
   </div>
@@ -613,12 +621,12 @@ renderHead('Analytics');
   <?php renderPeriodFilter($period, $filterFrom, $filterTo); ?>
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
     <?php $kpis=[
-      ['icon'=>'group',        'label'=>'Total Customers',       'val'=>$totalCustomers],
-      ['icon'=>'receipt_long', 'label'=>'Total Orders',          'val'=>$totalOrders],
-      ['icon'=>'repeat',       'label'=>'Repeat Customers',      'val'=>$repeatCustomers],
-      ['icon'=>'payments',     'label'=>'Avg Spend / Customer',  'val'=>convertCurrency((float)$avgSpendPerCustomer)],
+      ['icon'=>'group',        'label'=>'Total Customers',       'val'=>$totalCustomers, 'tip'=>'Number of distinct buyers who have ordered from you, all-time.'],
+      ['icon'=>'receipt_long', 'label'=>'Total Orders',          'val'=>$totalOrders, 'tip'=>'Total orders placed with your shop, all-time.'],
+      ['icon'=>'repeat',       'label'=>'Repeat Customers',      'val'=>$repeatCustomers, 'tip'=>'Buyers who have ordered from you more than once — a sign of buyer trust and satisfaction.'],
+      ['icon'=>'payments',     'label'=>'Avg Spend / Customer',  'val'=>convertCurrency((float)$avgSpendPerCustomer), 'tip'=>'Total revenue divided by number of distinct customers.'],
     ]; foreach($kpis as $k): ?>
-    <div class="tb-stat-card">
+    <div class="tb-stat-card" title="<?= htmlspecialchars($k['tip']) ?>">
       <div class="tb-stat-icon"><span class="material-symbols-outlined"><?= $k['icon'] ?></span></div>
       <div>
         <div class="tb-stat-label"><?= $k['label'] ?></div>
@@ -630,7 +638,8 @@ renderHead('Analytics');
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <div class="tb-card tb-card-body">
-      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:16px">Customer Sales Drivers, <?= ucfirst($period) ?> View</h3>
+      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Top Customer Revenue Contribution</h3>
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Your highest-spending buyers in the selected period — the customers worth prioritizing for repeat business.</p>
       <?php if (empty($topCustomers)): ?>
       <div style="color:var(--clr-tertiary)">No customer data yet</div>
       <?php else: ?>
@@ -640,11 +649,11 @@ renderHead('Analytics');
       <?php endif; ?>
     </div>
     <div class="tb-card tb-card-body">
-      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:12px">Insights</h3>
+      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Sales Insights &amp; Recommendations</h3>
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:12px">Automated findings from your listing and conversion data — which categories are underperforming, and why.</p>
       <p style="font-size:var(--fs-label-md);color:var(--clr-tertiary);margin-bottom:14px">
-        Average Instagram follower count across your listings is
-        <strong><?= number_format($avgFollowers) ?></strong>, with an average view-to-bid conversion of
-        <strong><?= number_format($avgConversion,1) ?>%</strong>.
+        Avg. Instagram followers per listing: <strong><?= number_format($avgFollowers) ?></strong> &bull;
+        Avg. view-to-bid conversion: <strong><?= number_format($avgConversion,1) ?>%</strong>
       </p>
 
       <?php if (count($categoryDiagnostics) >= 2): ?>
@@ -682,8 +691,8 @@ renderHead('Analytics');
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" style="margin-top:24px">
     <div class="tb-card tb-card-body">
-      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Sales Bias Analysis</h3>
-      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Orders, customers, and conversion rate over the selected period.</p>
+      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Sales Trend Analysis</h3>
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">How orders, distinct customers, and conversion rate (orders per customer) have moved over the selected period.</p>
       <?php if (empty($salesBias)): ?>
       <div style="color:var(--clr-tertiary)">Not enough order data yet for this period.</div>
       <?php else: ?>
@@ -691,8 +700,8 @@ renderHead('Analytics');
       <?php endif; ?>
     </div>
     <div class="tb-card tb-card-body">
-      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Currency Exchange Rates</h3>
-      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">PHP base rate against USD and KRW over the selected period.</p>
+      <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Exchange Rate Monitor</h3>
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">PHP-to-USD and PHP-to-KRW rates used to price listings for international buyers, over the selected period.</p>
       <?php if (empty($currencyLabels)): ?>
       <div style="color:var(--clr-tertiary)">No recorded exchange rate history for this period yet.</div>
       <?php else: ?>
@@ -705,12 +714,12 @@ renderHead('Analytics');
   <!-- =================== FORECAST (Predictive Report) =================== -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
     <?php $kpis=[
-      ['icon'=>'trending_up', 'label'=>'Projected Revenue (30d)', 'val'=>convertCurrency((float)$projectedRevenue)],
-      ['icon'=>'shopping_bag','label'=>'Projected Orders (30d)',  'val'=>$projectedOrders],
-      ['icon'=>'sell',        'label'=>'Avg Predicted Price',     'val'=>convertCurrency((float)$avgPredictedPrice)],
-      ['icon'=>'event',       'label'=>'Best Performing Month',   'val'=>$bestMonth],
+      ['icon'=>'trending_up', 'label'=>'Projected Revenue (30d)', 'val'=>convertCurrency((float)$projectedRevenue), 'tip'=>'Estimated revenue for the next 30 days, based on your trailing 3-month average plus a seasonal adjustment.'],
+      ['icon'=>'shopping_bag','label'=>'Projected Orders (30d)',  'val'=>$projectedOrders, 'tip'=>'Estimated order volume for the next 30 days, based on the same trailing-average method.'],
+      ['icon'=>'sell',        'label'=>'Avg Predicted Price',     'val'=>convertCurrency((float)$avgPredictedPrice), 'tip'=>'Average of the predicted market price (brand/tier price band midpoint) across your listings.'],
+      ['icon'=>'event',       'label'=>'Best Performing Month',   'val'=>$bestMonth, 'tip'=>'The calendar month with your highest revenue on record, all-time.'],
     ]; foreach($kpis as $k): ?>
-    <div class="tb-stat-card">
+    <div class="tb-stat-card" title="<?= htmlspecialchars($k['tip']) ?>">
       <div class="tb-stat-icon"><span class="material-symbols-outlined"><?= $k['icon'] ?></span></div>
       <div>
         <div class="tb-stat-label"><?= $k['label'] ?></div>
@@ -722,17 +731,17 @@ renderHead('Analytics');
   <?php renderPeriodFilter($period, $filterFrom, $filterTo); ?>
 
   <div class="tb-card mb-2">
-    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Seasonality Forecast, <?= htmlspecialchars($forecastPeriodLabel) ?></h3></div>
+    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Projected Seasonal Sales Trend, <?= htmlspecialchars($forecastPeriodLabel) ?></h3></div>
     <div class="tb-card-body">
       <canvas id="seasonChart" height="110"></canvas>
-      <p style="text-align:center;font-size:11px;color:var(--clr-tertiary);margin-top:8px">Peak season: "BER" months (Sep–Dec) &bull; based on your trailing 3-month sales average</p>
+      <p style="text-align:center;font-size:11px;color:var(--clr-tertiary);margin-top:8px">Projection based on your trailing 3-month sales average, adjusted for typical "BER month" (Sep–Dec) demand.</p>
     </div>
   </div>
 
   <div class="tb-card mb-2">
-    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Brand Pricing Predictor</h3></div>
+    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Brand Price Distribution</h3></div>
     <div class="tb-card-body">
-      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Tests the assumption that branded items are inherently more expensive. Both axes use a logarithmic scale, prices in this shop span from under \u20b1200 to over \u20b170,000, and a straight linear scale would crush every low-price listing into a single unreadable cluster near zero.</p>
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Each dot is one listing: its actual price vs. the predicted market price for its brand/tier. Above the diagonal means priced higher than the market band; below means priced lower. Both axes use a log scale since prices span ₱200 to ₱70,000+.</p>
       <?php if (empty($brandPricingPoints)): ?>
       <div style="color:var(--clr-tertiary)">Not enough brand data yet.</div>
       <?php else: ?>
@@ -742,8 +751,9 @@ renderHead('Analytics');
   </div>
 
   <div class="tb-card">
-    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Top Brand Predictions</h3></div>
+    <div class="tb-card-header"><h3 class="font-headline" style="font-size:var(--fs-headline-sm)">Predicted Brand Market Value</h3></div>
     <div class="tb-card-body" style="overflow-x:auto">
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:12px">Your average listing price per brand vs. that brand's predicted market price — positive % means you're pricing above the predicted market value.</p>
       <?php if (empty($topBrandPredictions)): ?>
       <div style="color:var(--clr-tertiary)">Not enough brand data yet.</div>
       <?php else: ?>
@@ -771,12 +781,12 @@ renderHead('Analytics');
   <!-- =================== OPTIMIZATION (Prescriptive Report) =================== -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
     <?php $kpis=[
-      ['icon'=>'checklist',  'label'=>'Total Listings Analyzed', 'val'=>$listingsAnalyzed],
-      ['icon'=>'task_alt',   'label'=>'Avg Completeness Score',  'val'=>number_format($avgCompleteness,0).'/100'],
-      ['icon'=>'insights',   'label'=>'Avg View-to-Bid Conv.',    'val'=>number_format($avgViewToBid,1).'%'],
-      ['icon'=>'warning',    'label'=>'Listings Needing Improvement','val'=>$needsImprovement],
+      ['icon'=>'checklist',  'label'=>'Total Listings Analyzed', 'val'=>$listingsAnalyzed, 'tip'=>'Number of your listings with tracked analytics data.'],
+      ['icon'=>'task_alt',   'label'=>'Avg Completeness Score',  'val'=>number_format($avgCompleteness,0).'/100', 'tip'=>'Average score across photos, item details, and pricing consistency, out of 100.'],
+      ['icon'=>'insights',   'label'=>'Avg View-to-Bid Rate',    'val'=>number_format($avgViewToBid,1).'%', 'tip'=>'Average share of listing views that resulted in a bid.'],
+      ['icon'=>'warning',    'label'=>'Listings Needing Improvement','val'=>$needsImprovement, 'tip'=>'Listings scoring below 70/100 on completeness — the ones most likely holding back views and bids.'],
     ]; foreach($kpis as $k): ?>
-    <div class="tb-stat-card">
+    <div class="tb-stat-card" title="<?= htmlspecialchars($k['tip']) ?>">
       <div class="tb-stat-icon"><span class="material-symbols-outlined"><?= $k['icon'] ?></span></div>
       <div>
         <div class="tb-stat-label"><?= $k['label'] ?></div>
@@ -788,21 +798,27 @@ renderHead('Analytics');
 
   <div class="tb-card tb-card-body mb-6">
     <h3 class="font-headline" style="font-size:var(--fs-headline-sm);margin-bottom:4px">Listing Completeness Score</h3>
-    <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Your listings' completeness score across key dimensions</p>
+    <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-bottom:16px">Average score across three factors that affect how buyer-ready your listings are: photo count, item detail completeness, and pricing consistency.</p>
+    <?php
+      /* Score tiers, shared by the donut color and the legend below it. */
+      $tier = $avgCompleteness >= 80 ? ['label'=>'Excellent','color'=>'var(--clr-success)','hex'=>'#1d6840']
+            : ($avgCompleteness >= 50 ? ['label'=>'Good','color'=>'var(--clr-yellow)','hex'=>'#ffc107']
+            : ['label'=>'Needs Improvement','color'=>'var(--clr-error)','hex'=>'#c0392b']);
+    ?>
     <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
       <div style="position:relative;width:150px;height:150px;flex-shrink:0">
         <canvas id="completenessGauge"></canvas>
         <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none">
           <span style="font-size:26px;font-weight:800;color:var(--clr-text)"><?= number_format($avgCompleteness,0) ?></span>
           <span style="font-size:11px;color:var(--clr-tertiary)">/ 100</span>
-          <span style="font-size:11px;font-weight:700;color:var(--clr-coral);margin-top:2px"><?= $avgCompleteness>=70?'Good':($avgCompleteness>=50?'Fair':'Needs Work') ?></span>
+          <span style="font-size:11px;font-weight:700;color:<?= $tier['color'] ?>;margin-top:2px"><?= $tier['label'] ?></span>
         </div>
       </div>
       <div style="flex:1;min-width:180px;display:flex;flex-direction:column;gap:10px">
         <?php $subScores=[
-          ['icon'=>'image',      'label'=>'Photos',       'val'=>$scoreBreakdown['photos']],
+          ['icon'=>'image',      'label'=>'Photo Count',  'val'=>$scoreBreakdown['photos']],
           ['icon'=>'description','label'=>'Item Details', 'val'=>$scoreBreakdown['details']],
-          ['icon'=>'payments',   'label'=>'Pricing Info', 'val'=>$scoreBreakdown['pricing']],
+          ['icon'=>'payments',   'label'=>'Pricing',      'val'=>$scoreBreakdown['pricing']],
         ]; foreach ($subScores as $s): $pct=round($s['val']); ?>
         <div style="display:flex;align-items:center;gap:8px;font-size:var(--fs-label-sm)">
           <span class="material-symbols-outlined icon-sm" style="color:var(--clr-tertiary)"><?= $s['icon'] ?></span>
@@ -813,6 +829,21 @@ renderHead('Analytics');
         <?php endforeach; ?>
       </div>
     </div>
+
+    <!-- Legend: what the tier colors mean, so a seller doesn't have to
+         guess what "Good" or the donut color represents. -->
+    <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:16px;padding-top:12px;border-top:1px solid var(--clr-outline)">
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--clr-tertiary)">
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--clr-success);display:inline-block"></span>80–100 &bull; Excellent
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--clr-tertiary)">
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--clr-yellow);display:inline-block"></span>50–79 &bull; Good
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--clr-tertiary)">
+        <span style="width:10px;height:10px;border-radius:50%;background:var(--clr-error);display:inline-block"></span>Below 50 &bull; Needs Improvement
+      </div>
+    </div>
+
     <p style="font-size:11px;color:var(--clr-tertiary);margin-top:14px">A complete listing increases the chance of getting higher bids and more sales.</p>
   </div>
 
@@ -831,17 +862,17 @@ renderHead('Analytics');
           <span class="tb-badge tb-badge-green" style="font-size:12px">All good</span>
           <?php endif; ?>
         </div>
-        <p style="font-weight:700;font-size:var(--fs-label-md)">Add More Photos</p>
+        <p style="font-weight:700;font-size:var(--fs-label-md)">Photo Quality Improvement</p>
         <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px;min-height:44px">
           <?php if ($recPhotosCount === 0): ?>
-          Every listing already has more than one photo. Nice, that's one less thing buyers have to guess about.
+          Every listing already has 3 or more photos. Nice, that's one less thing buyers have to guess about.
           <?php elseif ($recPhotosCount === 1): ?>
-          1 listing has only a single photo. Listings with 3+ high-quality photos get more views and higher bids.
+          1 listing has fewer than 3 photos. Listings with 3+ high-quality photos get more views and higher bids.
           <?php else: ?>
-          <?= $recPhotosCount ?> listings have only a single photo each. Listings with 3+ high-quality photos get more views and higher bids.
+          <?= $recPhotosCount ?> listings have fewer than 3 photos each. Listings with 3+ high-quality photos get more views and higher bids.
           <?php endif; ?>
         </p>
-        <a href="active-auctions.php?photo_filter=low" class="btn btn-outline btn-sm btn-full" style="background:#fff;margin-top:8px">View Listings</a>
+        <a href="optimization-review.php?issue=photos" class="btn btn-outline btn-sm btn-full" style="background:#fff;margin-top:8px">View Listings</a>
       </div>
 
       <!-- 2. Complete Item Details -->
@@ -854,7 +885,7 @@ renderHead('Analytics');
           <span class="tb-badge tb-badge-green" style="font-size:12px">All good</span>
           <?php endif; ?>
         </div>
-        <p style="font-weight:700;font-size:var(--fs-label-md)">Complete Item Details</p>
+        <p style="font-weight:700;font-size:var(--fs-label-md)">Item Information Completion</p>
         <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px;min-height:44px">
           <?php if ($recDetailsCount === 0): ?>
           Color, material, gender, and made-in are filled in across every listing. That's the kind of detail that builds buyer trust.
@@ -864,7 +895,7 @@ renderHead('Analytics');
           <?= $recDetailsCount ?> listings are missing color, gender, material, or made-in. These fields reduce buyer confidence and search visibility when left blank.
           <?php endif; ?>
         </p>
-        <a href="active-auctions.php?details_filter=incomplete" class="btn btn-outline btn-sm btn-full" style="background:#fff;margin-top:8px">View Incomplete Listings</a>
+        <a href="optimization-review.php?issue=details" class="btn btn-outline btn-sm btn-full" style="background:#fff;margin-top:8px">View Incomplete Listings</a>
       </div>
 
       <!-- 3. Pricing Info -->
@@ -877,15 +908,15 @@ renderHead('Analytics');
           <span class="tb-badge tb-badge-green" style="font-size:12px">All good</span>
           <?php endif; ?>
         </div>
-        <p style="font-weight:700;font-size:var(--fs-label-md)">Pricing Info</p>
+        <p style="font-weight:700;font-size:var(--fs-label-md)">Price Consistency Check</p>
         <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px;min-height:44px">
           <?php if ($recPricingCount === 0): ?>
-          Prices are consistent across every product line in your shop, nothing here is likely to confuse a buyer comparing your listings.
+          No product line in your shop has mismatched prices between listings — nothing here is likely to confuse a buyer comparing your items.
           <?php else: ?>
-          <?= $recPricingCount ?> listing<?= $recPricingCount!==1?'s':'' ?> share<?= $recPricingCount===1?'s':'' ?> a product line with inconsistent pricing across your shop. Worth reviewing so similar items don't look mispriced side by side.
+          <?= $recPricingCount ?> listing<?= $recPricingCount!==1?'s':'' ?> share<?= $recPricingCount===1?'s':'' ?> a product line with a different price than another listing of the same item in your shop. Align them so similar items don't look mispriced side by side.
           <?php endif; ?>
         </p>
-        <a href="active-auctions.php?pricing_filter=inconsistent" class="btn btn-outline btn-sm btn-full" style="background:#fff;margin-top:8px">View Listings</a>
+        <a href="optimization-review.php?issue=pricing" class="btn btn-outline btn-sm btn-full" style="background:#fff;margin-top:8px">View Listings</a>
       </div>
 
     </div>
@@ -935,7 +966,7 @@ renderHead('Analytics');
         borderWidth:2, borderColor:'#fff',
       }]
     },
-    options:{responsive:true,cutout:'68%',plugins:{legend:{display:false}}}
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false}}}
   });
   <?php endif; ?>
 
@@ -954,7 +985,7 @@ renderHead('Analytics');
         backgroundColor:'rgba(255,107,107,0.7)', borderColor:'#ff6b6b', borderWidth:2, borderRadius:6,
       }]
     },
-    options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,max:100}}}
+    options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,max:100,title:{display:true,text:'Score (0-100, higher is better)'}}}}
   });
 
 <?php elseif ($tab === 'sales-drivers'): ?>
@@ -969,7 +1000,7 @@ renderHead('Analytics');
         backgroundColor:'rgba(255,107,107,0.7)', borderColor:'#ff6b6b', borderWidth:2, borderRadius:6,
       }]
     },
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,ticks:{callback:v=>'₱'+v.toLocaleString()}}}}
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{beginAtZero:true,title:{display:true,text:'Total Spending (₱)'},ticks:{callback:v=>'₱'+v.toLocaleString()}}}}
   });
   <?php endif; ?>
   <?php if (!empty($salesBias)): ?>
@@ -978,12 +1009,24 @@ renderHead('Analytics');
     data:{
       labels:<?= json_encode(array_column($salesBias,'label')) ?>,
       datasets:[
-        { label:'Orders', data:<?= json_encode(array_map(fn($r)=>(int)$r['orders'],$salesBias)) ?>, borderColor:'#ff6b6b', backgroundColor:'rgba(255,107,107,0.1)', tension:0.3, pointRadius:3 },
-        { label:'Customers', data:<?= json_encode(array_map(fn($r)=>(int)$r['customers'],$salesBias)) ?>, borderColor:'#4a7fc9', backgroundColor:'rgba(74,127,201,0.1)', tension:0.3, pointRadius:3 },
-        { label:'Conversion Rate', data:<?= json_encode(array_map(fn($r)=>(float)$r['conversion_rate'],$salesBias)) ?>, borderColor:'#66bb6a', backgroundColor:'rgba(102,187,106,0.1)', tension:0.3, pointRadius:3 },
+        { label:'Orders', data:<?= json_encode(array_map(fn($r)=>(int)$r['orders'],$salesBias)) ?>, borderColor:'#ff6b6b', backgroundColor:'rgba(255,107,107,0.1)', tension:0.3, pointRadius:3, yAxisID:'yCount' },
+        { label:'Customers', data:<?= json_encode(array_map(fn($r)=>(int)$r['customers'],$salesBias)) ?>, borderColor:'#4a7fc9', backgroundColor:'rgba(74,127,201,0.1)', tension:0.3, pointRadius:3, yAxisID:'yCount' },
+        { label:'Conversion Rate (orders/customer)', data:<?= json_encode(array_map(fn($r)=>(float)$r['conversion_rate'],$salesBias)) ?>, borderColor:'#66bb6a', backgroundColor:'rgba(102,187,106,0.1)', tension:0.3, pointRadius:3, yAxisID:'yRate' },
       ]
     },
-    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:true}}}
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'top'}},
+      scales:{
+        x:{title:{display:true,text:<?= json_encode(ucfirst($period) . ' Period') ?>}},
+        /* Orders and Customers are both headcounts and share this axis;
+           Conversion Rate is a ratio (orders per customer, e.g. 1.5), a
+           completely different unit that would otherwise flatten to a
+           near-flat line at the bottom of a shared 0-many axis. */
+        yCount:{type:'linear',position:'left',beginAtZero:true,title:{display:true,text:'Orders / Customers (count)'}},
+        yRate:{type:'linear',position:'right',beginAtZero:true,grid:{drawOnChartArea:false},title:{display:true,text:'Conversion Rate'}},
+      }
+    }
   });
   <?php endif; ?>
   <?php if (!empty($currencyLabels)): ?>
@@ -992,11 +1035,22 @@ renderHead('Analytics');
     data:{
       labels:<?= json_encode($currencyLabels) ?>,
       datasets:[
-        { label:'USD', data:<?= json_encode(array_map(fn($l)=>$currencyByCcy['USD'][$l] ?? null, $currencyLabels)) ?>, borderColor:'#4a7fc9', backgroundColor:'rgba(74,127,201,0.1)', tension:0.3, pointRadius:3, spanGaps:true },
-        { label:'KRW', data:<?= json_encode(array_map(fn($l)=>$currencyByCcy['KRW'][$l] ?? null, $currencyLabels)) ?>, borderColor:'#8e6bff', backgroundColor:'rgba(142,107,255,0.1)', tension:0.3, pointRadius:3, spanGaps:true },
+        { label:'PHP → USD', data:<?= json_encode(array_map(fn($l)=>$currencyByCcy['USD'][$l] ?? null, $currencyLabels)) ?>, borderColor:'#4a7fc9', backgroundColor:'rgba(74,127,201,0.1)', tension:0.3, pointRadius:3, spanGaps:true, yAxisID:'yUsd' },
+        { label:'PHP → KRW', data:<?= json_encode(array_map(fn($l)=>$currencyByCcy['KRW'][$l] ?? null, $currencyLabels)) ?>, borderColor:'#8e6bff', backgroundColor:'rgba(142,107,255,0.1)', tension:0.3, pointRadius:3, spanGaps:true, yAxisID:'yKrw' },
       ]
     },
-    options:{responsive:true,plugins:{legend:{position:'top'}},scales:{y:{beginAtZero:false}}}
+    options:{
+      responsive:true,
+      plugins:{legend:{position:'top'}},
+      scales:{
+        /* USD (~0.0175) and KRW (~23.5) rates are two orders of magnitude
+           apart — sharing one axis would flatten USD to an invisible
+           near-zero line, so each currency gets its own axis. */
+        x:{title:{display:true,text:'Period'}},
+        yUsd:{type:'linear',position:'left',title:{display:true,text:'PHP → USD Rate'}},
+        yKrw:{type:'linear',position:'right',title:{display:true,text:'PHP → KRW Rate'},grid:{drawOnChartArea:false}},
+      }
+    }
   });
   <?php endif; ?>
 
@@ -1012,7 +1066,7 @@ renderHead('Analytics');
         borderWidth:2, fill:true, tension:0.35, pointBackgroundColor:'#ff6b6b', pointRadius:3,
       }]
     },
-    options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'₱'+v.toLocaleString()}}}}
+    options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{title:{display:true,text:<?= json_encode($forecastPeriodLabel) ?>}},y:{beginAtZero:true,title:{display:true,text:'Projected Revenue (₱)'},ticks:{callback:v=>'₱'+v.toLocaleString()}}}}
   });
   <?php if (!empty($brandPricingPoints)): ?>
   <?php
@@ -1042,11 +1096,9 @@ renderHead('Analytics');
         }
       },
       scales:{
-        // Logarithmic, not linear: prices in this shop range from
-        // under 200 to over 70,000. On a linear axis every low-price
-        // listing collapses into one indistinguishable cluster near
-        // the origin, exactly the "everything looks like 0" problem.
-        // Log scale gives low and high values comparable visual space.
+        /* Log scale, not linear: prices range from under P200 to over P70,000.
+           On a linear axis every cheap listing would collapse into one
+           unreadable cluster near zero. */
         x:{type:'logarithmic',title:{display:true,text:'Actual Price (\u20b1), log scale'},ticks:{callback:v=>{ const s=v.toString(); return (s[0]==='1'||s==='0')?'\u20b1'+v.toLocaleString():''; }}},
         y:{type:'logarithmic',title:{display:true,text:'Predicted Price (\u20b1), log scale'},ticks:{callback:v=>{ const s=v.toString(); return (s[0]==='1'||s==='0')?'\u20b1'+v.toLocaleString():''; }}}
       }
@@ -1059,11 +1111,11 @@ renderHead('Analytics');
     data:{
       datasets:[{
         data:[<?= (float)$avgCompleteness ?>, <?= max(0, 100 - (float)$avgCompleteness) ?>],
-        backgroundColor:['#ff6b6b', '#f0f0f0'],
+        backgroundColor:['<?= $tier['hex'] ?>', '#f0f0f0'],
         borderWidth:0,
       }]
     },
-    options:{responsive:true,cutout:'75%',plugins:{legend:{display:false},tooltip:{enabled:false}}}
+    options:{responsive:true,maintainAspectRatio:false,cutout:'75%',plugins:{legend:{display:false},tooltip:{enabled:false}}}
   });
 <?php endif; ?>
 </script>

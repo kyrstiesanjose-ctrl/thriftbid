@@ -1,7 +1,7 @@
 <?php
 // ============================================================
 // ThriftBid - Auth & Session Helpers
-// currentUser() nreturns the full row from whichever table the
+// currentUser() returns the full row from whichever table the
 // person authenticated against
 // ============================================================
 require_once __DIR__ . '/config.php';
@@ -107,5 +107,32 @@ function findAccountByEmail(string $email): ?array {
     if ($row = DB::fetch('SELECT * FROM ADMIN WHERE email=?', [$email]))  return ['role' => 'admin',  'row' => $row];
     if ($row = DB::fetch('SELECT * FROM SELLER WHERE email=?', [$email])) return ['role' => 'seller', 'row' => $row];
     if ($row = DB::fetch('SELECT * FROM BUYER WHERE email=?', [$email]))  return ['role' => 'buyer',  'row' => $row];
+    return null;
+}
+
+/**
+ * Rule 8 (Account Verification): "one account per verified contact number."
+ * A UNIQUE constraint on cellphone_number only prevents duplicates *within*
+ * BUYER or *within* SELLER individually — this checks across both tables,
+ * since a phone number registered as a buyer must also block registering
+ * that same number as a seller (and vice versa).
+ * Returns ['role' => ..., 'row' => [...]] or null.
+ */
+function findAccountByPhone(string $phone): ?array {
+    if ($row = DB::fetch('SELECT * FROM SELLER WHERE cellphone_number=?', [$phone])) return ['role' => 'seller', 'row' => $row];
+    if ($row = DB::fetch('SELECT * FROM BUYER WHERE cellphone_number=?', [$phone]))  return ['role' => 'buyer',  'row' => $row];
+    return null;
+}
+
+/**
+ * username is NOT NULL UNIQUE on ADMIN/SELLER/BUYER individually, but that
+ * only guards each table on its own - same gap phone/email had. Checks
+ * all three so a chosen username can't collide with any existing account,
+ * including an admin's.
+ */
+function findAccountByUsername(string $username): ?array {
+    if ($row = DB::fetch('SELECT * FROM ADMIN WHERE username=?', [$username]))  return ['role' => 'admin',  'row' => $row];
+    if ($row = DB::fetch('SELECT * FROM SELLER WHERE username=?', [$username])) return ['role' => 'seller', 'row' => $row];
+    if ($row = DB::fetch('SELECT * FROM BUYER WHERE username=?', [$username]))  return ['role' => 'buyer',  'row' => $row];
     return null;
 }

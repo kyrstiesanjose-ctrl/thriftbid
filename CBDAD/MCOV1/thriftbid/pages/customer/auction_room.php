@@ -36,18 +36,18 @@ $auction = loadAuction($auctionId);
 if (!$auction) { header('Location: live-bids.php'); exit; }
 
 $user    = currentUser();
-$buyerId = $user['buyer_id'] ?? 0; // session row IS the buyer row now (0 if an admin/seller is just viewing)
+$buyerId = $user['buyer_id'] ?? 0; /* session row IS the buyer row (0 if an admin/seller is just viewing) */
 
-// The seller who owns this listing (or an admin) gets a read-only
-// management view instead of the buyer's bid form: they can see every
-// bidder (not capped at 20) and edit the listing, but cannot bid on
-// their own auction.
+/* The seller who owns this listing (or an admin) gets a read-only
+   management view instead of the buyer's bid form: they can see every
+   bidder (not capped at 20) and edit the listing, but cannot bid on
+   their own auction. */
 $isOwnerSeller = ($user['role'] === 'seller' && (int)($user['seller_id'] ?? 0) === (int)$auction['sid'])
               || $user['role'] === 'admin';
-// Narrower than $isOwnerSeller above: true only for the actual seller who
-// owns this listing, never for admin. Admins shouldn't get routed into
-// the seller's own edit-listing.php as if they own the item, they have
-// their own moderation tools for that (admin/listings.php, etc.).
+/* Narrower than $isOwnerSeller above: true only for the actual seller who
+   owns this listing, never for admin. Admin shouldn't get routed into
+   the seller's own edit-listing.php as if they own the item - admin has
+   its own moderation tools for that (admin/listings.php, etc.). */
 $isActualOwnerSeller = $user['role'] === 'seller' && (int)($user['seller_id'] ?? 0) === (int)$auction['sid'];
 
 $bids       = loadBids($auctionId, $isOwnerSeller ? 1000 : 20);
@@ -64,22 +64,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bid_amount'])) {
     } elseif (!$buyerId) {
         $bidError = 'Only registered buyers can place bids.';
     } else {
-        // ------------------------------------------------------------
-        // We deliberately do NOT re-implement the auction rules here.
-        // before_bid_validate_amount (auction must be Active & amount
-        // must clear current_highest_bid + min_increment) and
-        // after_bid_update_auction (bumps current_highest_bid, applies
-        // the anti-snipe +2min/10x extension, logs BROWSING_HISTORY)
-        // are DB triggers, see database/triggers.sql. The INSERT below
-        // is the ONLY statement this page runs; everything else is the
-        // trigger's job. We just catch the SIGNAL it raises on failure.
-        // ------------------------------------------------------------
+        /* This page deliberately does NOT re-implement the auction rules.
+           before_bid_validate_amount (auction must be Active & amount
+           must clear current_highest_bid + min_increment) and
+           after_bid_update_auction (bumps current_highest_bid, applies
+           the anti-snipe +2min/10x extension, logs BROWSING_HISTORY) are
+           DB triggers - see schema.sql. The INSERT below is the ONLY
+           statement this page runs; everything else is the trigger's
+           job. This just catches the SIGNAL it raises on failure. */
         try {
             DB::query('INSERT INTO BIDDINGS (bid_amount, bid_time, auction_id, buyer_id) VALUES (?, NOW(), ?, ?)',
                 [$bidAmount, $auctionId, $buyerId]);
 
-            // Outbid notice to the previous top bidder (not a trigger
-            // concern, this is a courtesy notification, not a rule).
+            /* Outbid notice to the previous top bidder - a courtesy
+               notification, not something the DB trigger handles */
             $prev = DB::fetch(
                 'SELECT bu.buyer_id FROM BIDDINGS b JOIN BUYER bu ON b.buyer_id=bu.buyer_id
                  WHERE b.auction_id=? AND b.is_deleted=0 ORDER BY b.bid_amount DESC LIMIT 1 OFFSET 1',
@@ -94,15 +92,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bid_amount'])) {
 
             $bidSuccess = 'Bid of ' . convertCurrency($bidAmount) . ' placed successfully!';
 
-            // Re-pull fresh state, current_highest_bid/end_time/extension_count
-            // were just mutated by the trigger, not by this script.
+            /* Re-pull fresh state - current_highest_bid/end_time/
+               extension_count were just mutated by the trigger above,
+               not by this script, so the in-memory $auction is stale */
             $auction    = loadAuction($auctionId);
             $bids       = loadBids($auctionId, $isOwnerSeller ? 1000 : 20);
             $bidCount   = DB::fetch('SELECT COUNT(*) c FROM BIDDINGS WHERE auction_id=? AND is_deleted=0', [$auctionId])['c'] ?? 0;
             $minNextBid = max((float)$auction['current_highest_bid'] + (float)$auction['min_increment'], (float)$auction['start_bid']);
         } catch (\PDOException $e) {
-            // SQLSTATE 45000 = the SIGNAL raised by before_bid_validate_amount
-            // ("auction closed" or "bid too low"). Surface it plainly.
+            /* SQLSTATE 45000 = the SIGNAL raised by before_bid_validate_amount
+               ("auction closed" or "bid too low") - surfaced plainly here */
             $bidError = str_contains($e->getMessage(), '45000')
                 ? preg_replace('/^.*45000\s*/', '', $e->getMessage())
                 : 'Could not place bid. Please try again.';
@@ -185,7 +184,7 @@ renderHead($auction['title'] . ' - Auction Room');
             </p>
           </div>
         </div>
-        <div style="display:flex;gap:16px;font-size:var(--fs-label-sm);color:var(--clr-tertiary);padding-top:10px;border-top:1px solid var(--clr-outline)">
+        <div style="display:flex;gap:16px;font-size:var(--fs-label-sm);color:var(--clr-text);padding-top:10px;border-top:1px solid var(--clr-outline);font-weight:700">
           <span><?= $bidCount ?> bid<?= $bidCount!==1?'s':'' ?></span>
           <span>&bull;</span>
           <span>Min increment: <?= convertCurrency((float)$auction['min_increment']) ?></span>
@@ -302,12 +301,13 @@ if (cdEl) {
     const d = endTs - Math.floor(Date.now()/1000);
     if (d <= 0) { cdEl.textContent='Ended'; return; }
     const h=Math.floor(d/3600),m=Math.floor((d%3600)/60),s=d%60;
-    cdEl.textContent = d>=86400 ? Math.floor(d/86400)+'d '+h+'h' : String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    const hh=Math.floor((d%86400)/3600); /* remainder hours within the current day, for the "Xd Yh" format below */
+    cdEl.textContent = d>=86400 ? Math.floor(d/86400)+'d '+hh+'h '+m+'m' : String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
     if (d < 3600) cdEl.style.color='var(--clr-error)';
   }
   setInterval(tick, 1000); tick();
 }
-// Live rates from the server (open.er-api.com)
+/* Live exchange rates fetched server-side via includes/currency.php (open.er-api.com) */
 const LIVE_RATES = <?= json_encode(getLiveCurrencyRates()) ?>;
 const SYMS = {PHP:'₱',USD:'$',KRW:'₩'};
 const CURRENT_BID = <?= (float)$auction['current_highest_bid'] ?>;

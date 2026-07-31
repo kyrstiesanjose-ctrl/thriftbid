@@ -2,12 +2,13 @@
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
 require_once __DIR__ . '/../../includes/currency.php';
+require_once __DIR__ . '/../../includes/mailer.php';
 require_once __DIR__ . '/../../includes/layout.php';
 requireLogin();
 requireRole(['seller','admin']);
 
 $user     = currentUser();
-$sellerId = $user['seller_id'] ?? $user['id']; // session row IS the seller row now
+$sellerId = $user['seller_id'] ?? $user['id']; /* session row IS the seller row */
 
 $successMsg = $errorMsg = '';
 
@@ -33,7 +34,9 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['ship_order']) && verify
         if (count($validOrders) !== count($orderIds)) {
             $errorMsg = 'One or more selected orders could not be found.';
         } elseif (count($distinctBuyers) > 1) {
-            /// Enforces that a single package/tracking number maps exclusively to one unique buyer shipping address.
+            /* One tracking number = one buyer. Selected orders must all belong
+               to the same buyer, otherwise a single package/tracking number
+               would need to point to more than one shipping address. */
             $errorMsg = 'Selected orders belong to different buyers, they can\'t share one tracking number.';
         } else {
             try {
@@ -43,6 +46,9 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['ship_order']) && verify
                 $successMsg = count($orderIds) > 1
                     ? count($orderIds) . ' orders marked as shipped under tracking number ' . $trackingNo . '.'
                     : 'Order #' . $orderIds[0] . ' marked as shipped!';
+                /* Send the "your order shipped" email right now, instead of
+                   waiting on layout.php's opportunistic flush later. */
+                flushEmailQueue(3);
             } catch (\PDOException $e) {
                 $errorMsg = str_contains($e->getMessage(), '45000')
                     ? preg_replace('/^.*45000\s*/', '', $e->getMessage())
@@ -56,12 +62,13 @@ $subtab = $_GET['subtab'] ?? 'toship';
 $validSubtabs = ['toship','transit','completed','refunded'];
 if (!in_array($subtab, $validSubtabs, true)) $subtab = 'toship';
 
-//  filter/sort control: "Today"/"Yesterday"/"2 Days Ago" 
+/* Quick date filter: Today / Yesterday / 2 Days Ago, or sort Oldest/Newest */
 $validFilters = ['today','yesterday','2days','oldest','newest'];
 $filter = in_array($_GET['filter'] ?? '', $validFilters, true) ? $_GET['filter'] : ($subtab === 'toship' ? 'oldest' : 'newest');
 $sortSql = $filter === 'oldest' ? 'ASC' : 'DESC';
 
-// Which date column to filter/sort against depends on the tab.
+/* Each tab tracks a different point in the order lifecycle, so the
+   date filter/sort applies to a different column depending on the tab */
 $dateColByTab = ['toship' => 'o.order_date', 'transit' => 'sh.shipped_date', 'completed' => 'COALESCE(sh.delivered_date, o.order_date)'];
 $dateCol = $dateColByTab[$subtab] ?? 'o.order_date';
 $quickFilterSql = '';
@@ -72,7 +79,7 @@ if (in_array($filter, ['today','yesterday','2days'], true)) {
 
 $imgSub = '(SELECT image_url FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id ORDER BY is_primary DESC, image_id ASC LIMIT 1) AS cover_image';
 
-// To Ship: paid, no shipment yet
+/* To Ship: payment completed, no SHIPMENTS row created yet */
 $toShip = DB::fetchAll(
     "SELECT o.*, l.title, l.listing_id, bu.buyer_id, bu.username AS buyer_name, p.amount_paid, p.payment_method, $imgSub
      FROM ORDERS o
@@ -85,7 +92,7 @@ $toShip = DB::fetchAll(
     [$sellerId]
 );
 
-// In Transit: Shipped / Out for Delivery
+/* In Transit: status set by sp_ship_order (Shipped) or updated later to Out for Delivery */
 $inTransit = DB::fetchAll(
     "SELECT o.*, l.title, l.listing_id, bu.username AS buyer_name, sh.tracking_number, sh.status AS ship_status, sh.shipped_date, co.courier_name, $imgSub
      FROM ORDERS o
@@ -98,7 +105,7 @@ $inTransit = DB::fetchAll(
     [$sellerId]
 );
 
-// Completed: Delivered
+/* Completed: status = Delivered */
 $completedOrders = DB::fetchAll(
     "SELECT o.*, l.title, l.listing_id, bu.username AS buyer_name, p.amount_paid, sh.delivered_date,
             COALESCE(sh.delivered_date, o.order_date) AS group_date, $imgSub
@@ -112,7 +119,8 @@ $completedOrders = DB::fetchAll(
     [$sellerId]
 );
 
-// Refunded: this seller's orders where a dispute was resolved with a refund
+/* Refunded: DISPUTES resolved with resolution_type = refund (see
+   sp_resolve_dispute in schema.sql, admin-only action) */
 $refundedOrders = DB::fetchAll(
     "SELECT o.*, l.title, bu.username AS buyer_name, p.amount_paid, $imgSub,
             d.dispute_id, d.reason, d.resolution_type, d.resolved_at
@@ -181,9 +189,8 @@ renderHead('Orders');
   </div>
   <?php else: $dateIdx = 0; foreach (groupByDate($toShip, 'order_date') as $dateLabel => $dateRows): $dateIdx++; renderDateHeader($dateLabel); ?>
   <?php
-   
-// Groups by buyer within this date to consolidate multiple items into a single shipment and tracking number.
-
+    /* Group orders by buyer within this date so items from the same buyer
+       ship together under one tracking number instead of one row each */
     $toShipByBuyer = [];
     foreach ($dateRows as $o) { $toShipByBuyer[$o['buyer_id']]['buyer_name'] = $o['buyer_name']; $toShipByBuyer[$o['buyer_id']]['items'][] = $o; }
   ?>
@@ -209,6 +216,14 @@ renderHead('Orders');
           </div>
           <div style="flex:1;min-width:220px">
             <h3 style="font-weight:700;font-size:var(--fs-body-md)"><?= htmlspecialchars($o['title']) ?></h3>
+            <?php if ($o['shipping_street']): ?>
+            <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-top:2px;display:flex;align-items:center;gap:4px">
+              <span class="material-symbols-outlined icon-sm" style="font-size:14px">location_on</span>
+              <?= htmlspecialchars($o['shipping_street']) ?>, <?= htmlspecialchars($o['shipping_city']) ?>, <?= htmlspecialchars($o['shipping_province']) ?> <?= htmlspecialchars($o['shipping_zip']) ?>
+            </p>
+            <?php else: ?>
+            <p style="font-size:var(--fs-label-sm);color:var(--clr-error);margin-top:2px">No address on file for this order - contact the buyer before shipping.</p>
+            <?php endif; ?>
             <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-top:4px">
               Order #<?= $o['order_id'] ?> &bull; Paid: <?= convertCurrency((float)$o['amount_paid']) ?> via <?= htmlspecialchars($o['payment_method']) ?>
             </p>

@@ -5,8 +5,8 @@ require_once __DIR__ . '/../../includes/currency.php';
 require_once __DIR__ . '/../../includes/layout.php';
 requireLogin('../login.php');
 
-$parentCat = trim($_GET['parent']   ?? ''); // e.g. 'Tops'
-$catId     = (int)($_GET['cat']     ?? 0);  // specific category, e.g. 'Blouse'
+$parentCat = trim($_GET['parent']   ?? ''); /* e.g. 'Tops' */
+$catId     = (int)($_GET['cat']     ?? 0);  /* specific category, e.g. 'Blouse' */
 $brandId   = (int)($_GET['brand']   ?? 0);
 $q         = trim($_GET['q']        ?? '');
 $sort      = $_GET['sort']          ?? 'newest';
@@ -31,8 +31,9 @@ $categories = DB::fetchAll(
 );
 $brands = DB::fetchAll('SELECT * FROM BRANDS ORDER BY brand_name');
 
-// Sizes adapt to current scope: exact category sizes, union of sizes across a parent tab 
-// (e.g. "Tops"), or all sizes for "All". Ensures dropdown is always usable before picking a subcategory.
+/* Size options adapt to scope: exact category sizes, union of sizes
+   across a parent tab (e.g. "Tops"), or all sizes for "All" - keeps the
+   dropdown usable before a subcategory is even picked */
 if ($catId) {
     $sizesForCat = DB::fetchAll('SELECT DISTINCT size_value FROM CATEGORY_SIZES WHERE category_id=? ORDER BY size_value', [$catId]);
 } elseif ($parentCat) {
@@ -49,8 +50,8 @@ if ($catId) {
 
 $conditions = ['Brand New','Like New','Lightly Used','Well Used','Heavily Used'];
 
-// Distinct values actually present in active listings, so the filter
-// dropdowns never show an option with zero matching results.
+/* Only distinct values actually present in active listings, so the
+   filter dropdowns never show an option with zero matching results */
 $colorOptions    = DB::fetchAll('SELECT DISTINCT color FROM LISTINGS WHERE color IS NOT NULL AND is_active=1 ORDER BY color');
 $materialOptions = DB::fetchAll('SELECT DISTINCT material FROM LISTINGS WHERE material IS NOT NULL AND is_active=1 ORDER BY material');
 $madeInOptions   = DB::fetchAll('SELECT DISTINCT made_in FROM LISTINGS WHERE made_in IS NOT NULL AND is_active=1 ORDER BY made_in');
@@ -64,9 +65,9 @@ if ($q)         { $where .= ' AND (l.title LIKE ? OR l.description LIKE ? OR b.b
 if ($type === 'fixed')   $where .= ' AND l.listing_id NOT IN (SELECT listing_id FROM AUCTIONS WHERE status="Active")';
 if ($type === 'auction') $where .= ' AND l.listing_id IN (SELECT listing_id FROM AUCTIONS WHERE status="Active")';
 
-// Filter by tier "High" for luxury. Safe because listings only become active 
-// (is_active=1) after admin approval via `after_authentication_status_change` 
-
+/* pl.tier="High" is the luxury filter. Safe to trust is_active=1 here -
+   a luxury listing only reaches active once admin approves it via
+   after_authentication_status_change (Rule 15) */
 if ($luxuryOnly) $where .= ' AND pl.tier="High"';
 if ($sizeVal)   { $where .= ' AND l.size_id IN (SELECT size_id FROM CATEGORY_SIZES WHERE size_value=?)'; $params[] = $sizeVal; }
 if ($cond)      { $where .= ' AND l.condition_grade=?'; $params[] = $cond; }
@@ -262,7 +263,7 @@ renderHead('Browse - ' . ($activeCatName ?: ($parentCat ?: 'All Items')));
           <p style="font-size:10px;color:var(--clr-tertiary)"><?= htmlspecialchars($l['brand_name']) ?></p>
           <?php if ($l['auction_id']): ?>
           <div class="tb-listing-price"><?= convertCurrency((float)$l['current_highest_bid']) ?></div>
-          <div class="tb-listing-meta">Bid &bull; Ends <?= formatTimeLeft($l['end_time']) ?></div>
+          <div class="tb-listing-meta">Bid &bull; Ends <span data-end="<?= strtotime($l['end_time']) ?>"><?= formatTimeLeft($l['end_time']) ?></span></div>
           <?php else: ?>
           <div class="tb-listing-price"><?= convertCurrency((float)$l['price']) ?></div>
           <div class="tb-listing-meta"><?= htmlspecialchars($l['cat_name']) ?> &bull; <?= htmlspecialchars($l['condition_grade']) ?></div>
@@ -299,4 +300,17 @@ renderHead('Browse - ' . ($activeCatName ?: ($parentCat ?: 'All Items')));
   </div>
 </main>
 <?php renderFooter(); ?>
+<script>
+document.querySelectorAll('[data-end]').forEach(el => {
+  function upd() {
+    const d = parseInt(el.dataset.end) - Math.floor(Date.now()/1000);
+    if (d <= 0) { el.textContent='Ended'; return; }
+    const h=Math.floor(d/3600),m=Math.floor((d%3600)/60),s=d%60;
+    const hh=Math.floor((d%86400)/3600); /* remainder hours within the current day */
+    el.textContent = d>=86400 ? Math.floor(d/86400)+'d '+hh+'h '+m+'m'
+                               : String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  }
+  setInterval(upd,1000); upd();
+});
+</script>
 </body></html>

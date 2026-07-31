@@ -78,9 +78,9 @@ renderHeadRoot('Login');
 
     <div class="tb-divider" style="margin:20px 0">Quick Demo</div>
     <div class="grid grid-cols-3 gap-2 mb-5">
-      <button onclick="ql('ana_delacruz@thriftbid.com')"       class="btn btn-ghost btn-sm">Buyer</button>
-      <button onclick="ql('seller_leila@thriftbid.com')"       class="btn btn-ghost btn-sm">Seller</button>
-      <button onclick="ql('admin@thriftbid.com')"             class="btn btn-ghost btn-sm">Admin</button>
+      <button onclick="ql('leila_lumbao@dlsu.edu.ph')"       class="btn btn-ghost btn-sm">Buyer</button>
+      <button onclick="ql('mintea.peaz@gmail.com')"       class="btn btn-ghost btn-sm">Seller</button>
+      <button onclick="ql('kyrstie_sanjose@dlsu.edu.ph')"             class="btn btn-ghost btn-sm">Admin</button>
     </div>
 
     <p style="text-align:center;font-size:var(--fs-label-md);color:var(--clr-tertiary)">

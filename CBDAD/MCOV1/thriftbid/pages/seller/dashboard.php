@@ -88,17 +88,25 @@ renderHead('Seller Dashboard');
       <div class="tb-card-body">
         <?php if (empty($recentOrders)): ?>
         <div style="text-align:center;padding:24px;color:var(--clr-tertiary)">No orders yet.</div>
-        <?php else: foreach ($recentOrders as $o): ?>
-        <div style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--clr-outline)">
+        <?php else: foreach (groupByDate($recentOrders, 'order_date') as $dateLabel => $rows): ?>
+        <?php
+          $today     = date('F j, Y');
+          $yesterday = date('F j, Y', strtotime('-1 day'));
+          $headingLabel = $dateLabel === $today ? 'Today' : ($dateLabel === $yesterday ? 'Yesterday' : $dateLabel);
+        ?>
+        <p style="font-size:11px;font-weight:700;color:var(--clr-tertiary);text-transform:uppercase;letter-spacing:0.04em;margin:14px 0 4px"><?= htmlspecialchars($headingLabel) ?></p>
+        <?php foreach ($rows as $o): ?>
+        <div class="tb-recent-order-row" onclick="location.href='to-ship.php'" style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--clr-outline);cursor:pointer">
           <div style="width:48px;height:48px;border-radius:var(--radius-sm);overflow:hidden;background:var(--clr-surface-mid);flex-shrink:0;display:flex;align-items:center;justify-content:center">
             <?php if ($o['cover_image']): ?><img src="<?= htmlspecialchars($o['cover_image']) ?>" style="width:100%;height:100%;object-fit:cover"><?php else: ?><span class="material-symbols-outlined icon-sm" style="color:var(--clr-outline)">checkroom</span><?php endif; ?>
           </div>
           <div style="flex:1;min-width:0">
             <p style="font-weight:600;font-size:var(--fs-label-md);overflow:hidden;text-overflow:ellipsis;white-space:nowrap"><?= htmlspecialchars($o['title']) ?></p>
-            <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">@<?= htmlspecialchars($o['buyer_name']) ?> &bull; <?= date('M d, Y', strtotime($o['order_date'])) ?></p>
+            <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">@<?= htmlspecialchars($o['buyer_name']) ?> &bull; Order #<?= $o['order_id'] ?> &bull; <?= date('h:i A', strtotime($o['order_date'])) ?></p>
           </div>
           <span class="tb-badge <?= $o['status']==='Delivered'?'tb-badge-green':($o['status']==='Cancelled'?'tb-badge-red':'tb-badge-blue') ?>"><?= $o['status'] ?></span>
         </div>
+        <?php endforeach; ?>
         <?php endforeach; endif; ?>
       </div>
     </div>
@@ -123,4 +131,5 @@ renderHead('Seller Dashboard');
 </div>
 </main>
 </div>
+<style>.tb-recent-order-row:hover{background:var(--clr-surface-low)}</style>
 </body></html>

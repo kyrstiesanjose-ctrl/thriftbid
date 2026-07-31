@@ -28,35 +28,35 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ADMIN (password: Password123!)
 -- ------------------------------------------------------------
 INSERT INTO ADMIN (username, first_name, last_name, email, password_hash) VALUES
-('admin_root', 'Admin', 'Root', 'admin@thriftbid.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
-('admin_mod1', 'Jane', 'Ramos', 'mod1@thriftbid.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
-('admin_mod2', 'Carlo', 'Diaz', 'mod2@thriftbid.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
-('admin_mod3', 'Sophia', 'Lim', 'mod3@thriftbid.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
-('admin_mod4', 'Marco', 'Reyes', 'mod4@thriftbid.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a');
+('kyrstie_sanjose', 'Kyrstie', 'Sanjose', 'kyrstie_sanjose@dlsu.edu.ph', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
+('admin_mod1', 'Jane', 'Ramos', 'mod1@example.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
+('admin_mod2', 'Carlo', 'Diaz', 'mod2@example.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
+('admin_mod3', 'Sophia', 'Lim', 'mod3@example.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
+('admin_mod4', 'Marco', 'Reyes', 'mod4@example.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a');
 
 -- ------------------------------------------------------------
 -- SELLER (password: Password123!)
 -- ------------------------------------------------------------
 INSERT INTO SELLER (username, shop_name, password_hash, email, cellphone_number, is_verified, ig_follower_count, seller_status, offense_count) VALUES
-('seller_leila', 'Leila\'s Closet', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'seller_leila@thriftbid.com', '09171234561', 1, 6200, 'Active', 0),
-('thrift_marco', 'Marco Thrift Finds', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'marco@thriftbid.com', '09171234562', 1, 3400, 'Active', 0),
-('vintage_crys', 'Crys Vintage Rack', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'crys@thriftbid.com', '09171234563', 1, 1200, 'Active', 0),
-('closet_jhen', NULL, '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'jhen@thriftbid.com', '09171234564', 0, 850, 'Active', 0),
-('preloved_ken', 'Preloved by Ken', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'ken@thriftbid.com', '09171234565', 1, 2100, 'Active', 0),
-('rack_aya', NULL, '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'aya@thriftbid.com', '09171234566', 1, 400, 'Active', 0);
+('seller_lola', 'Lola\'s Closet', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'seller_lola@example.com', '09171234561', 1, 6200, 'Active', 0),
+('mintea.peaz', 'Mintea Thrifty', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'mintea.peaz@gmail.com', '09171234562', 1, 3400, 'Active', 0),
+('vintage_crys', 'Crys Vintage Rack', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'crys@example.com', '09171234563', 1, 1200, 'Active', 0),
+('closet_jhen', NULL, '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'jhen@example.com', '09171234564', 0, 850, 'Active', 0),
+('preloved_ken', 'Preloved by Ken', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'ken@example.com', '09171234565', 1, 2100, 'Active', 0),
+('daisys.closette', 'Daisy\'s Closette', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'daisys.closette@gmail.com', '09171234566', 1, 400, 'Active', 0);
 
 -- ------------------------------------------------------------
 -- BUYER (password: Password123!)
 -- ------------------------------------------------------------
 INSERT INTO BUYER (username, first_name, last_name, password_hash, email, cellphone_number, is_verified, buyer_status) VALUES
-('ana_delacruz', 'Ana', 'De la Cruz', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'ana_delacruz@thriftbid.com', '09201234561', 1, 'Active'),
-('kai_rowan', 'Kai', 'Rowan', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'kai_rowan@thriftbid.com', '09201234562', 1, 'Active'),
-('james_parker', 'James', 'Parker', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'james_parker@thriftbid.com', '09201234563', 1, 'Active'),
-('riley_avery', 'Riley', 'Avery', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'riley_avery@thriftbid.com', '09201234564', 0, 'Active'),
-('liza_magsaysay', 'Liza', 'Magsaysay', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'liza_magsaysay@thriftbid.com', '09201234565', 1, 'Active'),
-('saige_fuentes', 'Saige', 'Fuentes', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'saige_fuentes@thriftbid.com', '09201234566', 1, 'Active'),
-('john_cruz', 'John', 'Cruz', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'john_cruz@thriftbid.com', '09201234567', 1, 'Active'),
-('mira_santos', 'Mira', 'Santos', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'mira_santos@thriftbid.com', '09201234568', 1, 'Active');
+('ana_delacruz', 'Ana', 'De la Cruz', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'ana_delacruz@example.com', '09201234561', 1, 'Active'),
+('leila_lumbao', 'Leila', 'Lumbao', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'leila_lumbao@dlsu.edu.ph', '09201234562', 1, 'Active'),
+('james_parker', 'James', 'Parker', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'james_parker@example.com', '09201234563', 1, 'Active'),
+('riley_avery', 'Riley', 'Avery', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'riley_avery@example.com', '09201234564', 0, 'Active'),
+('liza_magsaysay', 'Liza', 'Magsaysay', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'liza_magsaysay@example.com', '09201234565', 1, 'Active'),
+('saige_fuentes', 'Saige', 'Fuentes', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'saige_fuentes@example.com', '09201234566', 1, 'Active'),
+('dhens_espina', 'Dhens', 'Espina', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'dhens_espina@dlsu.edu.ph', '09201234567', 1, 'Active'),
+('mira_santos', 'Mira', 'Santos', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'mira_santos@example.com', '09201234568', 1, 'Active');
 
 -- ------------------------------------------------------------
 -- ADDRESSES
@@ -126,50 +126,81 @@ INSERT INTO CATEGORY_SIZES (category_id, size_value) VALUES
 (1, 'M'),
 (1, 'L'),
 (1, 'XL'),
+(1, 'XXL'),
 (2, 'XS'),
 (2, 'S'),
 (2, 'M'),
 (2, 'L'),
+(2, 'XL'),
+(2, 'XXL'),
+(3, 'XS'),
 (3, 'S'),
 (3, 'M'),
 (3, 'L'),
 (3, 'XL'),
+(3, 'XXL'),
+(4, 'XS'),
 (4, 'S'),
 (4, 'M'),
 (4, 'L'),
 (4, 'XL'),
 (4, 'XXL'),
+(5, '22'),
+(5, '23'),
+(5, '24'),
+(5, '25'),
 (5, '26'),
 (5, '27'),
 (5, '28'),
 (5, '29'),
 (5, '30'),
+(5, '31'),
+(5, '32'),
+(5, '33'),
+(5, '34+'),
+(6, 'XS'),
 (6, 'S'),
 (6, 'M'),
 (6, 'L'),
+(6, 'XL'),
+(6, 'XXL'),
+(7, '22'),
+(7, '23'),
+(7, '24'),
+(7, '25'),
+(7, '26'),
 (7, '27'),
 (7, '28'),
 (7, '29'),
 (7, '30'),
 (7, '31'),
 (7, '32'),
-(7, '34'),
+(7, '33'),
+(7, '34+'),
 (8, 'XS'),
 (8, 'S'),
 (8, 'M'),
 (8, 'L'),
+(8, 'XL'),
+(8, 'XXL'),
+(9, 'XS'),
 (9, 'S'),
 (9, 'M'),
 (9, 'L'),
+(9, 'XL'),
+(9, 'XXL'),
 (10, 'XS'),
 (10, 'S'),
 (10, 'M'),
 (10, 'L'),
-(11, '35.5'),
+(10, 'XL'),
+(10, 'XXL'),
+(11, '35'),
 (11, '36'),
 (11, '37'),
 (11, '38'),
 (11, '39'),
+(11, '40'),
 (12, '36'),
 (12, '37'),
 (12, '38'),
@@ -178,25 +209,36 @@ INSERT INTO CATEGORY_SIZES (category_id, size_value) VALUES
 (12, '41'),
 (12, '42'),
 (12, '43'),
+(12, '44'),
+(12, '45'),
+(13, '36'),
 (13, '37'),
 (13, '38'),
 (13, '39'),
 (13, '40'),
 (13, '41'),
 (13, '42'),
+(13, '43'),
+(13, '44'),
 (14, '36'),
 (14, '37'),
 (14, '38'),
 (14, '39'),
 (14, '40'),
-(15, '35.5'),
+(14, '41'),
+(14, '42'),
+(14, '43'),
+(15, '35'),
 (15, '36'),
 (15, '37'),
 (15, '38'),
+(15, '39'),
+(16, '35'),
 (16, '36'),
 (16, '37'),
 (16, '38'),
 (16, '39'),
+(16, '40'),
 (17, 'Mini'),
 (17, 'Small'),
 (17, 'Medium'),
@@ -238,47 +280,40 @@ INSERT INTO BRANDS (brand_name) VALUES
 INSERT INTO PRODUCT_LINES (brand_id, line_name, tier, estimated_price_min, estimated_price_max) VALUES
 (14, 'Lady Dior Bag', 'High', 120000, 350000),
 (14, 'Saddle Bag', 'High', 95000, 260000),
+(14, 'Dior B23 High-Top Sneaker', 'High', 65000, 130000),
 (7, 'Neverfull Tote', 'High', 85000, 160000),
 (7, 'Speedy Monogram', 'High', 70000, 140000),
-(3, 'GG Marmont', 'High', 65000, 140000),
-(3, 'Ophidia Series', 'High', 50000, 110000),
 (7, 'LV Trainer Sneaker', 'High', 75000, 140000),
 (7, 'LV Runner Sneaker', 'High', 60000, 110000),
+(3, 'GG Marmont', 'High', 65000, 140000),
+(3, 'Ophidia Series', 'High', 50000, 110000),
 (3, 'Gucci Ace Sneaker', 'High', 35000, 65000),
 (3, 'Gucci Rhyton Sneaker', 'High', 40000, 75000),
-(14, 'Dior B23 High-Top Sneaker', 'High', 65000, 130000),
 (11, 'Tabby Collection', 'Mid', 18000, 38000),
 (11, 'Signature Canvas Series', 'Mid', 10000, 25000),
 (1, 'Air Jordan', 'Mid', 5500, 15000),
 (1, 'Nike Dunk', 'Mid', 4000, 8500),
 (1, 'Air Force 1', 'Mid', 3500, 6500),
-(10, '1460 8-Eye Boot', 'Mid', 4500, 9500),
+(1, 'Nike Tech Fleece', 'Mid', 2500, 5500),
 (2, 'Samba', 'Mid', 3200, 6000),
-(9, '501 Original Denim', 'Mid', 2200, 5500),
-(5, 'Studio Collection', 'Low', 2500, 7500),
-(5, 'Zara Woman', 'Low', 800, 3500),
-(4, 'Run Star Hike', 'Low', 3500, 6000),
+(2, 'Adidas Originals Firebird', 'Mid', 2200, 4500),
 (4, 'Chuck Taylor All Star', 'Low', 1800, 3500),
-(8, 'Premium Selection', 'Low', 1800, 6500),
+(4, 'Run Star Hike', 'Low', 3500, 6000),
+(10, '1460 8-Eye Boot', 'Mid', 4500, 9500),
+(10, '1461 Oxford Shoe', 'Mid', 4000, 8500),
+(9, '501 Original Denim', 'Mid', 2200, 5500),
+(9, '511 Slim Fit', 'Mid', 2000, 5000),
 (6, 'HEATTECH Line', 'Low', 500, 1900),
 (6, 'AIRism Apparel', 'Low', 400, 1500),
+(5, 'Zara Woman', 'Low', 800, 3500),
+(5, 'Studio Collection', 'Low', 2500, 7500),
+(5, 'Zara Basics', 'Low', 300, 2000),
+(8, 'Premium Selection', 'Low', 1800, 6500),
+(8, 'H&M Divided', 'Low', 600, 2500),
 (12, 'Going Out Collection', 'Low', 600, 3000),
+(12, 'Bershka Denim', 'Low', 700, 2800),
 (13, 'Shein Basics', 'Low', 100, 900),
-(1, 'Generic Vintage Nike', 'Mid', 800, 4000),
-(5, 'Generic Zara', 'Low', 300, 2000),
-(15, 'Generic / No Brand', 'Unbranded', 50, 1500),
-(1, 'Unknown', 'Unbranded', 0, 0),
-(2, 'Unknown', 'Unbranded', 0, 0),
-(3, 'Unknown', 'Unbranded', 0, 0),
-(4, 'Unknown', 'Unbranded', 0, 0),
-(6, 'Unknown', 'Unbranded', 0, 0),
-(7, 'Unknown', 'Unbranded', 0, 0),
-(8, 'Unknown', 'Unbranded', 0, 0),
-(9, 'Unknown', 'Unbranded', 0, 0),
-(10, 'Unknown', 'Unbranded', 0, 0),
-(11, 'Unknown', 'Unbranded', 0, 0),
-(12, 'Unknown', 'Unbranded', 0, 0),
-(14, 'Unknown', 'Unbranded', 0, 0);
+(15, 'Thrifted / No Brand Label', 'Unbranded', 50, 1500);
 
 -- ------------------------------------------------------------
 -- COURIERS
@@ -289,315 +324,315 @@ INSERT INTO COURIERS (courier_name) VALUES ('J&T Express'),('LBC'),('Ninja Van')
 -- LISTINGS (10-15+ per category = 299 total) + LISTING_IMAGES
 -- ------------------------------------------------------------
 INSERT INTO LISTINGS (title, description, price, original_price, condition_grade, color, material, target_gender, made_in, is_active, created_at, category_id, seller_id, product_line_id, size_id) VALUES
-('Classic Blouse', 'A lightly used blouse from Unbranded. Well-maintained and true to size, see photos for details.', 517.33, 1031.21, 'Lightly Used', 'White', 'Rayon', 'Women', 'Philippines', 1, '2025-08-12 07:32:00', 1, 1, 31, 1),
-('Minimalist Shein Blouse', 'A well used blouse from Shein. Well-maintained and true to size, see photos for details.', 79.43, 224.38, 'Well Used', 'Red', 'Cotton', 'Women', 'China', 1, '2025-12-19 19:16:00', 1, 3, 28, 1),
-('Y2K ZARA Blouse', 'A well used blouse from ZARA. Well-maintained and true to size, see photos for details.', 408.34, 1281.5, 'Well Used', 'Black', 'Polyester', 'Unisex', 'China', 1, '2025-04-14 12:17:00', 1, 5, 30, 3),
-('Timeless H&M Blouse', 'A lightly used blouse from H&M. Well-maintained and true to size, see photos for details.', 1688.05, 4310.46, 'Lightly Used', 'Green', 'Silk', 'Women', 'Indonesia', 1, '2025-08-13 21:20:00', 1, 6, 24, 3),
-('Limited Edition Bershka Blouse', NULL, 759.26, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-05-27 12:56:00', 1, 3, 42, 1),
-('Vintage H&M Blouse', 'A like new blouse from H&M. Well-maintained and true to size, see photos for details.', 3442.66, 6019.77, 'Like New', 'Brown', 'Polyester', 'Women', 'China', 1, '2025-04-23 04:40:00', 1, 3, 24, 2),
-('Timeless Bershka Blouse', NULL, 474.03, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-04-28 21:56:00', 1, 5, 42, 4),
-('Limited Edition Blouse', 'A like new blouse from Unbranded. Well-maintained and true to size, see photos for details.', 929.76, 1459.24, 'Like New', 'Yellow', 'Cotton', 'Unisex', 'France', 1, '2026-06-04 19:12:00', 1, 3, 31, 1),
-('Retro Shein Blouse', NULL, 655.5, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-09-03 01:15:00', 1, 3, 28, 4),
-('Limited Edition ZARA Blouse', NULL, 286.46, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-05-02 17:10:00', 1, 6, 30, 4),
-('Timeless Shein Blouse', NULL, 142.8, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-11-16 12:42:00', 1, 5, 28, 4),
-('Timeless Bershka Blouse', 'A like new blouse from Bershka. Well-maintained and true to size, see photos for details.', 467.68, 771.89, 'Like New', 'Brown', 'Rayon', 'Women', 'China', 1, '2025-03-02 07:04:00', 1, 5, 42, 4),
-('Y2K Uniqlo Blouse', 'A like new blouse from Uniqlo. Well-maintained and true to size, see photos for details.', 861.43, 1429.07, 'Like New', 'Green', 'Polyester', 'Unisex', 'Japan', 1, '2025-04-07 03:42:00', 1, 6, 36, 4),
-('Y2K Sleeveless', NULL, 813.52, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-07-14 17:28:00', 2, 1, 31, 6),
-('Everyday Bershka Sleeveless', NULL, 198.13, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-04-11 01:41:00', 2, 2, 42, 8),
-('Retro ZARA Sleeveless', 'A lightly used sleeveless from ZARA. Well-maintained and true to size, see photos for details.', 693.29, 1834.15, 'Lightly Used', 'Black', 'Silk', 'Women', 'South Korea', 1, '2026-03-10 22:46:00', 2, 2, 30, 7),
-('Y2K ZARA Sleeveless', 'A lightly used sleeveless from ZARA. Well-maintained and true to size, see photos for details.', 416.07, 953.57, 'Lightly Used', 'Beige', 'Cotton', 'Men', 'Indonesia', 1, '2026-02-18 03:56:00', 2, 5, 21, 6),
-('Signature Uniqlo Sleeveless', 'A like new sleeveless from Uniqlo. Well-maintained and true to size, see photos for details.', 320.22, 575.0, 'Like New', 'Cream', 'Cotton', 'Women', 'India', 1, '2025-04-13 02:34:00', 2, 2, 36, 8),
-('Retro ZARA Sleeveless', 'A like new sleeveless from ZARA. Well-maintained and true to size, see photos for details.', 908.02, 1339.85, 'Like New', 'Multicolor', 'Rayon', 'Women', 'Bangladesh', 1, '2025-04-17 04:16:00', 2, 2, 30, 8),
-('Vintage Uniqlo Sleeveless', 'A lightly used sleeveless from Uniqlo. Well-maintained and true to size, see photos for details.', 375.39, 955.95, 'Lightly Used', 'Black', 'Cotton', 'Men', 'France', 1, '2025-01-04 10:49:00', 2, 5, 26, 7),
-('Oversized Shein Sleeveless', 'A lightly used sleeveless from Shein. Well-maintained and true to size, see photos for details.', 245.03, 652.82, 'Lightly Used', 'Black', 'Linen', 'Men', 'Vietnam', 1, '2025-05-11 01:19:00', 2, 6, 28, 9),
-('Preloved Sleeveless', NULL, 196.18, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-08-31 05:51:00', 2, 1, 31, 8),
-('Classic Bershka Sleeveless', 'A lightly used sleeveless from Bershka. Well-maintained and true to size, see photos for details.', 509.78, 1048.11, 'Lightly Used', 'Navy', 'Polyester', 'Women', 'Thailand', 1, '2026-01-27 01:54:00', 2, 1, 42, 7),
-('Minimalist Uniqlo Sleeveless', 'A brand new sleeveless from Uniqlo. Well-maintained and true to size, see photos for details.', 1033.03, 1463.58, 'Brand New', 'Multicolor', 'Rayon', 'Women', 'Bangladesh', 1, '2025-01-29 03:56:00', 2, 2, 26, 7),
-('Everyday Shein Sleeveless', 'A lightly used sleeveless from Shein. Well-maintained and true to size, see photos for details.', 182.86, 408.16, 'Lightly Used', 'Blue', 'Cotton', 'Men', 'Philippines', 1, '2026-07-06 21:46:00', 2, 4, 28, 8),
-('Oversized Shein Sleeveless', 'A lightly used sleeveless from Shein. Well-maintained and true to size, see photos for details.', 169.11, 360.95, 'Lightly Used', 'Yellow', 'Polyester', 'Women', 'Indonesia', 1, '2025-06-28 19:36:00', 2, 3, 28, 6),
-('Everyday H&M Long sleeve', 'A lightly used long sleeve from H&M. Well-maintained and true to size, see photos for details.', 2838.13, 5530.56, 'Lightly Used', 'Navy', 'Polyester', 'Men', 'France', 1, '2025-12-10 02:52:00', 3, 4, 24, 12),
-('Oversized H&M Long sleeve', 'A like new long sleeve from H&M. Well-maintained and true to size, see photos for details.', 310.88, 541.04, 'Like New', 'Multicolor', 'Rayon', 'Women', 'Thailand', 1, '2026-05-22 12:15:00', 3, 1, 38, 10),
-('Minimalist H&M Long sleeve', 'A brand new long sleeve from H&M. Well-maintained and true to size, see photos for details.', 826.96, 1020.58, 'Brand New', 'Multicolor', 'Rayon', 'Kids', 'India', 1, '2026-03-30 19:52:00', 3, 2, 38, 13),
-('Classic ZARA Long sleeve', 'A well used long sleeve from ZARA. Well-maintained and true to size, see photos for details.', 335.18, 1047.78, 'Well Used', 'Brown', 'Linen', 'Women', 'Bangladesh', 1, '2025-05-22 04:14:00', 3, 2, 30, 12),
-('Oversized Bershka Long sleeve', 'A lightly used long sleeve from Bershka. Well-maintained and true to size, see photos for details.', 491.32, 975.18, 'Lightly Used', 'Gray', 'Cotton', 'Unisex', 'India', 1, '2026-05-04 00:22:00', 3, 3, 42, 13),
-('Vintage H&M Long sleeve', 'A lightly used long sleeve from H&M. Well-maintained and true to size, see photos for details.', 684.91, 1447.68, 'Lightly Used', 'Green', 'Polyester', 'Kids', 'Bangladesh', 1, '2026-02-08 18:36:00', 3, 3, 38, 13),
-('Vintage H&M Long sleeve', 'A like new long sleeve from H&M. Well-maintained and true to size, see photos for details.', 2086.01, 3107.81, 'Like New', 'Pink', 'Linen', 'Unisex', 'South Korea', 1, '2026-07-07 01:22:00', 3, 1, 24, 12),
-('Signature H&M Long sleeve', 'A lightly used long sleeve from H&M. Well-maintained and true to size, see photos for details.', 1722.65, 4450.66, 'Lightly Used', 'Navy', 'Linen', 'Unisex', 'Vietnam', 1, '2025-04-28 05:19:00', 3, 2, 24, 10),
-('Classic Bershka Long sleeve', 'A brand new long sleeve from Bershka. Well-maintained and true to size, see photos for details.', 827.28, 1234.05, 'Brand New', 'Cream', 'Linen', 'Unisex', 'India', 1, '2025-02-12 11:34:00', 3, 6, 42, 11),
-('Limited Edition Bershka Long sleeve', 'A lightly used long sleeve from Bershka. Well-maintained and true to size, see photos for details.', 669.84, 1564.47, 'Lightly Used', 'Beige', 'Silk', 'Women', 'Bangladesh', 1, '2025-10-04 19:51:00', 3, 4, 42, 10),
-('Retro H&M Long sleeve', 'A well used long sleeve from H&M. Well-maintained and true to size, see photos for details.', 977.81, 3381.06, 'Well Used', 'Red', 'Polyester', 'Women', 'USA', 1, '2025-12-15 08:56:00', 3, 1, 24, 12),
-('Y2K Bershka Long sleeve', 'A lightly used long sleeve from Bershka. Well-maintained and true to size, see photos for details.', 515.6, 1063.53, 'Lightly Used', 'White', 'Linen', 'Women', 'Thailand', 1, '2025-11-10 21:37:00', 3, 4, 42, 11),
-('Cropped ZARA Long sleeve', 'A like new long sleeve from ZARA. Well-maintained and true to size, see photos for details.', 1046.89, 1651.98, 'Like New', 'Cream', 'Polyester', 'Women', 'Thailand', 1, '2025-10-11 23:37:00', 3, 6, 21, 13),
-('Signature H&M Shirt', 'A brand new shirt from H&M. Well-maintained and true to size, see photos for details.', 3474.35, 4400.79, 'Brand New', 'Beige', 'Silk', 'Women', 'Philippines', 1, '2025-10-19 15:30:00', 4, 2, 24, 16),
-('Y2K Bershka Shirt', 'A lightly used shirt from Bershka. Well-maintained and true to size, see photos for details.', 466.76, 1299.75, 'Lightly Used', 'Beige', 'Rayon', 'Unisex', 'China', 1, '2025-05-02 17:48:00', 4, 1, 42, 14),
-('Y2K H&M Shirt', 'A like new shirt from H&M. Well-maintained and true to size, see photos for details.', 3360.73, 6253.67, 'Like New', 'Brown', 'Linen', 'Men', 'Vietnam', 1, '2025-06-27 17:04:00', 4, 5, 24, 17),
-('Oversized Shirt', 'A brand new shirt from Unbranded. Well-maintained and true to size, see photos for details.', 106.74, 153.21, 'Brand New', 'Blue', 'Rayon', 'Men', 'Italy', 1, '2025-04-28 17:14:00', 4, 4, 31, 16),
-('Cropped ZARA Shirt', 'A lightly used shirt from ZARA. Well-maintained and true to size, see photos for details.', 829.69, 2065.48, 'Lightly Used', 'Pink', 'Linen', 'Women', 'South Korea', 1, '2025-03-24 19:02:00', 4, 3, 21, 18),
-('Cropped ZARA Shirt', 'A lightly used shirt from ZARA. Well-maintained and true to size, see photos for details.', 759.93, 1696.42, 'Lightly Used', 'Cream', 'Polyester', 'Women', 'Indonesia', 1, '2025-10-12 05:37:00', 4, 6, 30, 18),
-('Retro Bershka Shirt', NULL, 418.9, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-02-15 17:02:00', 4, 3, 42, 16),
-('Vintage Uniqlo Shirt', NULL, 590.04, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-07-10 14:26:00', 4, 3, 36, 16),
-('Classic ZARA Shirt', 'A lightly used shirt from ZARA. Well-maintained and true to size, see photos for details.', 598.37, 1349.61, 'Lightly Used', 'Blue', 'Silk', 'Unisex', 'South Korea', 1, '2025-01-30 20:38:00', 4, 5, 21, 16),
-('Limited Edition Shirt', NULL, 143.83, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-06-07 15:59:00', 4, 4, 31, 14),
-('Classic Shirt', 'A lightly used shirt from Unbranded. Well-maintained and true to size, see photos for details.', 352.65, 849.33, 'Lightly Used', 'Gray', 'Rayon', 'Men', 'Vietnam', 1, '2025-10-10 13:21:00', 4, 6, 31, 16),
-('Oversized ZARA Shirt', 'A lightly used shirt from ZARA. Well-maintained and true to size, see photos for details.', 478.71, 941.26, 'Lightly Used', 'Brown', 'Polyester', 'Men', 'Italy', 1, '2025-02-14 10:47:00', 4, 4, 30, 18),
-('Preloved Uniqlo Shirt', 'A heavily used shirt from Uniqlo. Well-maintained and true to size, see photos for details.', 116.85, 509.68, 'Heavily Used', 'Black', 'Polyester', 'Women', 'Indonesia', 1, '2025-03-18 15:50:00', 4, 2, 26, 18),
-('Retro Shorts', 'A heavily used shorts from Unbranded. Well-maintained and true to size, see photos for details.', 140.08, 757.52, 'Heavily Used', 'Gray', 'Denim', 'Women', 'Indonesia', 1, '2025-08-21 23:05:00', 5, 5, 31, 22),
-('Preloved Shorts', NULL, 344.64, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-09-08 16:26:00', 5, 3, 31, 19),
-('Retro ZARA Shorts', 'A lightly used shorts from ZARA. Well-maintained and true to size, see photos for details.', 514.72, 1146.03, 'Lightly Used', 'Brown', 'Corduroy', 'Men', 'South Korea', 1, '2025-01-10 14:57:00', 5, 2, 30, 19),
-('Retro Shein Shorts', 'A lightly used shorts from Shein. Well-maintained and true to size, see photos for details.', 288.13, 782.67, 'Lightly Used', 'Pink', 'Polyester', 'Men', 'Thailand', 1, '2025-01-23 21:25:00', 5, 3, 28, 22),
-('Vintage ZARA Shorts', 'A like new shorts from ZARA. Well-maintained and true to size, see photos for details.', 906.47, 1368.02, 'Like New', 'Multicolor', 'Denim', 'Women', 'South Korea', 1, '2026-01-09 23:08:00', 5, 5, 30, 21),
-('Retro ZARA Shorts', NULL, 267.6, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-06-18 08:58:00', 5, 2, 30, 20),
-('Minimalist H&M Shorts', 'A well used shorts from H&M. Well-maintained and true to size, see photos for details.', 154.75, 475.3, 'Well Used', 'Brown', 'Corduroy', 'Kids', 'Bangladesh', 1, '2025-04-03 12:00:00', 5, 6, 38, 21),
-('Limited Edition Shein Shorts', 'A like new shorts from Shein. Well-maintained and true to size, see photos for details.', 449.26, 832.2, 'Like New', 'White', 'Corduroy', 'Unisex', 'France', 1, '2026-02-23 03:08:00', 5, 4, 28, 21),
-('Preloved Levi\'s Shorts', 'A well used shorts from Levi\'s. Well-maintained and true to size, see photos for details.', 267.93, 853.64, 'Well Used', 'Navy', 'Corduroy', 'Men', 'Thailand', 1, '2026-03-01 20:06:00', 5, 1, 39, 20),
-('Everyday ZARA Shorts', NULL, 94.85, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2026-01-03 01:25:00', 5, 4, 30, 22),
-('Y2K ZARA Shorts', 'A brand new shorts from ZARA. Well-maintained and true to size, see photos for details.', 276.63, 385.98, 'Brand New', 'Beige', 'Cotton', 'Women', 'Bangladesh', 1, '2025-08-10 07:21:00', 5, 1, 30, 22),
-('Preloved ZARA Shorts', 'A well used shorts from ZARA. Well-maintained and true to size, see photos for details.', 141.58, 524.07, 'Well Used', 'Cream', 'Cotton', 'Men', 'Philippines', 1, '2025-09-29 01:08:00', 5, 5, 30, 21),
-('Vintage H&M Shorts', 'A like new shorts from H&M. Well-maintained and true to size, see photos for details.', 683.21, 1345.42, 'Like New', 'Cream', 'Polyester', 'Women', 'Philippines', 1, '2026-05-06 12:27:00', 5, 5, 38, 23),
-('Retro Bershka Skirts', 'A brand new skirts from Bershka. Well-maintained and true to size, see photos for details.', 736.71, 969.77, 'Brand New', 'Red', 'Corduroy', 'Kids', 'Bangladesh', 1, '2026-04-10 16:38:00', 6, 5, 42, 24),
-('Cropped Shein Skirts', 'A like new skirts from Shein. Well-maintained and true to size, see photos for details.', 194.71, 350.04, 'Like New', 'Blue', 'Polyester', 'Kids', 'Indonesia', 1, '2025-03-10 02:53:00', 6, 2, 28, 25),
-('Oversized Bershka Skirts', NULL, 709.93, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-12-29 21:48:00', 6, 2, 42, 26),
-('Classic ZARA Skirts', 'A like new skirts from ZARA. Well-maintained and true to size, see photos for details.', 1390.46, 2573.19, 'Like New', 'White', 'Polyester', 'Unisex', 'USA', 1, '2025-10-13 18:14:00', 6, 3, 21, 26),
-('Limited Edition Bershka Skirts', 'A well used skirts from Bershka. Well-maintained and true to size, see photos for details.', 135.22, 563.27, 'Well Used', 'Multicolor', 'Corduroy', 'Women', 'Thailand', 1, '2025-02-01 02:47:00', 6, 6, 42, 25),
-('Vintage H&M Skirts', NULL, 331.95, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-06-09 05:48:00', 6, 3, 38, 25),
-('Limited Edition ZARA Skirts', 'A lightly used skirts from ZARA. Well-maintained and true to size, see photos for details.', 291.31, 666.47, 'Lightly Used', 'Red', 'Corduroy', 'Women', 'Indonesia', 1, '2026-05-14 16:42:00', 6, 3, 30, 25),
-('Classic ZARA Skirts', NULL, 247.43, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-01-08 15:47:00', 6, 2, 30, 25),
-('Vintage H&M Skirts', 'A lightly used skirts from H&M. Well-maintained and true to size, see photos for details.', 418.53, 902.85, 'Lightly Used', 'Red', 'Denim', 'Women', 'Thailand', 1, '2026-03-23 00:29:00', 6, 2, 38, 25),
-('Cropped Shein Skirts', NULL, 121.38, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-01-06 02:27:00', 6, 3, 28, 24),
-('Everyday H&M Skirts', 'A lightly used skirts from H&M. Well-maintained and true to size, see photos for details.', 564.26, 1183.47, 'Lightly Used', 'Brown', 'Polyester', 'Unisex', 'China', 1, '2025-04-27 16:32:00', 6, 4, 38, 26),
-('Cropped H&M Skirts', 'A like new skirts from H&M. Well-maintained and true to size, see photos for details.', 342.25, 537.58, 'Like New', 'White', 'Cotton', 'Kids', 'Indonesia', 1, '2026-04-21 18:48:00', 6, 1, 38, 24),
-('Classic ZARA Skirts', NULL, 535.0, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-11-14 14:28:00', 6, 4, 30, 25),
-('Vintage Levi\'s Pants', 'A like new pants from Levi\'s. Well-maintained and true to size, see photos for details.', 451.84, 744.47, 'Like New', 'Pink', 'Corduroy', 'Men', 'Thailand', 1, '2026-04-06 18:41:00', 7, 3, 39, 33),
-('Limited Edition Levi\'s Pants', NULL, 503.44, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-06-26 01:15:00', 7, 4, 39, 27),
-('Limited Edition Bershka Pants', 'A lightly used pants from Bershka. Well-maintained and true to size, see photos for details.', 860.29, 2068.7, 'Lightly Used', 'Cream', 'Polyester', 'Men', 'Philippines', 1, '2025-12-09 02:21:00', 7, 5, 42, 31),
-('Classic Pants', 'A brand new pants from Unbranded. Well-maintained and true to size, see photos for details.', 390.48, 499.84, 'Brand New', 'Multicolor', 'Corduroy', 'Women', 'Thailand', 1, '2025-11-14 17:24:00', 7, 2, 31, 29),
-('Everyday Levi\'s Pants', 'A like new pants from Levi\'s. Well-maintained and true to size, see photos for details.', 745.21, 1378.03, 'Like New', 'Beige', 'Cotton', 'Women', 'China', 1, '2026-07-07 23:56:00', 7, 3, 39, 29),
-('Retro ZARA Pants', 'A lightly used pants from ZARA. Well-maintained and true to size, see photos for details.', 545.44, 1526.01, 'Lightly Used', 'Red', 'Cotton', 'Kids', 'India', 1, '2026-04-05 07:34:00', 7, 2, 30, 33),
-('Signature Uniqlo Pants', 'A heavily used pants from Uniqlo. Well-maintained and true to size, see photos for details.', 174.25, 1050.83, 'Heavily Used', 'Yellow', 'Corduroy', 'Kids', 'Italy', 1, '2025-05-22 08:03:00', 7, 6, 36, 31),
-('Vintage Levi\'s Pants', 'A lightly used pants from Levi\'s. Well-maintained and true to size, see photos for details.', 376.94, 746.74, 'Lightly Used', 'Green', 'Polyester', 'Unisex', 'Japan', 1, '2026-02-10 16:23:00', 7, 2, 39, 29),
-('Preloved ZARA Pants', NULL, 302.01, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-02-09 09:58:00', 7, 1, 30, 29),
-('Y2K ZARA Pants', 'A lightly used pants from ZARA. Well-maintained and true to size, see photos for details.', 250.26, 666.61, 'Lightly Used', 'Navy', 'Corduroy', 'Women', 'France', 1, '2025-11-05 03:03:00', 7, 6, 30, 30),
-('Limited Edition Levi\'s Pants', 'A lightly used pants from Levi\'s. Well-maintained and true to size, see photos for details.', 1107.26, 3161.2, 'Lightly Used', 'Red', 'Cotton', 'Men', 'Vietnam', 1, '2025-03-29 16:23:00', 7, 4, 19, 31),
-('Minimalist Levi\'s Pants', 'A heavily used pants from Levi\'s. Well-maintained and true to size, see photos for details.', 694.12, 3337.85, 'Heavily Used', 'Multicolor', 'Denim', 'Unisex', 'Thailand', 1, '2025-05-17 01:22:00', 7, 6, 19, 30),
-('Cropped ZARA Pants', 'A well used pants from ZARA. Well-maintained and true to size, see photos for details.', 565.86, 1644.89, 'Well Used', 'Red', 'Polyester', 'Women', 'Bangladesh', 1, '2025-09-17 01:48:00', 7, 1, 30, 32),
-('Retro Bershka Dress', 'A lightly used dress from Bershka. Well-maintained and true to size, see photos for details.', 539.69, 1413.69, 'Lightly Used', 'Navy', 'Chiffon', 'Women', 'Bangladesh', 1, '2025-03-26 23:27:00', 8, 1, 27, 36),
-('Signature Bershka Dress', 'A like new dress from Bershka. Well-maintained and true to size, see photos for details.', 579.87, 999.95, 'Like New', 'Green', 'Cotton', 'Men', 'USA', 1, '2026-03-22 08:40:00', 8, 1, 27, 34),
-('Vintage Dress', 'A heavily used dress from Unbranded. Well-maintained and true to size, see photos for details.', 12.87, 100.46, 'Heavily Used', 'Cream', 'Silk', 'Women', 'India', 1, '2025-06-07 21:28:00', 8, 6, 31, 35),
-('Retro Dress', 'A like new dress from Unbranded. Well-maintained and true to size, see photos for details.', 46.72, 87.57, 'Like New', 'Yellow', 'Chiffon', 'Unisex', 'China', 1, '2025-09-24 22:28:00', 8, 3, 31, 37),
-('Limited Edition ZARA Dress', NULL, 385.61, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-11-24 21:22:00', 8, 2, 30, 34),
-('Limited Edition Dress', NULL, 378.55, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-06-28 11:32:00', 8, 5, 31, 36),
-('Classic ZARA Dress', 'A like new dress from ZARA. Well-maintained and true to size, see photos for details.', 597.7, 927.15, 'Like New', 'Yellow', 'Polyester', 'Men', 'China', 1, '2025-11-13 12:45:00', 8, 2, 30, 35),
-('Preloved Bershka Dress', 'A lightly used dress from Bershka. Well-maintained and true to size, see photos for details.', 908.52, 2442.68, 'Lightly Used', 'Yellow', 'Cotton', 'Unisex', 'Bangladesh', 1, '2025-11-08 05:10:00', 8, 6, 27, 34),
-('Minimalist Bershka Dress', 'A like new dress from Bershka. Well-maintained and true to size, see photos for details.', 1221.33, 2020.34, 'Like New', 'Beige', 'Satin', 'Men', 'India', 1, '2025-02-12 00:05:00', 8, 2, 27, 36),
-('Timeless Dress', 'A lightly used dress from Unbranded. Well-maintained and true to size, see photos for details.', 365.23, 750.27, 'Lightly Used', 'Multicolor', 'Chiffon', 'Women', 'China', 1, '2025-03-03 05:28:00', 8, 6, 31, 34),
-('Minimalist Dress', 'A well used dress from Unbranded. Well-maintained and true to size, see photos for details.', 151.92, 550.79, 'Well Used', 'Cream', 'Silk', 'Women', 'China', 1, '2025-09-05 14:07:00', 8, 2, 31, 36),
-('Cropped ZARA Dress', 'A well used dress from ZARA. Well-maintained and true to size, see photos for details.', 612.33, 1833.93, 'Well Used', 'Gray', 'Silk', 'Women', 'Vietnam', 1, '2026-06-12 14:31:00', 8, 3, 30, 37),
-('Classic Dress', 'A like new dress from Unbranded. Well-maintained and true to size, see photos for details.', 597.23, 916.4, 'Like New', 'Multicolor', 'Chiffon', 'Women', 'Philippines', 1, '2026-03-18 04:56:00', 8, 4, 31, 35),
-('Preloved Shein Co-ords', 'A lightly used co-ords from Shein. Well-maintained and true to size, see photos for details.', 241.61, 503.4, 'Lightly Used', 'Blue', 'Satin', 'Men', 'China', 1, '2025-04-10 12:23:00', 9, 1, 28, 40),
-('Preloved Co-ords', NULL, 916.51, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2026-06-12 04:20:00', 9, 1, 31, 38),
-('Oversized H&M Co-ords', 'A lightly used co-ords from H&M. Well-maintained and true to size, see photos for details.', 2057.38, 5131.08, 'Lightly Used', 'Black', 'Silk', 'Women', 'China', 1, '2025-11-12 23:55:00', 9, 4, 24, 40),
-('Limited Edition Co-ords', NULL, 486.44, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-09-06 01:36:00', 9, 4, 31, 38),
-('Y2K H&M Co-ords', 'A like new co-ords from H&M. Well-maintained and true to size, see photos for details.', 998.76, 1561.79, 'Like New', 'Green', 'Cotton', 'Men', 'Bangladesh', 1, '2025-11-29 21:30:00', 9, 1, 38, 39),
-('Signature Co-ords', NULL, 311.61, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-05-11 06:15:00', 9, 3, 31, 40),
-('Timeless Co-ords', NULL, 239.0, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2026-05-16 10:30:00', 9, 3, 31, 38),
-('Timeless Co-ords', 'A like new co-ords from Unbranded. Well-maintained and true to size, see photos for details.', 830.82, 1236.65, 'Like New', 'Cream', 'Polyester', 'Women', 'France', 1, '2025-03-22 11:59:00', 9, 6, 31, 39),
-('Classic Co-ords', 'A lightly used co-ords from Unbranded. Well-maintained and true to size, see photos for details.', 186.27, 401.56, 'Lightly Used', 'Yellow', 'Polyester', 'Men', 'Philippines', 1, '2026-02-28 10:45:00', 9, 3, 31, 40),
-('Everyday Shein Co-ords', 'A lightly used co-ords from Shein. Well-maintained and true to size, see photos for details.', 164.12, 356.93, 'Lightly Used', 'Cream', 'Cotton', 'Men', 'Italy', 1, '2025-02-08 05:26:00', 9, 6, 28, 39),
-('Everyday H&M Co-ords', 'A well used co-ords from H&M. Well-maintained and true to size, see photos for details.', 1645.14, 6163.74, 'Well Used', 'Green', 'Satin', 'Women', 'Vietnam', 1, '2026-04-25 08:12:00', 9, 6, 24, 39),
-('Oversized Bershka Co-ords', 'A brand new co-ords from Bershka. Well-maintained and true to size, see photos for details.', 838.63, 1021.19, 'Brand New', 'Pink', 'Chiffon', 'Women', 'China', 1, '2025-04-08 05:08:00', 9, 6, 27, 38),
-('Vintage Shein Co-ords', NULL, 109.71, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-09-25 20:23:00', 9, 2, 28, 39),
-('Retro Nike Athleisure', 'A lightly used athleisure from Nike. Well-maintained and true to size, see photos for details.', 1229.22, 2453.9, 'Lightly Used', 'Cream', 'Silk', 'Men', 'Indonesia', 1, '2026-01-12 19:14:00', 10, 6, 32, 41),
-('Timeless Athleisure', 'A lightly used athleisure from Unbranded. Well-maintained and true to size, see photos for details.', 537.7, 1154.7, 'Lightly Used', 'Gray', 'Cotton', 'Women', 'Bangladesh', 1, '2026-01-06 02:58:00', 10, 6, 31, 43),
-('Preloved Uniqlo Athleisure', 'A like new athleisure from Uniqlo. Well-maintained and true to size, see photos for details.', 933.59, 1807.98, 'Like New', 'Yellow', 'Chiffon', 'Unisex', 'South Korea', 1, '2026-06-10 13:29:00', 10, 5, 36, 44),
-('Vintage Uniqlo Athleisure', 'A lightly used athleisure from Uniqlo. Well-maintained and true to size, see photos for details.', 488.79, 1354.6, 'Lightly Used', 'Black', 'Cotton', 'Kids', 'South Korea', 1, '2025-10-21 13:11:00', 10, 1, 36, 42),
-('Minimalist Athleisure', NULL, 891.82, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-05-02 05:34:00', 10, 4, 31, 44),
-('Timeless Adidas Athleisure', NULL, 728.89, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-07-12 13:34:00', 10, 6, 33, 42),
-('Signature Adidas Athleisure', 'A like new athleisure from Adidas. Well-maintained and true to size, see photos for details.', 1564.33, 2481.08, 'Like New', 'White', 'Cotton', 'Unisex', 'Japan', 1, '2025-01-17 07:13:00', 10, 2, 33, 44),
-('Limited Edition Nike Athleisure', 'A lightly used athleisure from Nike. Well-maintained and true to size, see photos for details.', 647.8, 1248.43, 'Lightly Used', 'Brown', 'Satin', 'Women', 'India', 1, '2025-11-25 07:19:00', 10, 2, 29, 41),
-('Timeless Uniqlo Athleisure', 'A lightly used athleisure from Uniqlo. Well-maintained and true to size, see photos for details.', 845.94, 1641.68, 'Lightly Used', 'Multicolor', 'Chiffon', 'Unisex', 'USA', 1, '2026-03-03 13:09:00', 10, 1, 36, 42),
-('Everyday Adidas Athleisure', NULL, 628.69, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-06-27 04:24:00', 10, 3, 33, 42),
-('Timeless Uniqlo Athleisure', NULL, 844.65, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-07-15 01:17:00', 10, 2, 36, 43),
-('Y2K Nike Athleisure', 'A well used athleisure from Nike. Well-maintained and true to size, see photos for details.', 277.24, 1112.33, 'Well Used', 'Red', 'Silk', 'Kids', 'Philippines', 1, '2025-07-14 23:07:00', 10, 1, 32, 42),
-('Cropped Uniqlo Athleisure', 'A lightly used athleisure from Uniqlo. Well-maintained and true to size, see photos for details.', 528.73, 1286.0, 'Lightly Used', 'Green', 'Chiffon', 'Women', 'Thailand', 1, '2025-11-24 06:23:00', 10, 3, 36, 44),
-('Limited Edition ZARA Heels', 'A heavily used heels from ZARA. Well-maintained and true to size, see photos for details.', 93.51, 633.53, 'Heavily Used', 'Gray', 'Canvas', 'Women', 'Indonesia', 1, '2025-12-12 08:48:00', 11, 3, 30, 49),
-('Vintage Coach Heels', NULL, 964.64, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-06-21 01:53:00', 11, 2, 41, 49),
-('Signature ZARA Heels', 'A like new heels from ZARA. Well-maintained and true to size, see photos for details.', 186.49, 315.54, 'Like New', 'Red', 'Leather', 'Men', 'Indonesia', 1, '2026-05-10 21:31:00', 11, 1, 30, 48),
-('Y2K ZARA Heels', 'A lightly used heels from ZARA. Well-maintained and true to size, see photos for details.', 843.03, 1670.49, 'Lightly Used', 'White', 'Leather', 'Women', 'Italy', 1, '2026-06-24 08:52:00', 11, 5, 30, 47),
-('Oversized Heels', 'A like new heels from Unbranded. Well-maintained and true to size, see photos for details.', 653.12, 997.92, 'Like New', 'Cream', 'Leather', 'Women', 'Japan', 1, '2026-05-03 01:40:00', 11, 4, 31, 49),
-('Vintage Heels', NULL, 82.8, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-08-24 06:57:00', 11, 6, 31, 47),
-('Oversized Shein Heels', 'A lightly used heels from Shein. Well-maintained and true to size, see photos for details.', 120.42, 243.48, 'Lightly Used', 'Black', 'Canvas', 'Men', 'Thailand', 1, '2025-03-20 09:10:00', 11, 1, 28, 45),
-('Vintage ZARA Heels', 'A brand new heels from ZARA. Well-maintained and true to size, see photos for details.', 706.55, 879.01, 'Brand New', 'Gray', 'Synthetic', 'Kids', 'USA', 1, '2025-10-07 14:31:00', 11, 5, 30, 47),
-('Oversized Coach Heels', 'A lightly used heels from Coach. Well-maintained and true to size, see photos for details.', 1109.6, 2284.68, 'Lightly Used', 'Navy', 'Leather', 'Women', 'Vietnam', 1, '2025-06-07 23:24:00', 11, 6, 41, 49),
-('Everyday Shein Heels', 'A well used heels from Shein. Well-maintained and true to size, see photos for details.', 136.65, 459.07, 'Well Used', 'Pink', 'Leather', 'Women', 'USA', 1, '2025-04-06 19:38:00', 11, 4, 28, 47),
-('Oversized Heels', NULL, 214.33, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-06-23 04:17:00', 11, 1, 31, 49),
-('Cropped Shein Heels', 'A brand new heels from Shein. Well-maintained and true to size, see photos for details.', 524.43, 726.13, 'Brand New', 'Brown', 'Synthetic', 'Men', 'Italy', 1, '2025-04-20 04:19:00', 11, 4, 28, 46),
-('Retro Shein Heels', NULL, 280.02, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-11-25 19:44:00', 11, 4, 28, 47),
-('Cropped Louis Vuitton Sneakers', NULL, 439.7, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-09-06 10:24:00', 12, 3, 37, 52),
-('Cropped Sneakers', 'A like new sneakers from Unbranded. Well-maintained and true to size, see photos for details.', 622.07, 1038.48, 'Like New', 'Navy', 'Synthetic', 'Unisex', 'Italy', 1, '2025-10-26 22:04:00', 12, 4, 31, 55),
-('Signature Converse Sneakers', NULL, 1379.21, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-05-06 18:25:00', 12, 2, 35, 54),
-('Everyday Gucci Sneakers', NULL, 1198.56, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-03-29 03:49:00', 12, 6, 34, 56),
-('Retro Dior Sneakers', 'A like new sneakers from Dior. Well-maintained and true to size, see photos for details.', 71551.96, 127842.72, 'Like New', 'Cream', 'Synthetic', 'Women', 'China', 0, '2025-08-16 16:47:00', 12, 6, 11, 55),
-('Cropped Louis Vuitton Sneakers', 'A like new sneakers from Louis Vuitton. Well-maintained and true to size, see photos for details.', 54652.22, 106027.38, 'Like New', 'Navy', 'Canvas', 'Women', 'USA', 0, '2025-07-31 16:30:00', 12, 4, 8, 52),
-('Limited Edition Louis Vuitton Sneakers', NULL, 1031.36, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-04-22 21:51:00', 12, 3, 37, 51),
-('Oversized Dior Sneakers', 'A lightly used sneakers from Dior. Well-maintained and true to size, see photos for details.', 33538.22, 80070.61, 'Lightly Used', 'Beige', 'Canvas', 'Men', 'Japan', 0, '2025-01-30 23:39:00', 12, 2, 11, 52),
-('Everyday Dior Sneakers', NULL, 2311.11, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-07-11 11:20:00', 12, 2, 43, 53),
-('Cropped Louis Vuitton Sneakers', 'A lightly used sneakers from Louis Vuitton. Well-maintained and true to size, see photos for details.', 929.59, 2234.23, 'Lightly Used', 'Pink', 'Rubber', 'Women', 'USA', 1, '2025-06-26 21:45:00', 12, 1, 37, 54),
-('Cropped Adidas Sneakers', 'A like new sneakers from Adidas. Well-maintained and true to size, see photos for details.', 2663.74, 4630.31, 'Like New', 'Beige', 'Rubber', 'Women', 'Vietnam', 1, '2026-07-05 22:58:00', 12, 3, 18, 51),
-('Limited Edition Adidas Sneakers', 'A well used sneakers from Adidas. Well-maintained and true to size, see photos for details.', 1249.56, 4341.08, 'Well Used', 'Brown', 'Synthetic', 'Kids', 'Bangladesh', 1, '2026-05-22 13:43:00', 12, 2, 33, 55),
-('Everyday Adidas Sneakers', 'A well used sneakers from Adidas. Well-maintained and true to size, see photos for details.', 1145.97, 4705.3, 'Well Used', 'Green', 'Rubber', 'Men', 'South Korea', 1, '2026-06-08 03:36:00', 12, 1, 18, 50),
-('Cropped Running shoes', 'A lightly used running shoes from Unbranded. Well-maintained and true to size, see photos for details.', 250.42, 481.68, 'Lightly Used', 'Green', 'Suede', 'Women', 'China', 1, '2025-05-01 07:13:00', 13, 1, 31, 63),
-('Limited Edition Nike Running shoes', 'A like new running shoes from Nike. Well-maintained and true to size, see photos for details.', 8179.86, 14800.5, 'Like New', 'Gray', 'Suede', 'Kids', 'Bangladesh', 1, '2025-04-08 04:48:00', 13, 1, 14, 62),
-('Cropped Nike Running shoes', 'A like new running shoes from Nike. Well-maintained and true to size, see photos for details.', 1613.98, 3070.8, 'Like New', 'Multicolor', 'Suede', 'Men', 'Japan', 1, '2025-03-19 20:50:00', 13, 2, 32, 63),
-('Cropped Adidas Running shoes', NULL, 1788.44, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-01-02 02:50:00', 13, 4, 33, 60),
-('Cropped Nike Running shoes', 'A lightly used running shoes from Nike. Well-maintained and true to size, see photos for details.', 4704.97, 10878.35, 'Lightly Used', 'Red', 'Leather', 'Women', 'Indonesia', 1, '2025-01-17 03:59:00', 13, 4, 14, 59),
-('Retro Adidas Running shoes', NULL, 927.09, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-04-06 20:23:00', 13, 2, 33, 63),
-('Y2K Nike Running shoes', 'A well used running shoes from Nike. Well-maintained and true to size, see photos for details.', 4038.07, 12396.89, 'Well Used', 'Pink', 'Leather', 'Men', 'Philippines', 1, '2026-05-04 02:08:00', 13, 3, 14, 63),
-('Limited Edition Nike Running shoes', 'A like new running shoes from Nike. Well-maintained and true to size, see photos for details.', 3668.96, 6480.41, 'Like New', 'Blue', 'Canvas', 'Women', 'Vietnam', 1, '2025-05-27 02:33:00', 13, 4, 14, 63),
-('Minimalist Running shoes', 'A well used running shoes from Unbranded. Well-maintained and true to size, see photos for details.', 41.13, 175.7, 'Well Used', 'Cream', 'Leather', 'Men', 'Japan', 1, '2026-03-16 10:50:00', 13, 6, 31, 59),
-('Everyday Nike Running shoes', 'A lightly used running shoes from Nike. Well-maintained and true to size, see photos for details.', 2105.98, 4261.9, 'Lightly Used', 'Multicolor', 'Suede', 'Women', 'India', 1, '2025-07-13 23:25:00', 13, 5, 32, 62),
-('Oversized Nike Running shoes', 'A lightly used running shoes from Nike. Well-maintained and true to size, see photos for details.', 636.94, 1548.27, 'Lightly Used', 'Red', 'Canvas', 'Women', 'India', 1, '2026-01-10 17:43:00', 13, 2, 32, 61),
-('Classic Running shoes', 'A like new running shoes from Unbranded. Well-maintained and true to size, see photos for details.', 481.07, 784.59, 'Like New', 'Yellow', 'Synthetic', 'Women', 'Japan', 1, '2026-07-04 17:39:00', 13, 1, 31, 58),
-('Classic Nike Running shoes', 'A heavily used running shoes from Nike. Well-maintained and true to size, see photos for details.', 1457.03, 8446.61, 'Heavily Used', 'Brown', 'Leather', 'Women', 'Japan', 1, '2026-04-10 19:38:00', 13, 5, 14, 59),
-('Timeless Dr. Martens Boots', 'A lightly used boots from Dr. Martens. Well-maintained and true to size, see photos for details.', 1930.8, 3996.62, 'Lightly Used', 'Navy', 'Suede', 'Women', 'Vietnam', 1, '2025-10-03 23:56:00', 14, 6, 40, 65),
-('Everyday Boots', NULL, 565.69, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-01-04 01:31:00', 14, 5, 31, 64),
-('Timeless Boots', NULL, 242.63, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-06-06 00:02:00', 14, 2, 31, 66),
-('Vintage Dr. Martens Boots', NULL, 1716.9, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-03-06 07:20:00', 14, 1, 40, 67),
-('Retro Boots', 'A like new boots from Unbranded. Well-maintained and true to size, see photos for details.', 199.91, 310.05, 'Like New', 'Black', 'Synthetic', 'Women', 'South Korea', 1, '2025-11-15 10:05:00', 14, 6, 31, 66),
-('Preloved Boots', 'A like new boots from Unbranded. Well-maintained and true to size, see photos for details.', 957.44, 1496.79, 'Like New', 'Navy', 'Rubber', 'Unisex', 'Italy', 1, '2025-01-07 13:01:00', 14, 6, 31, 68),
-('Y2K Dr. Martens Boots', NULL, 657.95, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-03-06 15:03:00', 14, 6, 40, 67),
-('Minimalist Boots', NULL, 255.66, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-04-15 23:05:00', 14, 1, 31, 64),
-('Minimalist Dr. Martens Boots', 'A brand new boots from Dr. Martens. Well-maintained and true to size, see photos for details.', 3991.2, 5683.86, 'Brand New', 'Red', 'Synthetic', 'Men', 'Thailand', 1, '2025-11-22 14:17:00', 14, 6, 17, 67),
-('Classic Dr. Martens Boots', 'A like new boots from Dr. Martens. Well-maintained and true to size, see photos for details.', 5010.03, 9323.17, 'Like New', 'Blue', 'Synthetic', 'Women', 'China', 1, '2025-06-11 21:19:00', 14, 2, 17, 64),
-('Classic Dr. Martens Boots', 'A lightly used boots from Dr. Martens. Well-maintained and true to size, see photos for details.', 1949.44, 4655.41, 'Lightly Used', 'Green', 'Rubber', 'Men', 'Italy', 1, '2026-04-19 03:51:00', 14, 3, 17, 67),
-('Limited Edition Dr. Martens Boots', 'A well used boots from Dr. Martens. Well-maintained and true to size, see photos for details.', 1899.12, 7411.62, 'Well Used', 'White', 'Leather', 'Kids', 'Italy', 1, '2026-03-31 04:05:00', 14, 2, 17, 65),
-('Vintage Dr. Martens Boots', 'A well used boots from Dr. Martens. Well-maintained and true to size, see photos for details.', 1341.33, 5364.04, 'Well Used', 'Beige', 'Suede', 'Women', 'Vietnam', 1, '2025-09-09 20:18:00', 14, 5, 17, 67),
-('Minimalist Shein Flats', 'A lightly used flats from Shein. Well-maintained and true to size, see photos for details.', 155.35, 299.32, 'Lightly Used', 'Yellow', 'Leather', 'Kids', 'Thailand', 1, '2026-05-07 17:50:00', 15, 4, 28, 70),
-('Y2K ZARA Flats', 'A lightly used flats from ZARA. Well-maintained and true to size, see photos for details.', 379.05, 777.59, 'Lightly Used', 'Green', 'Rubber', 'Women', 'India', 1, '2025-06-13 03:15:00', 15, 1, 30, 71),
-('Preloved Shein Flats', 'A like new flats from Shein. Well-maintained and true to size, see photos for details.', 234.73, 387.03, 'Like New', 'Navy', 'Suede', 'Unisex', 'India', 1, '2025-07-12 15:34:00', 15, 2, 28, 70),
-('Signature ZARA Flats', 'A brand new flats from ZARA. Well-maintained and true to size, see photos for details.', 1200.0, 1670.96, 'Brand New', 'Beige', 'Suede', 'Women', 'Vietnam', 1, '2025-05-26 03:54:00', 15, 2, 30, 70),
-('Timeless Shein Flats', 'A like new flats from Shein. Well-maintained and true to size, see photos for details.', 493.57, 733.47, 'Like New', 'Multicolor', 'Suede', 'Women', 'Bangladesh', 1, '2026-01-01 07:42:00', 15, 3, 28, 71),
-('Signature ZARA Flats', NULL, 231.11, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-02-03 05:38:00', 15, 6, 30, 69),
-('Limited Edition Flats', 'A heavily used flats from Unbranded. Well-maintained and true to size, see photos for details.', 93.99, 395.09, 'Heavily Used', 'Beige', 'Leather', 'Unisex', 'Indonesia', 1, '2025-12-10 14:00:00', 15, 2, 31, 69),
-('Cropped Shein Flats', 'A brand new flats from Shein. Well-maintained and true to size, see photos for details.', 604.61, 807.64, 'Brand New', 'Pink', 'Suede', 'Women', 'China', 1, '2025-08-19 05:28:00', 15, 1, 28, 69),
-('Cropped Shein Flats', 'A brand new flats from Shein. Well-maintained and true to size, see photos for details.', 446.04, 537.64, 'Brand New', 'White', 'Suede', 'Men', 'India', 1, '2025-02-01 13:41:00', 15, 3, 28, 69),
-('Cropped ZARA Flats', 'A heavily used flats from ZARA. Well-maintained and true to size, see photos for details.', 221.55, 1423.02, 'Heavily Used', 'White', 'Leather', 'Women', 'Bangladesh', 1, '2025-06-07 01:23:00', 15, 3, 30, 70),
-('Cropped Flats', 'A like new flats from Unbranded. Well-maintained and true to size, see photos for details.', 858.39, 1466.73, 'Like New', 'White', 'Suede', 'Unisex', 'South Korea', 1, '2025-09-29 02:41:00', 15, 6, 31, 72),
-('Everyday ZARA Flats', 'A like new flats from ZARA. Well-maintained and true to size, see photos for details.', 663.87, 1259.22, 'Like New', 'Navy', 'Leather', 'Women', 'USA', 1, '2026-02-28 18:14:00', 15, 4, 30, 69),
-('Everyday Shein Flats', NULL, 77.03, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-05-31 03:48:00', 15, 3, 28, 69),
-('Classic ZARA Sandals', 'A well used sandals from ZARA. Well-maintained and true to size, see photos for details.', 215.59, 643.26, 'Well Used', 'Beige', 'Rubber', 'Women', 'Thailand', 1, '2025-03-31 12:35:00', 16, 2, 30, 74),
-('Oversized Sandals', 'A like new sandals from Unbranded. Well-maintained and true to size, see photos for details.', 836.47, 1391.15, 'Like New', 'White', 'Suede', 'Unisex', 'USA', 1, '2025-09-28 12:41:00', 16, 5, 31, 76),
-('Timeless Shein Sandals', NULL, 254.73, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2026-05-02 08:57:00', 16, 2, 28, 76),
-('Y2K ZARA Sandals', NULL, 1096.34, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-05-18 09:47:00', 16, 3, 30, 75),
-('Classic Shein Sandals', 'A lightly used sandals from Shein. Well-maintained and true to size, see photos for details.', 331.91, 692.76, 'Lightly Used', 'Red', 'Leather', 'Women', 'Vietnam', 1, '2025-11-15 22:32:00', 16, 3, 28, 76),
-('Limited Edition ZARA Sandals', 'A brand new sandals from ZARA. Well-maintained and true to size, see photos for details.', 623.87, 765.76, 'Brand New', 'Yellow', 'Synthetic', 'Men', 'China', 1, '2025-02-01 07:23:00', 16, 1, 30, 74),
-('Y2K Shein Sandals', 'A lightly used sandals from Shein. Well-maintained and true to size, see photos for details.', 69.18, 139.72, 'Lightly Used', 'Cream', 'Canvas', 'Unisex', 'Indonesia', 1, '2025-07-31 08:41:00', 16, 2, 28, 75),
-('Cropped Sandals', 'A like new sandals from Unbranded. Well-maintained and true to size, see photos for details.', 680.08, 1083.47, 'Like New', 'Blue', 'Synthetic', 'Unisex', 'USA', 1, '2025-09-16 06:29:00', 16, 2, 31, 73),
-('Y2K Sandals', 'A like new sandals from Unbranded. Well-maintained and true to size, see photos for details.', 641.22, 978.86, 'Like New', 'Blue', 'Suede', 'Women', 'Bangladesh', 1, '2025-02-28 19:25:00', 16, 6, 31, 75),
-('Cropped Shein Sandals', 'A like new sandals from Shein. Well-maintained and true to size, see photos for details.', 297.88, 557.63, 'Like New', 'Navy', 'Canvas', 'Men', 'Indonesia', 1, '2026-01-03 16:19:00', 16, 4, 28, 76),
-('Timeless Shein Sandals', 'A lightly used sandals from Shein. Well-maintained and true to size, see photos for details.', 431.28, 857.54, 'Lightly Used', 'Multicolor', 'Leather', 'Women', 'Italy', 1, '2025-11-11 13:50:00', 16, 2, 28, 75),
-('Everyday ZARA Sandals', 'A well used sandals from ZARA. Well-maintained and true to size, see photos for details.', 145.07, 421.07, 'Well Used', 'Yellow', 'Leather', 'Unisex', 'Japan', 1, '2025-11-02 13:03:00', 16, 4, 30, 73),
-('Minimalist Shein Sandals', NULL, 125.7, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-07-01 10:40:00', 16, 5, 28, 76),
-('Classic Gucci Bags & Purses', NULL, 1549.74, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-05-13 19:27:00', 17, 4, 34, 79),
-('Limited Edition Coach Bags & Purses', 'A like new bags & purses from Coach. Well-maintained and true to size, see photos for details.', 16019.29, 24251.03, 'Like New', 'Cream', 'Canvas', 'Women', 'Philippines', 1, '2025-09-12 07:44:00', 17, 4, 13, 80),
-('Timeless ZARA Bags & Purses', NULL, 445.71, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-06-17 19:33:00', 17, 5, 30, 79),
-('Oversized Coach Bags & Purses', NULL, 1136.83, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-01-20 07:14:00', 17, 6, 41, 78),
-('Limited Edition Louis Vuitton Bags & Purses', 'A lightly used bags & purses from Louis Vuitton. Well-maintained and true to size, see photos for details.', 51914.55, 113139.43, 'Lightly Used', 'Cream', 'Leather', 'Men', 'Philippines', 0, '2025-04-21 20:53:00', 17, 6, 3, 77),
-('Preloved ZARA Bags & Purses', 'A lightly used bags & purses from ZARA. Well-maintained and true to size, see photos for details.', 133.13, 315.82, 'Lightly Used', 'White', 'Nylon', 'Men', 'Thailand', 1, '2026-03-05 03:32:00', 17, 3, 30, 80),
-('Oversized Louis Vuitton Bags & Purses', NULL, 1188.63, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-10-30 05:02:00', 17, 5, 37, 78),
-('Everyday Louis Vuitton Bags & Purses', 'A like new bags & purses from Louis Vuitton. Well-maintained and true to size, see photos for details.', 2702.47, 4155.46, 'Like New', 'Multicolor', 'Suede', 'Women', 'China', 1, '2025-03-18 23:46:00', 17, 6, 37, 80),
-('Minimalist Dior Bags & Purses', NULL, 3309.96, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-11-17 13:47:00', 17, 3, 43, 80),
-('Preloved Gucci Bags & Purses', 'A well used bags & purses from Gucci. Well-maintained and true to size, see photos for details.', 36669.96, 103671.66, 'Well Used', 'Blue', 'Leather', 'Women', 'USA', 1, '2025-04-27 12:25:00', 17, 1, 6, 77),
-('Classic Bags & Purses', NULL, 960.55, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-03-03 18:30:00', 17, 2, 31, 77),
-('Oversized Louis Vuitton Bags & Purses', 'A well used bags & purses from Louis Vuitton. Well-maintained and true to size, see photos for details.', 1305.24, 4055.82, 'Well Used', 'Beige', 'Suede', 'Unisex', 'China', 1, '2026-03-28 01:04:00', 17, 5, 37, 80),
-('Limited Edition ZARA Bags & Purses', NULL, 518.04, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-01-30 04:53:00', 17, 5, 30, 77),
-('Everyday ZARA Accessories', 'A lightly used accessories from ZARA. Well-maintained and true to size, see photos for details.', 185.26, 427.27, 'Lightly Used', 'Brown', 'Synthetic', 'Kids', 'Philippines', 1, '2025-08-17 17:41:00', 18, 6, 30, 81),
-('Vintage H&M Accessories', 'A brand new accessories from H&M. Well-maintained and true to size, see photos for details.', 704.09, 832.12, 'Brand New', 'Navy', 'Metal', 'Women', 'Japan', 1, '2026-07-17 00:52:00', 18, 5, 38, 81),
-('Signature H&M Accessories', NULL, 282.89, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-04-30 22:42:00', 18, 3, 38, 81),
-('Preloved Accessories', 'A brand new accessories from Unbranded. Well-maintained and true to size, see photos for details.', 1056.42, 1253.33, 'Brand New', 'Blue', 'Synthetic', 'Men', 'Philippines', 1, '2026-05-20 04:52:00', 18, 4, 31, 81),
-('Oversized ZARA Accessories', NULL, 559.31, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-02-17 20:53:00', 18, 4, 30, 81),
-('Timeless H&M Accessories', 'A heavily used accessories from H&M. Well-maintained and true to size, see photos for details.', 311.72, 1672.43, 'Heavily Used', 'Pink', 'Glass', 'Unisex', 'Vietnam', 1, '2025-06-27 23:52:00', 18, 4, 38, 81),
-('Minimalist Accessories', NULL, 176.59, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-10-29 14:51:00', 18, 4, 31, 81),
-('Timeless ZARA Accessories', 'A well used accessories from ZARA. Well-maintained and true to size, see photos for details.', 197.19, 641.51, 'Well Used', 'Blue', 'Synthetic', 'Unisex', 'Vietnam', 1, '2025-07-02 16:34:00', 18, 4, 30, 81),
-('Retro Accessories', 'A well used accessories from Unbranded. Well-maintained and true to size, see photos for details.', 20.82, 86.64, 'Well Used', 'Multicolor', 'Metal', 'Women', 'Vietnam', 1, '2025-09-14 04:53:00', 18, 6, 31, 81),
-('Retro H&M Accessories', 'A lightly used accessories from H&M. Well-maintained and true to size, see photos for details.', 513.8, 1323.77, 'Lightly Used', 'Multicolor', 'Glass', 'Women', 'Thailand', 1, '2025-02-18 12:24:00', 18, 4, 38, 81),
-('Signature ZARA Accessories', NULL, 465.34, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-07-14 23:38:00', 18, 5, 30, 81),
-('Timeless Accessories', NULL, 81.14, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-06-11 03:24:00', 18, 2, 31, 81),
-('Signature H&M Accessories', 'A like new accessories from H&M. Well-maintained and true to size, see photos for details.', 397.26, 710.03, 'Like New', 'Navy', 'Leather', 'Women', 'USA', 1, '2025-02-22 20:39:00', 18, 3, 38, 81),
-('Y2K Earrings', 'A well used earrings from Unbranded. Well-maintained and true to size, see photos for details.', 46.01, 183.32, 'Well Used', 'Brown', 'Synthetic', 'Women', 'France', 1, '2026-06-28 15:35:00', 19, 2, 31, 82),
-('Timeless Earrings', NULL, 117.1, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-10-17 00:58:00', 19, 1, 31, 82),
-('Limited Edition ZARA Earrings', 'A like new earrings from ZARA. Well-maintained and true to size, see photos for details.', 1013.59, 1911.96, 'Like New', 'Cream', 'Metal', 'Men', 'Italy', 1, '2025-08-07 21:27:00', 19, 4, 30, 82),
-('Oversized Earrings', 'A lightly used earrings from Unbranded. Well-maintained and true to size, see photos for details.', 534.57, 1201.61, 'Lightly Used', 'Gray', 'Leather', 'Unisex', 'Japan', 1, '2026-04-07 20:25:00', 19, 1, 31, 82),
-('Signature Earrings', 'A well used earrings from Unbranded. Well-maintained and true to size, see photos for details.', 54.33, 155.25, 'Well Used', 'White', 'Synthetic', 'Unisex', 'France', 1, '2025-03-30 09:48:00', 19, 6, 31, 82),
-('Limited Edition Earrings', 'A like new earrings from Unbranded. Well-maintained and true to size, see photos for details.', 566.05, 841.3, 'Like New', 'Beige', 'Synthetic', 'Men', 'Thailand', 1, '2026-01-18 00:35:00', 19, 5, 31, 82),
-('Limited Edition Earrings', NULL, 230.49, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-06-09 04:10:00', 19, 3, 31, 82),
-('Retro Earrings', 'A like new earrings from Unbranded. Well-maintained and true to size, see photos for details.', 839.92, 1285.76, 'Like New', 'Yellow', 'Glass', 'Men', 'China', 1, '2025-03-10 08:06:00', 19, 5, 31, 82),
-('Signature Earrings', 'A like new earrings from Unbranded. Well-maintained and true to size, see photos for details.', 296.83, 510.79, 'Like New', 'Gray', 'Synthetic', 'Men', 'Vietnam', 1, '2026-01-09 10:27:00', 19, 6, 31, 82),
-('Everyday Earrings', 'A like new earrings from Unbranded. Well-maintained and true to size, see photos for details.', 311.24, 530.77, 'Like New', 'Green', 'Synthetic', 'Unisex', 'South Korea', 1, '2025-04-22 05:41:00', 19, 6, 31, 82),
-('Signature Earrings', NULL, 322.38, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-02-19 18:13:00', 19, 6, 31, 82),
-('Limited Edition ZARA Earrings', 'A lightly used earrings from ZARA. Well-maintained and true to size, see photos for details.', 229.61, 527.6, 'Lightly Used', 'White', 'Glass', 'Women', 'Philippines', 1, '2025-09-02 19:43:00', 19, 5, 30, 82),
-('Y2K Earrings', 'A lightly used earrings from Unbranded. Well-maintained and true to size, see photos for details.', 449.42, 1154.13, 'Lightly Used', 'Blue', 'Synthetic', 'Women', 'Indonesia', 1, '2026-06-15 11:24:00', 19, 5, 31, 82),
-('Classic Rings', 'A lightly used rings from Unbranded. Well-maintained and true to size, see photos for details.', 397.33, 889.02, 'Lightly Used', 'Pink', 'Glass', 'Women', 'Indonesia', 1, '2026-06-14 08:24:00', 20, 6, 31, 87),
-('Everyday ZARA Rings', NULL, 729.29, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-10-15 06:09:00', 20, 4, 30, 87),
-('Limited Edition Rings', 'A lightly used rings from Unbranded. Well-maintained and true to size, see photos for details.', 472.61, 1094.37, 'Lightly Used', 'Green', 'Glass', 'Women', 'Vietnam', 1, '2026-02-25 00:15:00', 20, 3, 31, 87),
-('Cropped Rings', 'A brand new rings from Unbranded. Well-maintained and true to size, see photos for details.', 700.99, 919.07, 'Brand New', 'Black', 'Synthetic', 'Unisex', 'Italy', 1, '2026-04-28 15:10:00', 20, 5, 31, 84),
-('Classic ZARA Rings', 'A well used rings from ZARA. Well-maintained and true to size, see photos for details.', 224.68, 955.29, 'Well Used', 'Brown', 'Glass', 'Unisex', 'India', 1, '2025-07-01 15:57:00', 20, 2, 30, 85),
-('Timeless Rings', 'A lightly used rings from Unbranded. Well-maintained and true to size, see photos for details.', 186.17, 382.76, 'Lightly Used', 'Cream', 'Glass', 'Women', 'Thailand', 1, '2025-04-11 13:08:00', 20, 6, 31, 86),
-('Everyday ZARA Rings', NULL, 235.47, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-01-08 12:41:00', 20, 3, 30, 84),
-('Y2K ZARA Rings', 'A like new rings from ZARA. Well-maintained and true to size, see photos for details.', 1010.42, 1753.46, 'Like New', 'Red', 'Synthetic', 'Kids', 'Japan', 1, '2026-02-28 17:50:00', 20, 4, 30, 85),
-('Oversized ZARA Rings', 'A well used rings from ZARA. Well-maintained and true to size, see photos for details.', 443.92, 1571.28, 'Well Used', 'Navy', 'Leather', 'Women', 'Bangladesh', 1, '2025-12-13 17:39:00', 20, 5, 30, 85),
-('Vintage Rings', 'A lightly used rings from Unbranded. Well-maintained and true to size, see photos for details.', 441.5, 933.09, 'Lightly Used', 'Pink', 'Synthetic', 'Men', 'India', 1, '2025-06-29 20:31:00', 20, 4, 31, 87),
-('Minimalist Rings', 'A lightly used rings from Unbranded. Well-maintained and true to size, see photos for details.', 263.72, 571.62, 'Lightly Used', 'Beige', 'Metal', 'Kids', 'Japan', 1, '2026-02-09 12:37:00', 20, 5, 31, 87),
-('Vintage ZARA Rings', 'A well used rings from ZARA. Well-maintained and true to size, see photos for details.', 234.78, 770.06, 'Well Used', 'Brown', 'Glass', 'Unisex', 'India', 1, '2025-09-25 05:26:00', 20, 6, 30, 87),
-('Vintage ZARA Rings', 'A like new rings from ZARA. Well-maintained and true to size, see photos for details.', 1023.84, 1608.94, 'Like New', 'Cream', 'Glass', 'Men', 'India', 1, '2026-05-09 03:16:00', 20, 5, 30, 87),
-('Cropped ZARA Necklace', 'A lightly used necklace from ZARA. Well-maintained and true to size, see photos for details.', 264.13, 722.04, 'Lightly Used', 'Multicolor', 'Synthetic', 'Women', 'Vietnam', 1, '2025-11-18 11:13:00', 21, 4, 30, 88),
-('Limited Edition Necklace', 'A well used necklace from Unbranded. Well-maintained and true to size, see photos for details.', 340.73, 1262.69, 'Well Used', 'Cream', 'Metal', 'Women', 'China', 1, '2026-05-20 19:00:00', 21, 6, 31, 88),
-('Signature ZARA Necklace', NULL, 113.87, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-05-12 01:33:00', 21, 4, 30, 88),
-('Vintage ZARA Necklace', 'A lightly used necklace from ZARA. Well-maintained and true to size, see photos for details.', 308.14, 597.16, 'Lightly Used', 'Navy', 'Glass', 'Women', 'Philippines', 1, '2025-08-04 12:37:00', 21, 5, 30, 88),
-('Retro Necklace', 'A like new necklace from Unbranded. Well-maintained and true to size, see photos for details.', 182.5, 316.67, 'Like New', 'Pink', 'Synthetic', 'Women', 'Japan', 1, '2026-04-07 05:36:00', 21, 5, 31, 88),
-('Limited Edition Necklace', 'A well used necklace from Unbranded. Well-maintained and true to size, see photos for details.', 320.82, 1120.89, 'Well Used', 'Black', 'Leather', 'Women', 'Vietnam', 1, '2026-06-14 17:46:00', 21, 5, 31, 88),
-('Cropped ZARA Necklace', NULL, 861.42, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-12-09 08:23:00', 21, 1, 30, 88),
-('Minimalist ZARA Necklace', 'A lightly used necklace from ZARA. Well-maintained and true to size, see photos for details.', 595.69, 1329.48, 'Lightly Used', 'Multicolor', 'Leather', 'Kids', 'France', 1, '2025-11-29 21:32:00', 21, 3, 30, 88),
-('Y2K ZARA Necklace', 'A well used necklace from ZARA. Well-maintained and true to size, see photos for details.', 310.95, 1017.09, 'Well Used', 'Pink', 'Metal', 'Women', 'USA', 1, '2025-11-18 10:41:00', 21, 6, 30, 88),
-('Classic ZARA Necklace', 'A lightly used necklace from ZARA. Well-maintained and true to size, see photos for details.', 726.8, 1425.44, 'Lightly Used', 'Navy', 'Metal', 'Women', 'Japan', 1, '2025-04-08 02:59:00', 21, 6, 30, 88),
-('Timeless Necklace', NULL, 428.16, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-10-18 14:40:00', 21, 3, 31, 88),
-('Timeless Necklace', 'A brand new necklace from Unbranded. Well-maintained and true to size, see photos for details.', 388.67, 521.54, 'Brand New', 'Yellow', 'Synthetic', 'Women', 'Vietnam', 1, '2026-07-07 05:37:00', 21, 5, 31, 88),
-('Vintage Necklace', 'A like new necklace from Unbranded. Well-maintained and true to size, see photos for details.', 32.42, 50.13, 'Like New', 'Beige', 'Synthetic', 'Women', 'Bangladesh', 1, '2026-05-19 15:19:00', 21, 1, 31, 88),
-('Timeless Bracelet', NULL, 372.66, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-02-04 12:14:00', 22, 5, 31, 89),
-('Retro Bracelet', NULL, 439.5, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-10-19 20:47:00', 22, 4, 31, 89),
-('Everyday ZARA Bracelet', 'A like new bracelet from ZARA. Well-maintained and true to size, see photos for details.', 466.8, 762.63, 'Like New', 'Brown', 'Synthetic', 'Women', 'Philippines', 1, '2025-01-23 05:06:00', 22, 2, 30, 89),
-('Vintage Bracelet', 'A brand new bracelet from Unbranded. Well-maintained and true to size, see photos for details.', 1111.91, 1497.05, 'Brand New', 'Cream', 'Metal', 'Women', 'Vietnam', 1, '2025-09-30 12:04:00', 22, 1, 31, 89),
-('Y2K Bracelet', NULL, 277.3, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-04-17 23:49:00', 22, 1, 31, 89),
-('Y2K Bracelet', 'A lightly used bracelet from Unbranded. Well-maintained and true to size, see photos for details.', 501.01, 1129.85, 'Lightly Used', 'White', 'Synthetic', 'Women', 'France', 1, '2026-01-05 01:55:00', 22, 4, 31, 89),
-('Y2K Bracelet', 'A lightly used bracelet from Unbranded. Well-maintained and true to size, see photos for details.', 417.21, 892.56, 'Lightly Used', 'Navy', 'Leather', 'Women', 'China', 1, '2025-06-11 15:05:00', 22, 2, 31, 89),
-('Cropped Bracelet', NULL, 759.25, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-07-17 00:44:00', 22, 2, 31, 89),
-('Minimalist ZARA Bracelet', 'A like new bracelet from ZARA. Well-maintained and true to size, see photos for details.', 747.32, 1250.34, 'Like New', 'Green', 'Leather', 'Men', 'Bangladesh', 1, '2025-11-28 23:29:00', 22, 6, 30, 89),
-('Vintage ZARA Bracelet', NULL, 550.74, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-01-08 19:15:00', 22, 3, 30, 89),
-('Limited Edition Bracelet', 'A like new bracelet from Unbranded. Well-maintained and true to size, see photos for details.', 150.68, 273.49, 'Like New', 'Pink', 'Synthetic', 'Women', 'Bangladesh', 1, '2025-03-10 01:53:00', 22, 6, 31, 89),
-('Signature Bracelet', 'A brand new bracelet from Unbranded. Well-maintained and true to size, see photos for details.', 758.18, 1003.99, 'Brand New', 'Navy', 'Synthetic', 'Women', 'Italy', 1, '2025-03-14 00:59:00', 22, 4, 31, 89),
-('Everyday Bracelet', NULL, 41.22, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-02-11 23:04:00', 22, 3, 31, 89),
-('Oversized Aesthetic Bundles', 'A like new aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 442.89, 812.98, 'Like New', 'Multicolor', 'Cotton', 'Men', 'Bangladesh', 1, '2025-04-19 20:36:00', 23, 2, 31, 90),
-('Limited Edition Aesthetic Bundles', 'A lightly used aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 706.6, 1403.6, 'Lightly Used', 'Yellow', 'Polyester', 'Unisex', 'Japan', 1, '2026-03-17 23:20:00', 23, 5, 31, 90),
-('Y2K Aesthetic Bundles', 'A brand new aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 679.4, 800.53, 'Brand New', 'Blue', 'Cotton', 'Women', 'Italy', 1, '2025-11-19 00:49:00', 23, 4, 31, 90),
-('Retro Aesthetic Bundles', NULL, 225.16, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-04-05 18:25:00', 23, 2, 31, 90),
-('Timeless Aesthetic Bundles', 'A well used aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 315.68, 1049.91, 'Well Used', 'White', 'Mixed', 'Men', 'Philippines', 1, '2026-01-26 02:49:00', 23, 6, 31, 90),
-('Limited Edition Aesthetic Bundles', NULL, 639.29, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-01-27 01:19:00', 23, 1, 31, 90),
-('Retro Aesthetic Bundles', 'A like new aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 926.58, 1458.01, 'Like New', 'Gray', 'Mixed', 'Women', 'Japan', 1, '2026-02-08 04:08:00', 23, 5, 31, 90),
-('Everyday Aesthetic Bundles', NULL, 89.14, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-07-22 15:25:00', 23, 1, 31, 90),
-('Minimalist Aesthetic Bundles', 'A like new aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 460.55, 885.23, 'Like New', 'Pink', 'Polyester', 'Women', 'Italy', 1, '2025-12-19 19:41:00', 23, 2, 31, 90),
-('Preloved Aesthetic Bundles', NULL, 181.27, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-03-29 03:47:00', 23, 5, 31, 90),
-('Classic Aesthetic Bundles', NULL, 22.17, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-11-09 14:30:00', 23, 5, 31, 90),
-('Signature Aesthetic Bundles', 'A like new aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 647.0, 953.41, 'Like New', 'Navy', 'Mixed', 'Men', 'Japan', 1, '2026-06-24 01:16:00', 23, 2, 31, 90),
-('Oversized Aesthetic Bundles', 'A lightly used aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 510.91, 1011.32, 'Lightly Used', 'Red', 'Cotton', 'Women', 'Indonesia', 1, '2025-08-25 12:32:00', 23, 1, 31, 90),
-('Nike Air Jordan 1 Retro High "Chicago"', 'Grail tier Air Jordan 1 in the original black, white, and red colorway that started it all in 1985. Authenticated preloved pair with minimal creasing, full original box included.', 28500.0, 32000.0, 'Like New', 'Black', 'Leather', 'Unisex', 'Vietnam', 0, '2025-07-23 16:29:00', 12, 1, 14, 50),
-('Nike Air Jordan 1 Retro High "Bred Toe"', 'Highly sought after Bred Toe colorway. Lightly worn with visible love on the toe box, priced accordingly below mint condition resale comps.', 21000.0, 26000.0, 'Lightly Used', 'Red', 'Leather', 'Unisex', 'Vietnam', 0, '2025-01-23 01:15:00', 12, 2, 14, 51),
-('Nike Air Jordan 13 Retro "Black Cat"', 'Cult favorite Jordan 13 in the stealthy Black Cat colorway. Rare full family size run from a private collection, sold as is with authenticity guarantee.', 18500.0, 21000.0, 'Like New', 'Black', 'Leather', 'Unisex', 'Vietnam', 0, '2026-06-27 09:21:00', 12, 3, 14, 52),
-('Nike Air Force 1 \'07 "Triple White"', 'The everyday icon. Clean triple white Air Force 1, freshly deep cleaned, minor sole yellowing consistent with age.', 5800.0, 6500.0, 'Lightly Used', 'White', 'Leather', 'Unisex', 'Vietnam', 0, '2026-05-17 12:47:00', 12, 4, 16, 53),
-('Nike Air Force 1 Low "Premium Collab Edition"', 'Limited premium AF1 build with upgraded leather and collab style detailing. Deadstock condition, worn twice for photos only.', 8200.0, 9800.0, 'Brand New', 'Black', 'Leather', 'Unisex', 'Vietnam', 0, '2025-06-10 00:22:00', 12, 5, 16, 54),
-('Louis Vuitton Trainer Sneaker, Monogram', 'Structured LV Trainer with monogram detailing and a chunky sole. Comes with dust bag and authenticity card, a true grail crossover between streetwear and luxury.', 98000.0, 125000.0, 'Like New', 'Brown', 'Leather', 'Unisex', 'France', 0, '2025-12-27 11:40:00', 12, 6, 7, 55),
-('Louis Vuitton LV Runner Sneaker', 'Sporty LV Runner with signature branding along the midsole. Well loved but structurally sound, priced fairly for the wear shown.', 67000.0, 89000.0, 'Well Used', 'Black', 'Leather', 'Unisex', 'France', 0, '2025-11-06 07:32:00', 12, 1, 8, 56),
-('Gucci Ace Sneaker, Web Stripe', 'Clean low top Ace sneaker with the signature green and red web stripe. Minimalist leather build, barely worn.', 42000.0, 52000.0, 'Like New', 'White', 'Leather', 'Unisex', 'Italy', 0, '2025-10-10 01:40:00', 12, 2, 9, 57),
-('Gucci Rhyton Sneaker, Chunky Sole', 'Statement chunky sole Rhyton sneaker. The distressed look upper is factory finish, not wear, authenticated and boxed.', 48500.0, 58000.0, 'Brand New', 'White', 'Leather', 'Unisex', 'Italy', 0, '2025-09-21 12:56:00', 12, 3, 10, 50),
-('Dior B23 High-Top Sneaker, Oblique Canvas', 'Signature Dior Oblique canvas high top with leather trim. One of the most recognized silhouettes in modern luxury streetwear.', 72000.0, 95000.0, 'Like New', 'Beige', 'Leather', 'Unisex', 'Italy', 0, '2025-01-31 17:17:00', 12, 4, 11, 51);
+('Classic Blouse', 'A lightly used blouse from Unbranded. Well-maintained and true to size, see photos for details.', 517.33, 1031.21, 'Lightly Used', 'White', 'Rayon', 'Women', 'Philippines', 1, '2025-08-12 07:32:00', 1, 1, 36, 4),
+('Minimalist Shein Blouse', 'A well used blouse from Shein. Well-maintained and true to size, see photos for details.', 79.43, 224.38, 'Well Used', 'Red', 'Cotton', 'Women', 'China', 1, '2025-12-19 19:16:00', 1, 3, 35, 5),
+('Y2K ZARA Blouse', 'A well used blouse from ZARA. Well-maintained and true to size, see photos for details.', 408.34, 1281.5, 'Well Used', 'Black', 'Polyester', 'Unisex', 'China', 1, '2025-04-14 12:17:00', 1, 5, 30, 6),
+('Timeless H&M Blouse', 'A lightly used blouse from H&M. Well-maintained and true to size, see photos for details.', 1688.05, 4310.46, 'Lightly Used', 'Green', 'Silk', 'Women', 'Indonesia', 1, '2025-08-13 21:20:00', 1, 6, 31, 1),
+('Limited Edition Bershka Blouse', NULL, 759.26, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-05-27 12:56:00', 1, 3, 34, 2),
+('Vintage H&M Blouse', 'A like new blouse from H&M. Well-maintained and true to size, see photos for details.', 3442.66, 6019.77, 'Like New', 'Brown', 'Polyester', 'Women', 'China', 1, '2025-04-23 04:40:00', 1, 3, 31, 3),
+('Timeless Bershka Blouse', NULL, 474.03, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-04-28 21:56:00', 1, 5, 34, 4),
+('Limited Edition Blouse', 'A like new blouse from Unbranded. Well-maintained and true to size, see photos for details.', 929.76, 1459.24, 'Like New', 'Yellow', 'Cotton', 'Unisex', 'France', 1, '2026-06-04 19:12:00', 1, 3, 36, 5),
+('Retro Shein Blouse', NULL, 655.5, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-09-03 01:15:00', 1, 3, 35, 6),
+('Limited Edition ZARA Blouse', NULL, 286.46, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-05-02 17:10:00', 1, 6, 28, 1),
+('Timeless Shein Blouse', NULL, 142.8, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-11-16 12:42:00', 1, 5, 35, 2),
+('Timeless Bershka Blouse', 'A like new blouse from Bershka. Well-maintained and true to size, see photos for details.', 467.68, 771.89, 'Like New', 'Brown', 'Rayon', 'Women', 'China', 1, '2025-03-02 07:04:00', 1, 5, 33, 3),
+('Y2K Uniqlo Blouse', 'A like new blouse from Uniqlo. Well-maintained and true to size, see photos for details.', 861.43, 1429.07, 'Like New', 'Green', 'Polyester', 'Unisex', 'Japan', 1, '2025-04-07 03:42:00', 1, 6, 27, 4),
+('Y2K Sleeveless', NULL, 813.52, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-07-14 17:28:00', 2, 1, 36, 11),
+('Everyday Bershka Sleeveless', NULL, 198.13, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-04-11 01:41:00', 2, 2, 34, 12),
+('Retro ZARA Sleeveless', 'A lightly used sleeveless from ZARA. Well-maintained and true to size, see photos for details.', 693.29, 1834.15, 'Lightly Used', 'Black', 'Silk', 'Women', 'South Korea', 1, '2026-03-10 22:46:00', 2, 2, 28, 7),
+('Y2K ZARA Sleeveless', 'A lightly used sleeveless from ZARA. Well-maintained and true to size, see photos for details.', 416.07, 953.57, 'Lightly Used', 'Beige', 'Cotton', 'Men', 'Indonesia', 1, '2026-02-18 03:56:00', 2, 5, 29, 8),
+('Signature Uniqlo Sleeveless', 'A like new sleeveless from Uniqlo. Well-maintained and true to size, see photos for details.', 320.22, 575.0, 'Like New', 'Cream', 'Cotton', 'Women', 'India', 1, '2025-04-13 02:34:00', 2, 2, 26, 9),
+('Retro ZARA Sleeveless', 'A like new sleeveless from ZARA. Well-maintained and true to size, see photos for details.', 908.02, 1339.85, 'Like New', 'Multicolor', 'Rayon', 'Women', 'Bangladesh', 1, '2025-04-17 04:16:00', 2, 2, 28, 10),
+('Vintage Uniqlo Sleeveless', 'A lightly used sleeveless from Uniqlo. Well-maintained and true to size, see photos for details.', 375.39, 955.95, 'Lightly Used', 'Black', 'Cotton', 'Men', 'France', 1, '2025-01-04 10:49:00', 2, 5, 26, 11),
+('Oversized Shein Sleeveless', 'A lightly used sleeveless from Shein. Well-maintained and true to size, see photos for details.', 245.03, 652.82, 'Lightly Used', 'Black', 'Linen', 'Men', 'Vietnam', 1, '2025-05-11 01:19:00', 2, 6, 35, 12),
+('Preloved Sleeveless', NULL, 196.18, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-08-31 05:51:00', 2, 1, 36, 7),
+('Classic Bershka Sleeveless', 'A lightly used sleeveless from Bershka. Well-maintained and true to size, see photos for details.', 509.78, 1048.11, 'Lightly Used', 'Navy', 'Polyester', 'Women', 'Thailand', 1, '2026-01-27 01:54:00', 2, 1, 34, 8),
+('Minimalist Uniqlo Sleeveless', 'A brand new sleeveless from Uniqlo. Well-maintained and true to size, see photos for details.', 1033.03, 1463.58, 'Brand New', 'Multicolor', 'Rayon', 'Women', 'Bangladesh', 1, '2025-01-29 03:56:00', 2, 2, 26, 9),
+('Everyday Shein Sleeveless', 'A lightly used sleeveless from Shein. Well-maintained and true to size, see photos for details.', 182.86, 408.16, 'Lightly Used', 'Blue', 'Cotton', 'Men', 'Philippines', 1, '2026-07-06 21:46:00', 2, 4, 35, 10),
+('Oversized Shein Sleeveless', 'A lightly used sleeveless from Shein. Well-maintained and true to size, see photos for details.', 169.11, 360.95, 'Lightly Used', 'Yellow', 'Polyester', 'Women', 'Indonesia', 1, '2025-06-28 19:36:00', 2, 3, 35, 11),
+('Everyday H&M Long sleeve', 'A lightly used long sleeve from H&M. Well-maintained and true to size, see photos for details.', 2838.13, 5530.56, 'Lightly Used', 'Navy', 'Polyester', 'Men', 'France', 1, '2025-12-10 02:52:00', 3, 4, 32, 18),
+('Oversized H&M Long sleeve', 'A like new long sleeve from H&M. Well-maintained and true to size, see photos for details.', 310.88, 541.04, 'Like New', 'Multicolor', 'Rayon', 'Women', 'Thailand', 1, '2026-05-22 12:15:00', 3, 1, 31, 13),
+('Minimalist H&M Long sleeve', 'A brand new long sleeve from H&M. Well-maintained and true to size, see photos for details.', 826.96, 1020.58, 'Brand New', 'Multicolor', 'Rayon', 'Kids', 'India', 1, '2026-03-30 19:52:00', 3, 2, 32, 14),
+('Classic ZARA Long sleeve', 'A well used long sleeve from ZARA. Well-maintained and true to size, see photos for details.', 335.18, 1047.78, 'Well Used', 'Brown', 'Linen', 'Women', 'Bangladesh', 1, '2025-05-22 04:14:00', 3, 2, 30, 15),
+('Oversized Bershka Long sleeve', 'A lightly used long sleeve from Bershka. Well-maintained and true to size, see photos for details.', 491.32, 975.18, 'Lightly Used', 'Gray', 'Cotton', 'Unisex', 'India', 1, '2026-05-04 00:22:00', 3, 3, 34, 16),
+('Vintage H&M Long sleeve', 'A lightly used long sleeve from H&M. Well-maintained and true to size, see photos for details.', 684.91, 1447.68, 'Lightly Used', 'Green', 'Polyester', 'Kids', 'Bangladesh', 1, '2026-02-08 18:36:00', 3, 3, 31, 17),
+('Vintage H&M Long sleeve', 'A like new long sleeve from H&M. Well-maintained and true to size, see photos for details.', 2086.01, 3107.81, 'Like New', 'Pink', 'Linen', 'Unisex', 'South Korea', 1, '2026-07-07 01:22:00', 3, 1, 32, 18),
+('Signature H&M Long sleeve', 'A lightly used long sleeve from H&M. Well-maintained and true to size, see photos for details.', 1722.65, 4450.66, 'Lightly Used', 'Navy', 'Linen', 'Unisex', 'Vietnam', 1, '2025-04-28 05:19:00', 3, 2, 31, 13),
+('Classic Bershka Long sleeve', 'A brand new long sleeve from Bershka. Well-maintained and true to size, see photos for details.', 827.28, 1234.05, 'Brand New', 'Cream', 'Linen', 'Unisex', 'India', 1, '2025-02-12 11:34:00', 3, 6, 34, 14),
+('Limited Edition Bershka Long sleeve', 'A lightly used long sleeve from Bershka. Well-maintained and true to size, see photos for details.', 669.84, 1564.47, 'Lightly Used', 'Beige', 'Silk', 'Women', 'Bangladesh', 1, '2025-10-04 19:51:00', 3, 4, 33, 15),
+('Retro H&M Long sleeve', 'A well used long sleeve from H&M. Well-maintained and true to size, see photos for details.', 977.81, 3381.06, 'Well Used', 'Red', 'Polyester', 'Women', 'USA', 1, '2025-12-15 08:56:00', 3, 1, 32, 16),
+('Y2K Bershka Long sleeve', 'A lightly used long sleeve from Bershka. Well-maintained and true to size, see photos for details.', 515.6, 1063.53, 'Lightly Used', 'White', 'Linen', 'Women', 'Thailand', 1, '2025-11-10 21:37:00', 3, 4, 33, 17),
+('Cropped ZARA Long sleeve', 'A like new long sleeve from ZARA. Well-maintained and true to size, see photos for details.', 1046.89, 1651.98, 'Like New', 'Cream', 'Polyester', 'Women', 'Thailand', 1, '2025-10-11 23:37:00', 3, 6, 30, 18),
+('Signature H&M Shirt', 'A brand new shirt from H&M. Well-maintained and true to size, see photos for details.', 3474.35, 4400.79, 'Brand New', 'Beige', 'Silk', 'Women', 'Philippines', 1, '2025-10-19 15:30:00', 4, 2, 31, 19),
+('Y2K Bershka Shirt', 'A lightly used shirt from Bershka. Well-maintained and true to size, see photos for details.', 466.76, 1299.75, 'Lightly Used', 'Beige', 'Rayon', 'Unisex', 'China', 1, '2025-05-02 17:48:00', 4, 1, 34, 20),
+('Y2K H&M Shirt', 'A like new shirt from H&M. Well-maintained and true to size, see photos for details.', 3360.73, 6253.67, 'Like New', 'Brown', 'Linen', 'Men', 'Vietnam', 1, '2025-06-27 17:04:00', 4, 5, 31, 21),
+('Oversized Shirt', 'A brand new shirt from Unbranded. Well-maintained and true to size, see photos for details.', 106.74, 153.21, 'Brand New', 'Blue', 'Rayon', 'Men', 'Italy', 1, '2025-04-28 17:14:00', 4, 4, 36, 22),
+('Cropped ZARA Shirt', 'A lightly used shirt from ZARA. Well-maintained and true to size, see photos for details.', 829.69, 2065.48, 'Lightly Used', 'Pink', 'Linen', 'Women', 'South Korea', 1, '2025-03-24 19:02:00', 4, 3, 29, 23),
+('Cropped ZARA Shirt', 'A lightly used shirt from ZARA. Well-maintained and true to size, see photos for details.', 759.93, 1696.42, 'Lightly Used', 'Cream', 'Polyester', 'Women', 'Indonesia', 1, '2025-10-12 05:37:00', 4, 6, 30, 24),
+('Retro Bershka Shirt', NULL, 418.9, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-02-15 17:02:00', 4, 3, 33, 19),
+('Vintage Uniqlo Shirt', NULL, 590.04, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-07-10 14:26:00', 4, 3, 27, 20),
+('Classic ZARA Shirt', 'A lightly used shirt from ZARA. Well-maintained and true to size, see photos for details.', 598.37, 1349.61, 'Lightly Used', 'Blue', 'Silk', 'Unisex', 'South Korea', 1, '2025-01-30 20:38:00', 4, 5, 30, 21),
+('Limited Edition Shirt', NULL, 143.83, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-06-07 15:59:00', 4, 4, 36, 22),
+('Classic Shirt', 'A lightly used shirt from Unbranded. Well-maintained and true to size, see photos for details.', 352.65, 849.33, 'Lightly Used', 'Gray', 'Rayon', 'Men', 'Vietnam', 1, '2025-10-10 13:21:00', 4, 6, 36, 23),
+('Oversized ZARA Shirt', 'A lightly used shirt from ZARA. Well-maintained and true to size, see photos for details.', 478.71, 941.26, 'Lightly Used', 'Brown', 'Polyester', 'Men', 'Italy', 1, '2025-02-14 10:47:00', 4, 4, 30, 24),
+('Preloved Uniqlo Shirt', 'A heavily used shirt from Uniqlo. Well-maintained and true to size, see photos for details.', 116.85, 509.68, 'Heavily Used', 'Black', 'Polyester', 'Women', 'Indonesia', 1, '2025-03-18 15:50:00', 4, 2, 26, 19),
+('Retro Shorts', 'A heavily used shorts from Unbranded. Well-maintained and true to size, see photos for details.', 140.08, 757.52, 'Heavily Used', 'Gray', 'Denim', 'Women', 'Indonesia', 1, '2025-08-21 23:05:00', 5, 5, 36, 30),
+('Preloved Shorts', NULL, 344.64, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-09-08 16:26:00', 5, 3, 36, 31),
+('Retro ZARA Shorts', 'A lightly used shorts from ZARA. Well-maintained and true to size, see photos for details.', 514.72, 1146.03, 'Lightly Used', 'Brown', 'Corduroy', 'Men', 'South Korea', 1, '2025-01-10 14:57:00', 5, 2, 28, 32),
+('Retro Shein Shorts', 'A lightly used shorts from Shein. Well-maintained and true to size, see photos for details.', 288.13, 782.67, 'Lightly Used', 'Pink', 'Polyester', 'Men', 'Thailand', 1, '2025-01-23 21:25:00', 5, 3, 35, 33),
+('Vintage ZARA Shorts', 'A like new shorts from ZARA. Well-maintained and true to size, see photos for details.', 906.47, 1368.02, 'Like New', 'Multicolor', 'Denim', 'Women', 'South Korea', 1, '2026-01-09 23:08:00', 5, 5, 30, 34),
+('Retro ZARA Shorts', NULL, 267.6, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-06-18 08:58:00', 5, 2, 28, 35),
+('Minimalist H&M Shorts', 'A well used shorts from H&M. Well-maintained and true to size, see photos for details.', 154.75, 475.3, 'Well Used', 'Brown', 'Corduroy', 'Kids', 'Bangladesh', 1, '2025-04-03 12:00:00', 5, 6, 32, 36),
+('Limited Edition Shein Shorts', 'A like new shorts from Shein. Well-maintained and true to size, see photos for details.', 449.26, 832.2, 'Like New', 'White', 'Corduroy', 'Unisex', 'France', 1, '2026-02-23 03:08:00', 5, 4, 35, 37),
+('Preloved Levi\'s Shorts', 'A well used shorts from Levi\'s. Well-maintained and true to size, see photos for details.', 267.93, 853.64, 'Well Used', 'Navy', 'Corduroy', 'Men', 'Thailand', 1, '2026-03-01 20:06:00', 5, 1, 25, 25),
+('Everyday ZARA Shorts', NULL, 94.85, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2026-01-03 01:25:00', 5, 4, 29, 26),
+('Y2K ZARA Shorts', 'A brand new shorts from ZARA. Well-maintained and true to size, see photos for details.', 276.63, 385.98, 'Brand New', 'Beige', 'Cotton', 'Women', 'Bangladesh', 1, '2025-08-10 07:21:00', 5, 1, 30, 27),
+('Preloved ZARA Shorts', 'A well used shorts from ZARA. Well-maintained and true to size, see photos for details.', 141.58, 524.07, 'Well Used', 'Cream', 'Cotton', 'Men', 'Philippines', 1, '2025-09-29 01:08:00', 5, 5, 28, 28),
+('Vintage H&M Shorts', 'A like new shorts from H&M. Well-maintained and true to size, see photos for details.', 683.21, 1345.42, 'Like New', 'Cream', 'Polyester', 'Women', 'Philippines', 1, '2026-05-06 12:27:00', 5, 5, 32, 29),
+('Retro Bershka Skirts', 'A brand new skirts from Bershka. Well-maintained and true to size, see photos for details.', 736.71, 969.77, 'Brand New', 'Red', 'Corduroy', 'Kids', 'Bangladesh', 1, '2026-04-10 16:38:00', 6, 5, 33, 40),
+('Cropped Shein Skirts', 'A like new skirts from Shein. Well-maintained and true to size, see photos for details.', 194.71, 350.04, 'Like New', 'Blue', 'Polyester', 'Kids', 'Indonesia', 1, '2025-03-10 02:53:00', 6, 2, 35, 41),
+('Oversized Bershka Skirts', NULL, 709.93, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-12-29 21:48:00', 6, 2, 33, 42),
+('Classic ZARA Skirts', 'A like new skirts from ZARA. Well-maintained and true to size, see photos for details.', 1390.46, 2573.19, 'Like New', 'White', 'Polyester', 'Unisex', 'USA', 1, '2025-10-13 18:14:00', 6, 3, 30, 43),
+('Limited Edition Bershka Skirts', 'A well used skirts from Bershka. Well-maintained and true to size, see photos for details.', 135.22, 563.27, 'Well Used', 'Multicolor', 'Corduroy', 'Women', 'Thailand', 1, '2025-02-01 02:47:00', 6, 6, 33, 38),
+('Vintage H&M Skirts', NULL, 331.95, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-06-09 05:48:00', 6, 3, 32, 39),
+('Limited Edition ZARA Skirts', 'A lightly used skirts from ZARA. Well-maintained and true to size, see photos for details.', 291.31, 666.47, 'Lightly Used', 'Red', 'Corduroy', 'Women', 'Indonesia', 1, '2026-05-14 16:42:00', 6, 3, 30, 40),
+('Classic ZARA Skirts', NULL, 247.43, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-01-08 15:47:00', 6, 2, 28, 41),
+('Vintage H&M Skirts', 'A lightly used skirts from H&M. Well-maintained and true to size, see photos for details.', 418.53, 902.85, 'Lightly Used', 'Red', 'Denim', 'Women', 'Thailand', 1, '2026-03-23 00:29:00', 6, 2, 31, 42),
+('Cropped Shein Skirts', NULL, 121.38, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-01-06 02:27:00', 6, 3, 35, 43),
+('Everyday H&M Skirts', 'A lightly used skirts from H&M. Well-maintained and true to size, see photos for details.', 564.26, 1183.47, 'Lightly Used', 'Brown', 'Polyester', 'Unisex', 'China', 1, '2025-04-27 16:32:00', 6, 4, 31, 38),
+('Cropped H&M Skirts', 'A like new skirts from H&M. Well-maintained and true to size, see photos for details.', 342.25, 537.58, 'Like New', 'White', 'Cotton', 'Kids', 'Indonesia', 1, '2026-04-21 18:48:00', 6, 1, 32, 39),
+('Classic ZARA Skirts', NULL, 535.0, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-11-14 14:28:00', 6, 4, 30, 40),
+('Vintage Levi\'s Pants', 'A like new pants from Levi\'s. Well-maintained and true to size, see photos for details.', 451.84, 744.47, 'Like New', 'Pink', 'Corduroy', 'Men', 'Thailand', 1, '2026-04-06 18:41:00', 7, 3, 25, 49),
+('Limited Edition Levi\'s Pants', NULL, 503.44, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-06-26 01:15:00', 7, 4, 24, 50),
+('Limited Edition Bershka Pants', 'A lightly used pants from Bershka. Well-maintained and true to size, see photos for details.', 860.29, 2068.7, 'Lightly Used', 'Cream', 'Polyester', 'Men', 'Philippines', 1, '2025-12-09 02:21:00', 7, 5, 34, 51),
+('Classic Pants', 'A brand new pants from Unbranded. Well-maintained and true to size, see photos for details.', 390.48, 499.84, 'Brand New', 'Multicolor', 'Corduroy', 'Women', 'Thailand', 1, '2025-11-14 17:24:00', 7, 2, 36, 52),
+('Everyday Levi\'s Pants', 'A like new pants from Levi\'s. Well-maintained and true to size, see photos for details.', 745.21, 1378.03, 'Like New', 'Beige', 'Cotton', 'Women', 'China', 1, '2026-07-07 23:56:00', 7, 3, 25, 53),
+('Retro ZARA Pants', 'A lightly used pants from ZARA. Well-maintained and true to size, see photos for details.', 545.44, 1526.01, 'Lightly Used', 'Red', 'Cotton', 'Kids', 'India', 1, '2026-04-05 07:34:00', 7, 2, 30, 54),
+('Signature Uniqlo Pants', 'A heavily used pants from Uniqlo. Well-maintained and true to size, see photos for details.', 174.25, 1050.83, 'Heavily Used', 'Yellow', 'Corduroy', 'Kids', 'Italy', 1, '2025-05-22 08:03:00', 7, 6, 27, 55),
+('Vintage Levi\'s Pants', 'A lightly used pants from Levi\'s. Well-maintained and true to size, see photos for details.', 376.94, 746.74, 'Lightly Used', 'Green', 'Polyester', 'Unisex', 'Japan', 1, '2026-02-10 16:23:00', 7, 2, 24, 56),
+('Preloved ZARA Pants', NULL, 302.01, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-02-09 09:58:00', 7, 1, 30, 44),
+('Y2K ZARA Pants', 'A lightly used pants from ZARA. Well-maintained and true to size, see photos for details.', 250.26, 666.61, 'Lightly Used', 'Navy', 'Corduroy', 'Women', 'France', 1, '2025-11-05 03:03:00', 7, 6, 28, 45),
+('Limited Edition Levi\'s Pants', 'A lightly used pants from Levi\'s. Well-maintained and true to size, see photos for details.', 1107.26, 3161.2, 'Lightly Used', 'Red', 'Cotton', 'Men', 'Vietnam', 1, '2025-03-29 16:23:00', 7, 4, 25, 46),
+('Minimalist Levi\'s Pants', 'A heavily used pants from Levi\'s. Well-maintained and true to size, see photos for details.', 694.12, 3337.85, 'Heavily Used', 'Multicolor', 'Denim', 'Unisex', 'Thailand', 1, '2025-05-17 01:22:00', 7, 6, 24, 47),
+('Cropped ZARA Pants', 'A well used pants from ZARA. Well-maintained and true to size, see photos for details.', 565.86, 1644.89, 'Well Used', 'Red', 'Polyester', 'Women', 'Bangladesh', 1, '2025-09-17 01:48:00', 7, 1, 28, 48),
+('Retro Bershka Dress', 'A lightly used dress from Bershka. Well-maintained and true to size, see photos for details.', 539.69, 1413.69, 'Lightly Used', 'Navy', 'Chiffon', 'Women', 'Bangladesh', 1, '2025-03-26 23:27:00', 8, 1, 33, 61),
+('Signature Bershka Dress', 'A like new dress from Bershka. Well-maintained and true to size, see photos for details.', 579.87, 999.95, 'Like New', 'Green', 'Cotton', 'Men', 'USA', 1, '2026-03-22 08:40:00', 8, 1, 34, 62),
+('Vintage Dress', 'A heavily used dress from Unbranded. Well-maintained and true to size, see photos for details.', 12.87, 100.46, 'Heavily Used', 'Cream', 'Silk', 'Women', 'India', 1, '2025-06-07 21:28:00', 8, 6, 36, 57),
+('Retro Dress', 'A like new dress from Unbranded. Well-maintained and true to size, see photos for details.', 46.72, 87.57, 'Like New', 'Yellow', 'Chiffon', 'Unisex', 'China', 1, '2025-09-24 22:28:00', 8, 3, 36, 58),
+('Limited Edition ZARA Dress', NULL, 385.61, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-11-24 21:22:00', 8, 2, 30, 59),
+('Limited Edition Dress', NULL, 378.55, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-06-28 11:32:00', 8, 5, 36, 60),
+('Classic ZARA Dress', 'A like new dress from ZARA. Well-maintained and true to size, see photos for details.', 597.7, 927.15, 'Like New', 'Yellow', 'Polyester', 'Men', 'China', 1, '2025-11-13 12:45:00', 8, 2, 29, 61),
+('Preloved Bershka Dress', 'A lightly used dress from Bershka. Well-maintained and true to size, see photos for details.', 908.52, 2442.68, 'Lightly Used', 'Yellow', 'Cotton', 'Unisex', 'Bangladesh', 1, '2025-11-08 05:10:00', 8, 6, 34, 62),
+('Minimalist Bershka Dress', 'A like new dress from Bershka. Well-maintained and true to size, see photos for details.', 1221.33, 2020.34, 'Like New', 'Beige', 'Satin', 'Men', 'India', 1, '2025-02-12 00:05:00', 8, 2, 33, 57),
+('Timeless Dress', 'A lightly used dress from Unbranded. Well-maintained and true to size, see photos for details.', 365.23, 750.27, 'Lightly Used', 'Multicolor', 'Chiffon', 'Women', 'China', 1, '2025-03-03 05:28:00', 8, 6, 36, 58),
+('Minimalist Dress', 'A well used dress from Unbranded. Well-maintained and true to size, see photos for details.', 151.92, 550.79, 'Well Used', 'Cream', 'Silk', 'Women', 'China', 1, '2025-09-05 14:07:00', 8, 2, 36, 59),
+('Cropped ZARA Dress', 'A well used dress from ZARA. Well-maintained and true to size, see photos for details.', 612.33, 1833.93, 'Well Used', 'Gray', 'Silk', 'Women', 'Vietnam', 1, '2026-06-12 14:31:00', 8, 3, 28, 60),
+('Classic Dress', 'A like new dress from Unbranded. Well-maintained and true to size, see photos for details.', 597.23, 916.4, 'Like New', 'Multicolor', 'Chiffon', 'Women', 'Philippines', 1, '2026-03-18 04:56:00', 8, 4, 36, 61),
+('Preloved Shein Co-ords', 'A lightly used co-ords from Shein. Well-maintained and true to size, see photos for details.', 241.61, 503.4, 'Lightly Used', 'Blue', 'Satin', 'Men', 'China', 1, '2025-04-10 12:23:00', 9, 1, 35, 68),
+('Preloved Co-ords', NULL, 916.51, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2026-06-12 04:20:00', 9, 1, 36, 63),
+('Oversized H&M Co-ords', 'A lightly used co-ords from H&M. Well-maintained and true to size, see photos for details.', 2057.38, 5131.08, 'Lightly Used', 'Black', 'Silk', 'Women', 'China', 1, '2025-11-12 23:55:00', 9, 4, 32, 64),
+('Limited Edition Co-ords', NULL, 486.44, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-09-06 01:36:00', 9, 4, 36, 65),
+('Y2K H&M Co-ords', 'A like new co-ords from H&M. Well-maintained and true to size, see photos for details.', 998.76, 1561.79, 'Like New', 'Green', 'Cotton', 'Men', 'Bangladesh', 1, '2025-11-29 21:30:00', 9, 1, 32, 66),
+('Signature Co-ords', NULL, 311.61, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-05-11 06:15:00', 9, 3, 36, 67),
+('Timeless Co-ords', NULL, 239.0, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2026-05-16 10:30:00', 9, 3, 36, 68),
+('Timeless Co-ords', 'A like new co-ords from Unbranded. Well-maintained and true to size, see photos for details.', 830.82, 1236.65, 'Like New', 'Cream', 'Polyester', 'Women', 'France', 1, '2025-03-22 11:59:00', 9, 6, 36, 63),
+('Classic Co-ords', 'A lightly used co-ords from Unbranded. Well-maintained and true to size, see photos for details.', 186.27, 401.56, 'Lightly Used', 'Yellow', 'Polyester', 'Men', 'Philippines', 1, '2026-02-28 10:45:00', 9, 3, 36, 64),
+('Everyday Shein Co-ords', 'A lightly used co-ords from Shein. Well-maintained and true to size, see photos for details.', 164.12, 356.93, 'Lightly Used', 'Cream', 'Cotton', 'Men', 'Italy', 1, '2025-02-08 05:26:00', 9, 6, 35, 65),
+('Everyday H&M Co-ords', 'A well used co-ords from H&M. Well-maintained and true to size, see photos for details.', 1645.14, 6163.74, 'Well Used', 'Green', 'Satin', 'Women', 'Vietnam', 1, '2026-04-25 08:12:00', 9, 6, 32, 66),
+('Oversized Bershka Co-ords', 'A brand new co-ords from Bershka. Well-maintained and true to size, see photos for details.', 838.63, 1021.19, 'Brand New', 'Pink', 'Chiffon', 'Women', 'China', 1, '2025-04-08 05:08:00', 9, 6, 33, 67),
+('Vintage Shein Co-ords', NULL, 109.71, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-09-25 20:23:00', 9, 2, 35, 68),
+('Retro Nike Athleisure', 'A lightly used athleisure from Nike. Well-maintained and true to size, see photos for details.', 1229.22, 2453.9, 'Lightly Used', 'Cream', 'Silk', 'Men', 'Indonesia', 1, '2026-01-12 19:14:00', 10, 6, 17, 69),
+('Timeless Athleisure', 'A lightly used athleisure from Unbranded. Well-maintained and true to size, see photos for details.', 537.7, 1154.7, 'Lightly Used', 'Gray', 'Cotton', 'Women', 'Bangladesh', 1, '2026-01-06 02:58:00', 10, 6, 36, 70),
+('Preloved Uniqlo Athleisure', 'A like new athleisure from Uniqlo. Well-maintained and true to size, see photos for details.', 933.59, 1807.98, 'Like New', 'Yellow', 'Chiffon', 'Unisex', 'South Korea', 1, '2026-06-10 13:29:00', 10, 5, 26, 71),
+('Vintage Uniqlo Athleisure', 'A lightly used athleisure from Uniqlo. Well-maintained and true to size, see photos for details.', 488.79, 1354.6, 'Lightly Used', 'Black', 'Cotton', 'Kids', 'South Korea', 1, '2025-10-21 13:11:00', 10, 1, 27, 72),
+('Minimalist Athleisure', NULL, 891.82, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-05-02 05:34:00', 10, 4, 36, 73),
+('Timeless Adidas Athleisure', NULL, 728.89, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-07-12 13:34:00', 10, 6, 19, 74),
+('Signature Adidas Athleisure', 'A like new athleisure from Adidas. Well-maintained and true to size, see photos for details.', 1564.33, 2481.08, 'Like New', 'White', 'Cotton', 'Unisex', 'Japan', 1, '2025-01-17 07:13:00', 10, 2, 19, 69),
+('Limited Edition Nike Athleisure', 'A lightly used athleisure from Nike. Well-maintained and true to size, see photos for details.', 647.8, 1248.43, 'Lightly Used', 'Brown', 'Satin', 'Women', 'India', 1, '2025-11-25 07:19:00', 10, 2, 17, 70),
+('Timeless Uniqlo Athleisure', 'A lightly used athleisure from Uniqlo. Well-maintained and true to size, see photos for details.', 845.94, 1641.68, 'Lightly Used', 'Multicolor', 'Chiffon', 'Unisex', 'USA', 1, '2026-03-03 13:09:00', 10, 1, 26, 71),
+('Everyday Adidas Athleisure', NULL, 628.69, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-06-27 04:24:00', 10, 3, 19, 72),
+('Timeless Uniqlo Athleisure', NULL, 844.65, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-07-15 01:17:00', 10, 2, 26, 73),
+('Y2K Nike Athleisure', 'A well used athleisure from Nike. Well-maintained and true to size, see photos for details.', 277.24, 1112.33, 'Well Used', 'Red', 'Silk', 'Kids', 'Philippines', 1, '2025-07-14 23:07:00', 10, 1, 17, 74),
+('Cropped Uniqlo Athleisure', 'A lightly used athleisure from Uniqlo. Well-maintained and true to size, see photos for details.', 528.73, 1286.0, 'Lightly Used', 'Green', 'Chiffon', 'Women', 'Thailand', 1, '2025-11-24 06:23:00', 10, 3, 26, 69),
+('Limited Edition Heels', 'A heavily used heels from Unbranded. Well-maintained and true to size, see photos for details.', 93.51, 633.53, 'Heavily Used', 'Gray', 'Canvas', 'Women', 'Indonesia', 1, '2025-12-12 08:48:00', 11, 3, 36, 76),
+('Vintage Heels', NULL, 964.64, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-06-21 01:53:00', 11, 2, 36, 77),
+('Signature Heels', 'A like new heels from Unbranded. Well-maintained and true to size, see photos for details.', 186.49, 315.54, 'Like New', 'Red', 'Leather', 'Men', 'Indonesia', 1, '2026-05-10 21:31:00', 11, 1, 36, 78),
+('Y2K Heels', 'A lightly used heels from Unbranded. Well-maintained and true to size, see photos for details.', 843.03, 1670.49, 'Lightly Used', 'White', 'Leather', 'Women', 'Italy', 1, '2026-06-24 08:52:00', 11, 5, 36, 79),
+('Oversized Heels', 'A like new heels from Unbranded. Well-maintained and true to size, see photos for details.', 653.12, 997.92, 'Like New', 'Cream', 'Leather', 'Women', 'Japan', 1, '2026-05-03 01:40:00', 11, 4, 36, 80),
+('Vintage Heels', NULL, 82.8, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-08-24 06:57:00', 11, 6, 36, 75),
+('Oversized Heels', 'A lightly used heels from Unbranded. Well-maintained and true to size, see photos for details.', 120.42, 243.48, 'Lightly Used', 'Black', 'Canvas', 'Men', 'Thailand', 1, '2025-03-20 09:10:00', 11, 1, 36, 76),
+('Vintage Heels', 'A brand new heels from Unbranded. Well-maintained and true to size, see photos for details.', 706.55, 879.01, 'Brand New', 'Gray', 'Synthetic', 'Kids', 'USA', 1, '2025-10-07 14:31:00', 11, 5, 36, 77),
+('Oversized Heels', 'A lightly used heels from Unbranded. Well-maintained and true to size, see photos for details.', 1109.6, 2284.68, 'Lightly Used', 'Navy', 'Leather', 'Women', 'Vietnam', 1, '2025-06-07 23:24:00', 11, 6, 36, 78),
+('Everyday Heels', 'A well used heels from Unbranded. Well-maintained and true to size, see photos for details.', 136.65, 459.07, 'Well Used', 'Pink', 'Leather', 'Women', 'USA', 1, '2025-04-06 19:38:00', 11, 4, 36, 79),
+('Oversized Heels', NULL, 214.33, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-06-23 04:17:00', 11, 1, 36, 80),
+('Cropped Heels', 'A brand new heels from Unbranded. Well-maintained and true to size, see photos for details.', 524.43, 726.13, 'Brand New', 'Brown', 'Synthetic', 'Men', 'Italy', 1, '2025-04-20 04:19:00', 11, 4, 36, 75),
+('Retro Heels', NULL, 280.02, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-11-25 19:44:00', 11, 4, 36, 76),
+('Cropped Louis Vuitton Sneakers', NULL, 439.7, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-09-06 10:24:00', 12, 3, 6, 85),
+('Cropped Sneakers', 'A like new sneakers from Unbranded. Well-maintained and true to size, see photos for details.', 622.07, 1038.48, 'Like New', 'Navy', 'Synthetic', 'Unisex', 'Italy', 1, '2025-10-26 22:04:00', 12, 4, 36, 86),
+('Signature Converse Sneakers', NULL, 1379.21, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-05-06 18:25:00', 12, 2, 20, 87),
+('Everyday Gucci Sneakers', NULL, 1198.56, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-03-29 03:49:00', 12, 6, 11, 88),
+('Retro Dior Sneakers', 'A like new sneakers from Dior. Well-maintained and true to size, see photos for details.', 71551.96, 127842.72, 'Like New', 'Cream', 'Synthetic', 'Women', 'China', 0, '2025-08-16 16:47:00', 12, 6, 3, 89),
+('Cropped Louis Vuitton Sneakers', 'A like new sneakers from Louis Vuitton. Well-maintained and true to size, see photos for details.', 54652.22, 106027.38, 'Like New', 'Navy', 'Canvas', 'Women', 'USA', 0, '2025-07-31 16:30:00', 12, 4, 7, 90),
+('Limited Edition Louis Vuitton Sneakers', NULL, 1031.36, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-04-22 21:51:00', 12, 3, 6, 81),
+('Oversized Dior Sneakers', 'A lightly used sneakers from Dior. Well-maintained and true to size, see photos for details.', 33538.22, 80070.61, 'Lightly Used', 'Beige', 'Canvas', 'Men', 'Japan', 0, '2025-01-30 23:39:00', 12, 2, 3, 82),
+('Everyday Dior Sneakers', NULL, 2311.11, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-07-11 11:20:00', 12, 2, 3, 83),
+('Cropped Louis Vuitton Sneakers', 'A lightly used sneakers from Louis Vuitton. Well-maintained and true to size, see photos for details.', 929.59, 2234.23, 'Lightly Used', 'Pink', 'Rubber', 'Women', 'USA', 1, '2025-06-26 21:45:00', 12, 1, 7, 84),
+('Cropped Adidas Sneakers', 'A like new sneakers from Adidas. Well-maintained and true to size, see photos for details.', 2663.74, 4630.31, 'Like New', 'Beige', 'Rubber', 'Women', 'Vietnam', 1, '2026-07-05 22:58:00', 12, 3, 18, 85),
+('Limited Edition Adidas Sneakers', 'A well used sneakers from Adidas. Well-maintained and true to size, see photos for details.', 1249.56, 4341.08, 'Well Used', 'Brown', 'Synthetic', 'Kids', 'Bangladesh', 1, '2026-05-22 13:43:00', 12, 2, 18, 86),
+('Everyday Adidas Sneakers', 'A well used sneakers from Adidas. Well-maintained and true to size, see photos for details.', 1145.97, 4705.3, 'Well Used', 'Green', 'Rubber', 'Men', 'South Korea', 1, '2026-06-08 03:36:00', 12, 1, 18, 87),
+('Cropped Running shoes', 'A lightly used running shoes from Unbranded. Well-maintained and true to size, see photos for details.', 250.42, 481.68, 'Lightly Used', 'Green', 'Suede', 'Women', 'China', 1, '2025-05-01 07:13:00', 13, 1, 36, 97),
+('Limited Edition Nike Running shoes', 'A like new running shoes from Nike. Well-maintained and true to size, see photos for details.', 8179.86, 14800.5, 'Like New', 'Gray', 'Suede', 'Kids', 'Bangladesh', 1, '2025-04-08 04:48:00', 13, 1, 15, 98),
+('Cropped Nike Running shoes', 'A like new running shoes from Nike. Well-maintained and true to size, see photos for details.', 1613.98, 3070.8, 'Like New', 'Multicolor', 'Suede', 'Men', 'Japan', 1, '2025-03-19 20:50:00', 13, 2, 16, 99),
+('Cropped Adidas Running shoes', NULL, 1788.44, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-01-02 02:50:00', 13, 4, 18, 91),
+('Cropped Nike Running shoes', 'A lightly used running shoes from Nike. Well-maintained and true to size, see photos for details.', 4704.97, 10878.35, 'Lightly Used', 'Red', 'Leather', 'Women', 'Indonesia', 1, '2025-01-17 03:59:00', 13, 4, 15, 92),
+('Retro Adidas Running shoes', NULL, 927.09, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-04-06 20:23:00', 13, 2, 18, 93),
+('Y2K Nike Running shoes', 'A well used running shoes from Nike. Well-maintained and true to size, see photos for details.', 4038.07, 12396.89, 'Well Used', 'Pink', 'Leather', 'Men', 'Philippines', 1, '2026-05-04 02:08:00', 13, 3, 14, 94),
+('Limited Edition Nike Running shoes', 'A like new running shoes from Nike. Well-maintained and true to size, see photos for details.', 3668.96, 6480.41, 'Like New', 'Blue', 'Canvas', 'Women', 'Vietnam', 1, '2025-05-27 02:33:00', 13, 4, 15, 95),
+('Minimalist Running shoes', 'A well used running shoes from Unbranded. Well-maintained and true to size, see photos for details.', 41.13, 175.7, 'Well Used', 'Cream', 'Leather', 'Men', 'Japan', 1, '2026-03-16 10:50:00', 13, 6, 36, 96),
+('Everyday Nike Running shoes', 'A lightly used running shoes from Nike. Well-maintained and true to size, see photos for details.', 2105.98, 4261.9, 'Lightly Used', 'Multicolor', 'Suede', 'Women', 'India', 1, '2025-07-13 23:25:00', 13, 5, 14, 97),
+('Oversized Nike Running shoes', 'A lightly used running shoes from Nike. Well-maintained and true to size, see photos for details.', 636.94, 1548.27, 'Lightly Used', 'Red', 'Canvas', 'Women', 'India', 1, '2026-01-10 17:43:00', 13, 2, 15, 98),
+('Classic Running shoes', 'A like new running shoes from Unbranded. Well-maintained and true to size, see photos for details.', 481.07, 784.59, 'Like New', 'Yellow', 'Synthetic', 'Women', 'Japan', 1, '2026-07-04 17:39:00', 13, 1, 36, 99),
+('Classic Nike Running shoes', 'A heavily used running shoes from Nike. Well-maintained and true to size, see photos for details.', 1457.03, 8446.61, 'Heavily Used', 'Brown', 'Leather', 'Women', 'Japan', 1, '2026-04-10 19:38:00', 13, 5, 14, 91),
+('Timeless Dr. Martens Boots', 'A lightly used boots from Dr. Martens. Well-maintained and true to size, see photos for details.', 1930.8, 3996.62, 'Lightly Used', 'Navy', 'Suede', 'Women', 'Vietnam', 1, '2025-10-03 23:56:00', 14, 6, 22, 104),
+('Everyday Boots', NULL, 565.69, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-01-04 01:31:00', 14, 5, 36, 105),
+('Timeless Boots', NULL, 242.63, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-06-06 00:02:00', 14, 2, 36, 106),
+('Vintage Dr. Martens Boots', NULL, 1716.9, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-03-06 07:20:00', 14, 1, 23, 107),
+('Retro Boots', 'A like new boots from Unbranded. Well-maintained and true to size, see photos for details.', 199.91, 310.05, 'Like New', 'Black', 'Synthetic', 'Women', 'South Korea', 1, '2025-11-15 10:05:00', 14, 6, 36, 100),
+('Preloved Boots', 'A like new boots from Unbranded. Well-maintained and true to size, see photos for details.', 957.44, 1496.79, 'Like New', 'Navy', 'Rubber', 'Unisex', 'Italy', 1, '2025-01-07 13:01:00', 14, 6, 36, 101),
+('Y2K Dr. Martens Boots', NULL, 657.95, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-03-06 15:03:00', 14, 6, 22, 102),
+('Minimalist Boots', NULL, 255.66, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-04-15 23:05:00', 14, 1, 36, 103),
+('Minimalist Dr. Martens Boots', 'A brand new boots from Dr. Martens. Well-maintained and true to size, see photos for details.', 3991.2, 5683.86, 'Brand New', 'Red', 'Synthetic', 'Men', 'Thailand', 1, '2025-11-22 14:17:00', 14, 6, 22, 104),
+('Classic Dr. Martens Boots', 'A like new boots from Dr. Martens. Well-maintained and true to size, see photos for details.', 5010.03, 9323.17, 'Like New', 'Blue', 'Synthetic', 'Women', 'China', 1, '2025-06-11 21:19:00', 14, 2, 23, 105),
+('Classic Dr. Martens Boots', 'A lightly used boots from Dr. Martens. Well-maintained and true to size, see photos for details.', 1949.44, 4655.41, 'Lightly Used', 'Green', 'Rubber', 'Men', 'Italy', 1, '2026-04-19 03:51:00', 14, 3, 22, 106),
+('Limited Edition Dr. Martens Boots', 'A well used boots from Dr. Martens. Well-maintained and true to size, see photos for details.', 1899.12, 7411.62, 'Well Used', 'White', 'Leather', 'Kids', 'Italy', 1, '2026-03-31 04:05:00', 14, 2, 23, 107),
+('Vintage Dr. Martens Boots', 'A well used boots from Dr. Martens. Well-maintained and true to size, see photos for details.', 1341.33, 5364.04, 'Well Used', 'Beige', 'Suede', 'Women', 'Vietnam', 1, '2025-09-09 20:18:00', 14, 5, 22, 100),
+('Minimalist Flats', 'A lightly used flats from Unbranded. Well-maintained and true to size, see photos for details.', 155.35, 299.32, 'Lightly Used', 'Yellow', 'Leather', 'Kids', 'Thailand', 1, '2026-05-07 17:50:00', 15, 4, 36, 111),
+('Y2K Flats', 'A lightly used flats from Unbranded. Well-maintained and true to size, see photos for details.', 379.05, 777.59, 'Lightly Used', 'Green', 'Rubber', 'Women', 'India', 1, '2025-06-13 03:15:00', 15, 1, 36, 112),
+('Preloved Flats', 'A like new flats from Unbranded. Well-maintained and true to size, see photos for details.', 234.73, 387.03, 'Like New', 'Navy', 'Suede', 'Unisex', 'India', 1, '2025-07-12 15:34:00', 15, 2, 36, 108),
+('Signature Flats', 'A brand new flats from Unbranded. Well-maintained and true to size, see photos for details.', 1200.0, 1670.96, 'Brand New', 'Beige', 'Suede', 'Women', 'Vietnam', 1, '2025-05-26 03:54:00', 15, 2, 36, 109),
+('Timeless Flats', 'A like new flats from Unbranded. Well-maintained and true to size, see photos for details.', 493.57, 733.47, 'Like New', 'Multicolor', 'Suede', 'Women', 'Bangladesh', 1, '2026-01-01 07:42:00', 15, 3, 36, 110),
+('Signature Flats', NULL, 231.11, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-02-03 05:38:00', 15, 6, 36, 111),
+('Limited Edition Flats', 'A heavily used flats from Unbranded. Well-maintained and true to size, see photos for details.', 93.99, 395.09, 'Heavily Used', 'Beige', 'Leather', 'Unisex', 'Indonesia', 1, '2025-12-10 14:00:00', 15, 2, 36, 112),
+('Cropped Flats', 'A brand new flats from Unbranded. Well-maintained and true to size, see photos for details.', 604.61, 807.64, 'Brand New', 'Pink', 'Suede', 'Women', 'China', 1, '2025-08-19 05:28:00', 15, 1, 36, 108),
+('Cropped Flats', 'A brand new flats from Unbranded. Well-maintained and true to size, see photos for details.', 446.04, 537.64, 'Brand New', 'White', 'Suede', 'Men', 'India', 1, '2025-02-01 13:41:00', 15, 3, 36, 109),
+('Cropped Flats', 'A heavily used flats from Unbranded. Well-maintained and true to size, see photos for details.', 221.55, 1423.02, 'Heavily Used', 'White', 'Leather', 'Women', 'Bangladesh', 1, '2025-06-07 01:23:00', 15, 3, 36, 110),
+('Cropped Flats', 'A like new flats from Unbranded. Well-maintained and true to size, see photos for details.', 858.39, 1466.73, 'Like New', 'White', 'Suede', 'Unisex', 'South Korea', 1, '2025-09-29 02:41:00', 15, 6, 36, 111),
+('Everyday Flats', 'A like new flats from Unbranded. Well-maintained and true to size, see photos for details.', 663.87, 1259.22, 'Like New', 'Navy', 'Leather', 'Women', 'USA', 1, '2026-02-28 18:14:00', 15, 4, 36, 112),
+('Everyday Flats', NULL, 77.03, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-05-31 03:48:00', 15, 3, 36, 108),
+('Classic Sandals', 'A well used sandals from Unbranded. Well-maintained and true to size, see photos for details.', 215.59, 643.26, 'Well Used', 'Beige', 'Rubber', 'Women', 'Thailand', 1, '2025-03-31 12:35:00', 16, 2, 36, 113),
+('Oversized Sandals', 'A like new sandals from Unbranded. Well-maintained and true to size, see photos for details.', 836.47, 1391.15, 'Like New', 'White', 'Suede', 'Unisex', 'USA', 1, '2025-09-28 12:41:00', 16, 5, 36, 114),
+('Timeless Sandals', NULL, 254.73, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2026-05-02 08:57:00', 16, 2, 36, 115),
+('Y2K Sandals', NULL, 1096.34, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-05-18 09:47:00', 16, 3, 36, 116),
+('Classic Sandals', 'A lightly used sandals from Unbranded. Well-maintained and true to size, see photos for details.', 331.91, 692.76, 'Lightly Used', 'Red', 'Leather', 'Women', 'Vietnam', 1, '2025-11-15 22:32:00', 16, 3, 36, 117),
+('Limited Edition Sandals', 'A brand new sandals from Unbranded. Well-maintained and true to size, see photos for details.', 623.87, 765.76, 'Brand New', 'Yellow', 'Synthetic', 'Men', 'China', 1, '2025-02-01 07:23:00', 16, 1, 36, 118),
+('Y2K Sandals', 'A lightly used sandals from Unbranded. Well-maintained and true to size, see photos for details.', 69.18, 139.72, 'Lightly Used', 'Cream', 'Canvas', 'Unisex', 'Indonesia', 1, '2025-07-31 08:41:00', 16, 2, 36, 113),
+('Cropped Sandals', 'A like new sandals from Unbranded. Well-maintained and true to size, see photos for details.', 680.08, 1083.47, 'Like New', 'Blue', 'Synthetic', 'Unisex', 'USA', 1, '2025-09-16 06:29:00', 16, 2, 36, 114),
+('Y2K Sandals', 'A like new sandals from Unbranded. Well-maintained and true to size, see photos for details.', 641.22, 978.86, 'Like New', 'Blue', 'Suede', 'Women', 'Bangladesh', 1, '2025-02-28 19:25:00', 16, 6, 36, 115),
+('Cropped Sandals', 'A like new sandals from Unbranded. Well-maintained and true to size, see photos for details.', 297.88, 557.63, 'Like New', 'Navy', 'Canvas', 'Men', 'Indonesia', 1, '2026-01-03 16:19:00', 16, 4, 36, 116),
+('Timeless Sandals', 'A lightly used sandals from Unbranded. Well-maintained and true to size, see photos for details.', 431.28, 857.54, 'Lightly Used', 'Multicolor', 'Leather', 'Women', 'Italy', 1, '2025-11-11 13:50:00', 16, 2, 36, 117),
+('Everyday Sandals', 'A well used sandals from Unbranded. Well-maintained and true to size, see photos for details.', 145.07, 421.07, 'Well Used', 'Yellow', 'Leather', 'Unisex', 'Japan', 1, '2025-11-02 13:03:00', 16, 4, 36, 118),
+('Minimalist Sandals', NULL, 125.7, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-07-01 10:40:00', 16, 5, 36, 113),
+('Classic Gucci Bags & Purses', NULL, 1549.74, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-05-13 19:27:00', 17, 4, 9, 122),
+('Limited Edition Coach Bags & Purses', 'A like new bags & purses from Coach. Well-maintained and true to size, see photos for details.', 16019.29, 24251.03, 'Like New', 'Cream', 'Canvas', 'Women', 'Philippines', 1, '2025-09-12 07:44:00', 17, 4, 12, 119),
+('Timeless Bags & Purses', NULL, 445.71, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-06-17 19:33:00', 17, 5, 36, 120),
+('Oversized Coach Bags & Purses', NULL, 1136.83, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-01-20 07:14:00', 17, 6, 12, 121),
+('Limited Edition Louis Vuitton Bags & Purses', 'A lightly used bags & purses from Louis Vuitton. Well-maintained and true to size, see photos for details.', 51914.55, 113139.43, 'Lightly Used', 'Cream', 'Leather', 'Men', 'Philippines', 0, '2025-04-21 20:53:00', 17, 6, 5, 122),
+('Preloved Bags & Purses', 'A lightly used bags & purses from Unbranded. Well-maintained and true to size, see photos for details.', 133.13, 315.82, 'Lightly Used', 'White', 'Nylon', 'Men', 'Thailand', 1, '2026-03-05 03:32:00', 17, 3, 36, 119),
+('Oversized Louis Vuitton Bags & Purses', NULL, 1188.63, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-10-30 05:02:00', 17, 5, 5, 120),
+('Everyday Louis Vuitton Bags & Purses', 'A like new bags & purses from Louis Vuitton. Well-maintained and true to size, see photos for details.', 2702.47, 4155.46, 'Like New', 'Multicolor', 'Suede', 'Women', 'China', 1, '2025-03-18 23:46:00', 17, 6, 4, 121),
+('Minimalist Dior Bags & Purses', NULL, 3309.96, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-11-17 13:47:00', 17, 3, 2, 122),
+('Preloved Gucci Bags & Purses', 'A well used bags & purses from Gucci. Well-maintained and true to size, see photos for details.', 36669.96, 103671.66, 'Well Used', 'Blue', 'Leather', 'Women', 'USA', 1, '2025-04-27 12:25:00', 17, 1, 8, 119),
+('Classic Bags & Purses', NULL, 960.55, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-03-03 18:30:00', 17, 2, 36, 120),
+('Oversized Louis Vuitton Bags & Purses', 'A well used bags & purses from Louis Vuitton. Well-maintained and true to size, see photos for details.', 1305.24, 4055.82, 'Well Used', 'Beige', 'Suede', 'Unisex', 'China', 1, '2026-03-28 01:04:00', 17, 5, 4, 121),
+('Limited Edition Bags & Purses', NULL, 518.04, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-01-30 04:53:00', 17, 5, 36, 122),
+('Everyday Accessories', 'A lightly used accessories from Unbranded. Well-maintained and true to size, see photos for details.', 185.26, 427.27, 'Lightly Used', 'Brown', 'Synthetic', 'Kids', 'Philippines', 1, '2025-08-17 17:41:00', 18, 6, 36, 123),
+('Vintage Accessories', 'A brand new accessories from Unbranded. Well-maintained and true to size, see photos for details.', 704.09, 832.12, 'Brand New', 'Navy', 'Metal', 'Women', 'Japan', 1, '2026-07-17 00:52:00', 18, 5, 36, 123),
+('Signature Accessories', NULL, 282.89, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-04-30 22:42:00', 18, 3, 36, 123),
+('Preloved Accessories', 'A brand new accessories from Unbranded. Well-maintained and true to size, see photos for details.', 1056.42, 1253.33, 'Brand New', 'Blue', 'Synthetic', 'Men', 'Philippines', 1, '2026-05-20 04:52:00', 18, 4, 36, 123),
+('Oversized Accessories', NULL, 559.31, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-02-17 20:53:00', 18, 4, 36, 123),
+('Timeless Accessories', 'A heavily used accessories from Unbranded. Well-maintained and true to size, see photos for details.', 311.72, 1672.43, 'Heavily Used', 'Pink', 'Glass', 'Unisex', 'Vietnam', 1, '2025-06-27 23:52:00', 18, 4, 36, 123),
+('Minimalist Accessories', NULL, 176.59, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-10-29 14:51:00', 18, 4, 36, 123),
+('Timeless Accessories', 'A well used accessories from Unbranded. Well-maintained and true to size, see photos for details.', 197.19, 641.51, 'Well Used', 'Blue', 'Synthetic', 'Unisex', 'Vietnam', 1, '2025-07-02 16:34:00', 18, 4, 36, 123),
+('Retro Accessories', 'A well used accessories from Unbranded. Well-maintained and true to size, see photos for details.', 20.82, 86.64, 'Well Used', 'Multicolor', 'Metal', 'Women', 'Vietnam', 1, '2025-09-14 04:53:00', 18, 6, 36, 123),
+('Retro Accessories', 'A lightly used accessories from Unbranded. Well-maintained and true to size, see photos for details.', 513.8, 1323.77, 'Lightly Used', 'Multicolor', 'Glass', 'Women', 'Thailand', 1, '2025-02-18 12:24:00', 18, 4, 36, 123),
+('Signature Accessories', NULL, 465.34, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-07-14 23:38:00', 18, 5, 36, 123),
+('Timeless Accessories', NULL, 81.14, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-06-11 03:24:00', 18, 2, 36, 123),
+('Signature Accessories', 'A like new accessories from Unbranded. Well-maintained and true to size, see photos for details.', 397.26, 710.03, 'Like New', 'Navy', 'Leather', 'Women', 'USA', 1, '2025-02-22 20:39:00', 18, 3, 36, 123),
+('Y2K Earrings', 'A well used earrings from Unbranded. Well-maintained and true to size, see photos for details.', 46.01, 183.32, 'Well Used', 'Brown', 'Synthetic', 'Women', 'France', 1, '2026-06-28 15:35:00', 19, 2, 36, 124),
+('Timeless Earrings', NULL, 117.1, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-10-17 00:58:00', 19, 1, 36, 124),
+('Limited Edition Earrings', 'A like new earrings from Unbranded. Well-maintained and true to size, see photos for details.', 1013.59, 1911.96, 'Like New', 'Cream', 'Metal', 'Men', 'Italy', 1, '2025-08-07 21:27:00', 19, 4, 36, 124),
+('Oversized Earrings', 'A lightly used earrings from Unbranded. Well-maintained and true to size, see photos for details.', 534.57, 1201.61, 'Lightly Used', 'Gray', 'Leather', 'Unisex', 'Japan', 1, '2026-04-07 20:25:00', 19, 1, 36, 124),
+('Signature Earrings', 'A well used earrings from Unbranded. Well-maintained and true to size, see photos for details.', 54.33, 155.25, 'Well Used', 'White', 'Synthetic', 'Unisex', 'France', 1, '2025-03-30 09:48:00', 19, 6, 36, 124),
+('Limited Edition Earrings', 'A like new earrings from Unbranded. Well-maintained and true to size, see photos for details.', 566.05, 841.3, 'Like New', 'Beige', 'Synthetic', 'Men', 'Thailand', 1, '2026-01-18 00:35:00', 19, 5, 36, 124),
+('Limited Edition Earrings', NULL, 230.49, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-06-09 04:10:00', 19, 3, 36, 124),
+('Retro Earrings', 'A like new earrings from Unbranded. Well-maintained and true to size, see photos for details.', 839.92, 1285.76, 'Like New', 'Yellow', 'Glass', 'Men', 'China', 1, '2025-03-10 08:06:00', 19, 5, 36, 124),
+('Signature Earrings', 'A like new earrings from Unbranded. Well-maintained and true to size, see photos for details.', 296.83, 510.79, 'Like New', 'Gray', 'Synthetic', 'Men', 'Vietnam', 1, '2026-01-09 10:27:00', 19, 6, 36, 124),
+('Everyday Earrings', 'A like new earrings from Unbranded. Well-maintained and true to size, see photos for details.', 311.24, 530.77, 'Like New', 'Green', 'Synthetic', 'Unisex', 'South Korea', 1, '2025-04-22 05:41:00', 19, 6, 36, 124),
+('Signature Earrings', NULL, 322.38, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2026-02-19 18:13:00', 19, 6, 36, 124),
+('Limited Edition Earrings', 'A lightly used earrings from Unbranded. Well-maintained and true to size, see photos for details.', 229.61, 527.6, 'Lightly Used', 'White', 'Glass', 'Women', 'Philippines', 1, '2025-09-02 19:43:00', 19, 5, 36, 124),
+('Y2K Earrings', 'A lightly used earrings from Unbranded. Well-maintained and true to size, see photos for details.', 449.42, 1154.13, 'Lightly Used', 'Blue', 'Synthetic', 'Women', 'Indonesia', 1, '2026-06-15 11:24:00', 19, 5, 36, 124),
+('Classic Rings', 'A lightly used rings from Unbranded. Well-maintained and true to size, see photos for details.', 397.33, 889.02, 'Lightly Used', 'Pink', 'Glass', 'Women', 'Indonesia', 1, '2026-06-14 08:24:00', 20, 6, 36, 128),
+('Everyday Rings', NULL, 729.29, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-10-15 06:09:00', 20, 4, 36, 129),
+('Limited Edition Rings', 'A lightly used rings from Unbranded. Well-maintained and true to size, see photos for details.', 472.61, 1094.37, 'Lightly Used', 'Green', 'Glass', 'Women', 'Vietnam', 1, '2026-02-25 00:15:00', 20, 3, 36, 125),
+('Cropped Rings', 'A brand new rings from Unbranded. Well-maintained and true to size, see photos for details.', 700.99, 919.07, 'Brand New', 'Black', 'Synthetic', 'Unisex', 'Italy', 1, '2026-04-28 15:10:00', 20, 5, 36, 126),
+('Classic Rings', 'A well used rings from Unbranded. Well-maintained and true to size, see photos for details.', 224.68, 955.29, 'Well Used', 'Brown', 'Glass', 'Unisex', 'India', 1, '2025-07-01 15:57:00', 20, 2, 36, 127),
+('Timeless Rings', 'A lightly used rings from Unbranded. Well-maintained and true to size, see photos for details.', 186.17, 382.76, 'Lightly Used', 'Cream', 'Glass', 'Women', 'Thailand', 1, '2025-04-11 13:08:00', 20, 6, 36, 128),
+('Everyday Rings', NULL, 235.47, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-01-08 12:41:00', 20, 3, 36, 129),
+('Y2K Rings', 'A like new rings from Unbranded. Well-maintained and true to size, see photos for details.', 1010.42, 1753.46, 'Like New', 'Red', 'Synthetic', 'Kids', 'Japan', 1, '2026-02-28 17:50:00', 20, 4, 36, 125),
+('Oversized Rings', 'A well used rings from Unbranded. Well-maintained and true to size, see photos for details.', 443.92, 1571.28, 'Well Used', 'Navy', 'Leather', 'Women', 'Bangladesh', 1, '2025-12-13 17:39:00', 20, 5, 36, 126),
+('Vintage Rings', 'A lightly used rings from Unbranded. Well-maintained and true to size, see photos for details.', 441.5, 933.09, 'Lightly Used', 'Pink', 'Synthetic', 'Men', 'India', 1, '2025-06-29 20:31:00', 20, 4, 36, 127),
+('Minimalist Rings', 'A lightly used rings from Unbranded. Well-maintained and true to size, see photos for details.', 263.72, 571.62, 'Lightly Used', 'Beige', 'Metal', 'Kids', 'Japan', 1, '2026-02-09 12:37:00', 20, 5, 36, 128),
+('Vintage Rings', 'A well used rings from Unbranded. Well-maintained and true to size, see photos for details.', 234.78, 770.06, 'Well Used', 'Brown', 'Glass', 'Unisex', 'India', 1, '2025-09-25 05:26:00', 20, 6, 36, 129),
+('Vintage Rings', 'A like new rings from Unbranded. Well-maintained and true to size, see photos for details.', 1023.84, 1608.94, 'Like New', 'Cream', 'Glass', 'Men', 'India', 1, '2026-05-09 03:16:00', 20, 5, 36, 125),
+('Cropped Necklace', 'A lightly used necklace from Unbranded. Well-maintained and true to size, see photos for details.', 264.13, 722.04, 'Lightly Used', 'Multicolor', 'Synthetic', 'Women', 'Vietnam', 1, '2025-11-18 11:13:00', 21, 4, 36, 130),
+('Limited Edition Necklace', 'A well used necklace from Unbranded. Well-maintained and true to size, see photos for details.', 340.73, 1262.69, 'Well Used', 'Cream', 'Metal', 'Women', 'China', 1, '2026-05-20 19:00:00', 21, 6, 36, 130),
+('Signature Necklace', NULL, 113.87, NULL, 'Heavily Used', NULL, NULL, NULL, NULL, 1, '2025-05-12 01:33:00', 21, 4, 36, 130),
+('Vintage Necklace', 'A lightly used necklace from Unbranded. Well-maintained and true to size, see photos for details.', 308.14, 597.16, 'Lightly Used', 'Navy', 'Glass', 'Women', 'Philippines', 1, '2025-08-04 12:37:00', 21, 5, 36, 130),
+('Retro Necklace', 'A like new necklace from Unbranded. Well-maintained and true to size, see photos for details.', 182.5, 316.67, 'Like New', 'Pink', 'Synthetic', 'Women', 'Japan', 1, '2026-04-07 05:36:00', 21, 5, 36, 130),
+('Limited Edition Necklace', 'A well used necklace from Unbranded. Well-maintained and true to size, see photos for details.', 320.82, 1120.89, 'Well Used', 'Black', 'Leather', 'Women', 'Vietnam', 1, '2026-06-14 17:46:00', 21, 5, 36, 130),
+('Cropped Necklace', NULL, 861.42, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-12-09 08:23:00', 21, 1, 36, 130),
+('Minimalist Necklace', 'A lightly used necklace from Unbranded. Well-maintained and true to size, see photos for details.', 595.69, 1329.48, 'Lightly Used', 'Multicolor', 'Leather', 'Kids', 'France', 1, '2025-11-29 21:32:00', 21, 3, 36, 130),
+('Y2K Necklace', 'A well used necklace from Unbranded. Well-maintained and true to size, see photos for details.', 310.95, 1017.09, 'Well Used', 'Pink', 'Metal', 'Women', 'USA', 1, '2025-11-18 10:41:00', 21, 6, 36, 130),
+('Classic Necklace', 'A lightly used necklace from Unbranded. Well-maintained and true to size, see photos for details.', 726.8, 1425.44, 'Lightly Used', 'Navy', 'Metal', 'Women', 'Japan', 1, '2025-04-08 02:59:00', 21, 6, 36, 130),
+('Timeless Necklace', NULL, 428.16, NULL, 'Brand New', NULL, NULL, NULL, NULL, 1, '2025-10-18 14:40:00', 21, 3, 36, 130),
+('Timeless Necklace', 'A brand new necklace from Unbranded. Well-maintained and true to size, see photos for details.', 388.67, 521.54, 'Brand New', 'Yellow', 'Synthetic', 'Women', 'Vietnam', 1, '2026-07-07 05:37:00', 21, 5, 36, 130),
+('Vintage Necklace', 'A like new necklace from Unbranded. Well-maintained and true to size, see photos for details.', 32.42, 50.13, 'Like New', 'Beige', 'Synthetic', 'Women', 'Bangladesh', 1, '2026-05-19 15:19:00', 21, 1, 36, 130),
+('Timeless Bracelet', NULL, 372.66, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-02-04 12:14:00', 22, 5, 36, 131),
+('Retro Bracelet', NULL, 439.5, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-10-19 20:47:00', 22, 4, 36, 131),
+('Everyday Bracelet', 'A like new bracelet from Unbranded. Well-maintained and true to size, see photos for details.', 466.8, 762.63, 'Like New', 'Brown', 'Synthetic', 'Women', 'Philippines', 1, '2025-01-23 05:06:00', 22, 2, 36, 131),
+('Vintage Bracelet', 'A brand new bracelet from Unbranded. Well-maintained and true to size, see photos for details.', 1111.91, 1497.05, 'Brand New', 'Cream', 'Metal', 'Women', 'Vietnam', 1, '2025-09-30 12:04:00', 22, 1, 36, 131),
+('Y2K Bracelet', NULL, 277.3, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2026-04-17 23:49:00', 22, 1, 36, 131),
+('Y2K Bracelet', 'A lightly used bracelet from Unbranded. Well-maintained and true to size, see photos for details.', 501.01, 1129.85, 'Lightly Used', 'White', 'Synthetic', 'Women', 'France', 1, '2026-01-05 01:55:00', 22, 4, 36, 131),
+('Y2K Bracelet', 'A lightly used bracelet from Unbranded. Well-maintained and true to size, see photos for details.', 417.21, 892.56, 'Lightly Used', 'Navy', 'Leather', 'Women', 'China', 1, '2025-06-11 15:05:00', 22, 2, 36, 131),
+('Cropped Bracelet', NULL, 759.25, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-07-17 00:44:00', 22, 2, 36, 131),
+('Minimalist Bracelet', 'A like new bracelet from Unbranded. Well-maintained and true to size, see photos for details.', 747.32, 1250.34, 'Like New', 'Green', 'Leather', 'Men', 'Bangladesh', 1, '2025-11-28 23:29:00', 22, 6, 36, 131),
+('Vintage Bracelet', NULL, 550.74, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-01-08 19:15:00', 22, 3, 36, 131),
+('Limited Edition Bracelet', 'A like new bracelet from Unbranded. Well-maintained and true to size, see photos for details.', 150.68, 273.49, 'Like New', 'Pink', 'Synthetic', 'Women', 'Bangladesh', 1, '2025-03-10 01:53:00', 22, 6, 36, 131),
+('Signature Bracelet', 'A brand new bracelet from Unbranded. Well-maintained and true to size, see photos for details.', 758.18, 1003.99, 'Brand New', 'Navy', 'Synthetic', 'Women', 'Italy', 1, '2025-03-14 00:59:00', 22, 4, 36, 131),
+('Everyday Bracelet', NULL, 41.22, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-02-11 23:04:00', 22, 3, 36, 131),
+('Oversized Aesthetic Bundles', 'A like new aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 442.89, 812.98, 'Like New', 'Multicolor', 'Cotton', 'Men', 'Bangladesh', 1, '2025-04-19 20:36:00', 23, 2, 36, 132),
+('Limited Edition Aesthetic Bundles', 'A lightly used aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 706.6, 1403.6, 'Lightly Used', 'Yellow', 'Polyester', 'Unisex', 'Japan', 1, '2026-03-17 23:20:00', 23, 5, 36, 132),
+('Y2K Aesthetic Bundles', 'A brand new aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 679.4, 800.53, 'Brand New', 'Blue', 'Cotton', 'Women', 'Italy', 1, '2025-11-19 00:49:00', 23, 4, 36, 132),
+('Retro Aesthetic Bundles', NULL, 225.16, NULL, 'Like New', NULL, NULL, NULL, NULL, 1, '2025-04-05 18:25:00', 23, 2, 36, 132),
+('Timeless Aesthetic Bundles', 'A well used aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 315.68, 1049.91, 'Well Used', 'White', 'Mixed', 'Men', 'Philippines', 1, '2026-01-26 02:49:00', 23, 6, 36, 132),
+('Limited Edition Aesthetic Bundles', NULL, 639.29, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2026-01-27 01:19:00', 23, 1, 36, 132),
+('Retro Aesthetic Bundles', 'A like new aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 926.58, 1458.01, 'Like New', 'Gray', 'Mixed', 'Women', 'Japan', 1, '2026-02-08 04:08:00', 23, 5, 36, 132),
+('Everyday Aesthetic Bundles', NULL, 89.14, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-07-22 15:25:00', 23, 1, 36, 132),
+('Minimalist Aesthetic Bundles', 'A like new aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 460.55, 885.23, 'Like New', 'Pink', 'Polyester', 'Women', 'Italy', 1, '2025-12-19 19:41:00', 23, 2, 36, 132),
+('Preloved Aesthetic Bundles', NULL, 181.27, NULL, 'Lightly Used', NULL, NULL, NULL, NULL, 1, '2025-03-29 03:47:00', 23, 5, 36, 132),
+('Classic Aesthetic Bundles', NULL, 22.17, NULL, 'Well Used', NULL, NULL, NULL, NULL, 1, '2025-11-09 14:30:00', 23, 5, 36, 132),
+('Signature Aesthetic Bundles', 'A like new aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 647.0, 953.41, 'Like New', 'Navy', 'Mixed', 'Men', 'Japan', 1, '2026-06-24 01:16:00', 23, 2, 36, 132),
+('Oversized Aesthetic Bundles', 'A lightly used aesthetic bundles from Unbranded. Well-maintained and true to size, see photos for details.', 510.91, 1011.32, 'Lightly Used', 'Red', 'Cotton', 'Women', 'Indonesia', 1, '2025-08-25 12:32:00', 23, 1, 36, 132),
+('Nike Air Jordan 1 Retro High "Chicago"', 'Grail tier Air Jordan 1 in the original black, white, and red colorway that started it all in 1985. Authenticated preloved pair with minimal creasing, full original box included.', 28500.0, 32000.0, 'Like New', 'Black', 'Leather', 'Unisex', 'Vietnam', 0, '2025-07-23 16:29:00', 12, 1, 16, 81),
+('Nike Air Jordan 1 Retro High "Bred Toe"', 'Highly sought after Bred Toe colorway. Lightly worn with visible love on the toe box, priced accordingly below mint condition resale comps.', 21000.0, 26000.0, 'Lightly Used', 'Red', 'Leather', 'Unisex', 'Vietnam', 0, '2025-01-23 01:15:00', 12, 2, 14, 82),
+('Nike Air Jordan 13 Retro "Black Cat"', 'Cult favorite Jordan 13 in the stealthy Black Cat colorway. Rare full family size run from a private collection, sold as is with authenticity guarantee.', 18500.0, 21000.0, 'Like New', 'Black', 'Leather', 'Unisex', 'Vietnam', 0, '2026-06-27 09:21:00', 12, 3, 15, 83),
+('Nike Air Force 1 \'07 "Triple White"', 'The everyday icon. Clean triple white Air Force 1, freshly deep cleaned, minor sole yellowing consistent with age.', 5800.0, 6500.0, 'Lightly Used', 'White', 'Leather', 'Unisex', 'Vietnam', 0, '2026-05-17 12:47:00', 12, 4, 16, 84),
+('Nike Air Force 1 Low "Premium Collab Edition"', 'Limited premium AF1 build with upgraded leather and collab style detailing. Deadstock condition, worn twice for photos only.', 8200.0, 9800.0, 'Brand New', 'Black', 'Leather', 'Unisex', 'Vietnam', 0, '2025-06-10 00:22:00', 12, 5, 14, 85),
+('Louis Vuitton Trainer Sneaker, Monogram', 'Structured LV Trainer with monogram detailing and a chunky sole. Comes with dust bag and authenticity card, a true grail crossover between streetwear and luxury.', 98000.0, 125000.0, 'Like New', 'Brown', 'Leather', 'Unisex', 'France', 0, '2025-12-27 11:40:00', 12, 6, 7, 86),
+('Louis Vuitton LV Runner Sneaker', 'Sporty LV Runner with signature branding along the midsole. Well loved but structurally sound, priced fairly for the wear shown.', 67000.0, 89000.0, 'Well Used', 'Black', 'Leather', 'Unisex', 'France', 0, '2025-11-06 07:32:00', 12, 1, 6, 87),
+('Gucci Ace Sneaker, Web Stripe', 'Clean low top Ace sneaker with the signature green and red web stripe. Minimalist leather build, barely worn.', 42000.0, 52000.0, 'Like New', 'White', 'Leather', 'Unisex', 'Italy', 0, '2025-10-10 01:40:00', 12, 2, 11, 88),
+('Gucci Rhyton Sneaker, Chunky Sole', 'Statement chunky sole Rhyton sneaker. The distressed look upper is factory finish, not wear, authenticated and boxed.', 48500.0, 58000.0, 'Brand New', 'White', 'Leather', 'Unisex', 'Italy', 0, '2025-09-21 12:56:00', 12, 3, 10, 89),
+('Dior B23 High-Top Sneaker, Oblique Canvas', 'Signature Dior Oblique canvas high top with leather trim. One of the most recognized silhouettes in modern luxury streetwear.', 72000.0, 95000.0, 'Like New', 'Beige', 'Leather', 'Unisex', 'Italy', 0, '2025-01-31 17:17:00', 12, 4, 3, 90);
 
 INSERT INTO LISTING_IMAGES (listing_id, image_url, is_primary) VALUES
 (1, 'https://images.unsplash.com/photo-1564257631407-4deb1f99d992?w=600', 1),
@@ -3074,20 +3109,20 @@ UPDATE AUCTIONS SET status='Closed', end_time='2025-10-16 22:37:00' WHERE auctio
 -- ORDERS
 -- ------------------------------------------------------------
 INSERT INTO ORDERS (order_date, status, listing_id, buyer_id, seller_id) VALUES
-('2025-11-19 21:50:00', 'Out for Delivery', 206, 1, 2),
+('2025-11-19 21:50:00', 'Delivered', 206, 1, 2),
 ((NOW() - INTERVAL 3 HOUR), 'Preparing', 205, 1, 4),
 ((NOW() - INTERVAL 25 HOUR), 'Preparing', 38, 2, 4),
-('2026-07-17 02:00:00', 'Out for Delivery', 265, 5, 5),
-('2026-02-02 06:41:00', 'Out for Delivery', 295, 7, 2),
+('2026-07-17 02:00:00', 'Delivered', 265, 5, 5),
+('2026-02-02 06:41:00', 'Delivered', 295, 7, 2),
 ((NOW() - INTERVAL 26 HOUR), 'Preparing', 62, 6, 4),
 ('2025-07-16 06:19:00', 'Cancelled', 34, 7, 2),
 ('2026-07-19 14:00:00', 'Delivered', 103, 6, 3),
 ('2025-10-01 00:31:00', 'Delivered', 257, 7, 4),
 ('2026-07-18 03:00:00', 'Cancelled', 127, 2, 3),
-('2025-05-12 09:02:00', 'Shipped', 44, 4, 3),
-('2025-11-22 14:48:00', 'Shipped', 91, 8, 1),
-('2026-07-19 12:00:00', 'Shipped', 25, 1, 4),
-('2026-07-17 21:00:00', 'Shipped', 120, 1, 5),
+('2025-05-12 09:02:00', 'Delivered', 44, 4, 3),
+('2025-11-22 14:48:00', 'Delivered', 91, 8, 1),
+('2026-07-19 12:00:00', 'Delivered', 25, 1, 4),
+('2026-07-17 21:00:00', 'Delivered', 120, 1, 5),
 ('2025-05-19 22:04:00', 'Delivered', 12, 4, 5),
 ((NOW() - INTERVAL 31 HOUR), 'Preparing', 193, 2, 6),
 ('2026-02-07 15:03:00', 'Delivered', 88, 2, 6),
@@ -3097,53 +3132,53 @@ INSERT INTO ORDERS (order_date, status, listing_id, buyer_id, seller_id) VALUES
 ('2026-04-09 07:41:00', 'Delivered', 79, 8, 3),
 ('2026-07-18 04:00:00', 'Delivered', 223, 1, 5),
 ('2026-05-09 21:08:00', 'Delivered', 163, 8, 3),
-('2026-06-11 08:02:00', 'Out for Delivery', 172, 3, 2),
-('2025-12-01 23:29:00', 'Shipped', 282, 3, 6),
+('2026-06-11 08:02:00', 'Delivered', 172, 3, 2),
+('2025-12-01 23:29:00', 'Delivered', 282, 3, 6),
 ('2026-01-05 02:48:00', 'Delivered', 68, 5, 2),
 ('2025-06-13 10:48:00', 'Delivered', 71, 7, 3),
-('2025-07-25 05:25:00', 'Out for Delivery', 294, 1, 1),
+('2025-07-25 05:25:00', 'Delivered', 294, 1, 1),
 ('2026-03-21 08:56:00', 'Delivered', 104, 1, 4),
 ((NOW() - INTERVAL 25 HOUR), 'Preparing', 273, 7, 1),
-('2025-02-02 12:47:00', 'Out for Delivery', 70, 8, 6),
+('2025-02-02 12:47:00', 'Delivered', 70, 8, 6),
 ('2026-05-23 03:52:00', 'Delivered', 225, 4, 4),
 ('2026-01-10 14:27:00', 'Delivered', 75, 5, 3),
 ('2025-12-15 03:21:00', 'Delivered', 81, 7, 5),
 ((NOW() - INTERVAL 8 HOUR), 'Preparing', 166, 6, 5),
-('2025-02-15 15:34:00', 'Shipped', 35, 7, 6),
+('2025-02-15 15:34:00', 'Delivered', 35, 7, 6),
 ((NOW() - INTERVAL 32 HOUR), 'Preparing', 277, 7, 1),
 ('2026-03-06 16:06:00', 'Delivered', 61, 5, 1),
-('2026-01-13 08:15:00', 'Out for Delivery', 283, 2, 3),
+('2026-01-13 08:15:00', 'Delivered', 283, 2, 3),
 ((NOW() - INTERVAL 37 HOUR), 'Preparing', 16, 2, 2),
-('2026-01-15 13:43:00', 'Out for Delivery', 167, 4, 2),
-('2025-11-05 02:02:00', 'Shipped', 215, 2, 5),
-('2025-02-23 05:24:00', 'Shipped', 231, 2, 4),
+('2026-01-15 13:43:00', 'Delivered', 167, 4, 2),
+('2025-11-05 02:02:00', 'Delivered', 215, 2, 5),
+('2025-02-23 05:24:00', 'Delivered', 231, 2, 4),
 ('2025-06-30 21:32:00', 'Delivered', 97, 2, 5),
-('2025-01-16 15:57:00', 'Out for Delivery', 55, 5, 2),
-('2026-01-08 22:55:00', 'Out for Delivery', 279, 3, 4),
+('2025-01-16 15:57:00', 'Delivered', 55, 5, 2),
+('2026-01-08 22:55:00', 'Delivered', 279, 3, 4),
 ('2025-07-18 23:28:00', 'Delivered', 14, 1, 1),
-('2025-03-22 04:10:00', 'Shipped', 137, 4, 1),
-('2026-01-08 07:58:00', 'Shipped', 119, 6, 6),
+('2025-03-22 04:10:00', 'Delivered', 137, 4, 1),
+('2026-01-08 07:58:00', 'Delivered', 119, 6, 6),
 ((NOW() - INTERVAL 15 HOUR), 'Preparing', 156, 5, 1),
 ('2026-02-11 17:37:00', 'Delivered', 258, 6, 5),
 ('2025-06-17 19:19:00', 'Delivered', 179, 6, 2),
 ('2025-05-01 03:56:00', 'Delivered', 7, 5, 5),
 ('2025-03-29 13:27:00', 'Delivered', 92, 7, 1),
-('2025-05-16 11:19:00', 'Out for Delivery', 21, 8, 6),
+('2025-05-16 11:19:00', 'Delivered', 21, 8, 6),
 ((NOW() - INTERVAL 8 HOUR), 'Preparing', 203, 2, 2),
-('2026-07-17 03:34:00', 'Shipped', 123, 6, 6),
+('2026-07-17 03:34:00', 'Delivered', 123, 6, 6),
 ('2025-06-15 06:05:00', 'Delivered', 280, 4, 2),
 ('2025-07-20 22:07:00', 'Delivered', 129, 3, 1),
 ('2026-02-06 20:53:00', 'Delivered', 221, 2, 5),
-('2025-04-11 21:48:00', 'Out for Delivery', 158, 3, 1),
+('2025-04-11 21:48:00', 'Delivered', 158, 3, 1),
 ('2025-10-24 04:11:00', 'Delivered', 121, 7, 1),
-('2025-05-31 21:54:00', 'Shipped', 186, 6, 2),
+('2025-05-31 21:54:00', 'Delivered', 186, 6, 2),
 ('2026-06-27 05:16:00', 'Delivered', 298, 4, 2),
 ('2026-03-06 11:09:00', 'Delivered', 126, 3, 1),
 ('2025-05-07 22:34:00', 'Delivered', 122, 6, 4),
-('2025-10-09 17:51:00', 'Out for Delivery', 36, 6, 4),
+('2025-10-09 17:51:00', 'Delivered', 36, 6, 4),
 ((NOW() - INTERVAL 9 HOUR), 'Preparing', 42, 1, 5),
 ('2025-04-12 15:23:00', 'Delivered', 105, 2, 1),
-('2025-08-17 00:20:00', 'Shipped', 4, 1, 6),
+('2025-08-17 00:20:00', 'Delivered', 4, 1, 6),
 ('2026-01-14 18:08:00', 'Delivered', 57, 8, 5),
 ('2026-03-04 09:14:00', 'Delivered', 194, 6, 4),
 ('2025-01-13 17:01:00', 'Delivered', 175, 3, 6),
@@ -3152,16 +3187,16 @@ INSERT INTO ORDERS (order_date, status, listing_id, buyer_id, seller_id) VALUES
 ((NOW() - INTERVAL 15 HOUR), 'Preparing', 17, 4, 5),
 ('2026-03-06 02:45:00', 'Delivered', 113, 6, 3),
 ('2025-01-19 07:59:00', 'Delivered', 161, 7, 4),
-('2025-07-05 19:57:00', 'Shipped', 252, 5, 2),
+('2025-07-05 19:57:00', 'Delivered', 252, 5, 2),
 ('2026-04-10 01:34:00', 'Delivered', 84, 6, 2),
-('2026-01-15 04:14:00', 'Shipped', 118, 7, 6),
+('2026-01-15 04:14:00', 'Delivered', 118, 7, 6),
 ((NOW() - INTERVAL 3 HOUR), 'Preparing', 110, 7, 3),
-('2025-08-03 10:41:00', 'Shipped', 202, 1, 2),
+('2025-08-03 10:41:00', 'Delivered', 202, 1, 2),
 ('2025-11-19 16:42:00', 'Delivered', 11, 4, 5),
 ('2025-04-12 18:59:00', 'Cancelled', 270, 2, 6),
 ('2025-06-11 05:23:00', 'Delivered', 192, 8, 3),
 ('2025-11-16 19:45:00', 'Cancelled', 98, 7, 2),
-('2025-02-07 21:38:00', 'Out for Delivery', 188, 1, 6),
+('2025-02-07 21:38:00', 'Delivered', 188, 1, 6),
 ('2025-03-07 21:28:00', 'Delivered', 101, 1, 6),
 ((NOW() - INTERVAL 32 HOUR), 'Preparing', 284, 3, 6),
 ('2025-04-01 01:49:00', 'Delivered', 147, 3, 6),
@@ -3170,7 +3205,7 @@ INSERT INTO ORDERS (order_date, status, listing_id, buyer_id, seller_id) VALUES
 ((NOW() - INTERVAL 10 HOUR), 'Preparing', 184, 4, 1),
 ((NOW() - INTERVAL 14 HOUR), 'Preparing', 10, 7, 6),
 ((NOW() - INTERVAL 15 HOUR), 'Preparing', 134, 6, 5),
-('2026-05-24 18:15:00', 'Out for Delivery', 28, 3, 1),
+('2026-05-24 18:15:00', 'Delivered', 28, 3, 1),
 ('2025-04-11 22:08:00', 'Delivered', 116, 8, 6),
 ((NOW() - INTERVAL 12 HOUR), 'Preparing', 117, 5, 2),
 ((NOW() - INTERVAL 26 HOUR), 'Preparing', 207, 4, 4),
@@ -3179,13 +3214,13 @@ INSERT INTO ORDERS (order_date, status, listing_id, buyer_id, seller_id) VALUES
 ('2026-01-06 10:42:00', 'Cancelled', 187, 2, 3),
 ('2025-11-28 06:44:00', 'Delivered', 143, 1, 4),
 ('2025-04-03 15:48:00', 'Delivered', 239, 2, 6),
-('2025-04-09 09:42:00', 'Shipped', 13, 4, 6),
+('2025-04-09 09:42:00', 'Delivered', 13, 4, 6),
 ('2025-10-23 23:47:00', 'Cancelled', 275, 5, 4),
-('2025-04-30 16:25:00', 'Out for Delivery', 218, 2, 1),
+('2025-04-30 16:25:00', 'Delivered', 218, 2, 1),
 ('2026-05-11 05:50:00', 'Delivered', 183, 8, 4),
 ('2025-12-13 00:23:00', 'Delivered', 267, 2, 1),
 ('2026-03-26 16:29:00', 'Delivered', 74, 7, 2),
-('2025-04-29 08:32:00', 'Out for Delivery', 76, 5, 4),
+('2025-04-29 08:32:00', 'Delivered', 76, 5, 4),
 ('2025-11-18 19:32:00', 'Delivered', 200, 7, 3),
 ((NOW() - INTERVAL 26 HOUR), 'Preparing', 256, 6, 5),
 ('2025-12-20 09:56:00', 'Delivered', 37, 8, 1),
@@ -3195,16 +3230,16 @@ INSERT INTO ORDERS (order_date, status, listing_id, buyer_id, seller_id) VALUES
 ('2026-06-16 14:24:00', 'Delivered', 248, 7, 6),
 ('2026-04-04 23:52:00', 'Delivered', 29, 6, 2),
 ('2026-07-15 00:26:00', 'Delivered', 47, 8, 3),
-('2025-07-01 03:45:00', 'Out for Delivery', 153, 4, 1),
+('2025-07-01 03:45:00', 'Delivered', 153, 4, 1),
 ('2025-04-13 12:38:00', 'Delivered', 140, 2, 4),
 ('2025-02-03 15:23:00', 'Delivered', 201, 3, 1),
 ('2025-07-05 08:52:00', 'Delivered', 227, 6, 4),
-('2025-11-19 03:47:00', 'Out for Delivery', 217, 6, 3),
-('2026-03-10 10:30:00', 'Out for Delivery', 219, 6, 2),
+('2025-11-19 03:47:00', 'Delivered', 217, 6, 3),
+('2026-03-10 10:30:00', 'Delivered', 219, 6, 2),
 ('2026-05-02 07:10:00', 'Delivered', 251, 4, 5),
-('2025-09-11 02:24:00', 'Out for Delivery', 144, 2, 3),
-('2025-01-27 05:06:00', 'Shipped', 276, 5, 2),
-('2026-05-11 07:27:00', 'Shipped', 65, 7, 5),
+('2025-09-11 02:24:00', 'Delivered', 144, 2, 3),
+('2025-01-27 05:06:00', 'Delivered', 276, 5, 2),
+('2026-05-11 07:27:00', 'Delivered', 65, 7, 5),
 ('2026-07-01 16:35:00', 'Cancelled', 235, 4, 2),
 ('2026-02-13 13:36:00', 'Delivered', 32, 6, 3),
 ('2025-05-24 20:14:00', 'Cancelled', 30, 2, 2),
@@ -3215,43 +3250,43 @@ INSERT INTO ORDERS (order_date, status, listing_id, buyer_id, seller_id) VALUES
 ('2025-03-05 00:25:00', 'Delivered', 204, 2, 6),
 ('2025-04-28 05:40:00', 'Delivered', 6, 1, 3),
 ('2025-01-10 15:47:00', 'Cancelled', 73, 6, 2),
-('2025-03-25 11:59:00', 'Shipped', 112, 4, 6),
-('2025-05-25 08:03:00', 'Shipped', 85, 6, 6),
+('2025-03-25 11:59:00', 'Delivered', 112, 4, 6),
+('2025-05-25 08:03:00', 'Delivered', 85, 6, 6),
 ('2026-05-21 18:30:00', 'Cancelled', 111, 3, 3),
-('2025-01-09 13:49:00', 'Shipped', 20, 4, 5),
+('2025-01-09 13:49:00', 'Delivered', 20, 4, 5),
 ('2025-04-14 14:08:00', 'Delivered', 253, 5, 6),
 ('2026-02-25 21:13:00', 'Delivered', 245, 2, 6),
 ('2025-04-21 08:16:00', 'Delivered', 19, 2, 2),
 ('2026-02-01 21:54:00', 'Delivered', 23, 8, 1),
-('2026-07-10 00:37:00', 'Out for Delivery', 272, 8, 5),
+('2026-07-10 00:37:00', 'Delivered', 272, 8, 5),
 ('2026-05-11 12:25:00', 'Cancelled', 146, 1, 2),
-('2025-09-16 07:53:00', 'Shipped', 230, 1, 6),
+('2025-09-16 07:53:00', 'Delivered', 230, 1, 6),
 ('2025-06-11 00:28:00', 'Delivered', 94, 1, 6),
-('2026-06-15 22:24:00', 'Out for Delivery', 233, 3, 2),
+('2026-06-15 22:24:00', 'Delivered', 233, 3, 2),
 ((NOW() - INTERVAL 6 HOUR), 'Preparing', 26, 1, 3),
-('2025-07-01 01:15:00', 'Out for Delivery', 80, 4, 4),
+('2025-07-01 01:15:00', 'Delivered', 80, 4, 4),
 ((NOW() - INTERVAL 25 HOUR), 'Preparing', 2, 2, 3),
 ('2026-06-20 17:33:00', 'Delivered', 211, 7, 5),
-('2025-07-19 01:17:00', 'Shipped', 128, 7, 2),
+('2025-07-19 01:17:00', 'Delivered', 128, 7, 2),
 ('2026-05-06 02:22:00', 'Delivered', 31, 5, 3),
 ('2025-08-23 04:28:00', 'Delivered', 190, 2, 1),
 ('2025-02-14 14:04:00', 'Delivered', 286, 4, 3),
 ('2025-11-18 08:55:00', 'Delivered', 107, 4, 4),
-('2026-06-21 23:24:00', 'Shipped', 247, 8, 5),
+('2026-06-21 23:24:00', 'Delivered', 247, 8, 5),
 ('2025-02-20 03:53:00', 'Delivered', 226, 1, 4),
 ('2026-04-25 13:48:00', 'Delivered', 77, 5, 1),
-('2025-08-28 07:32:00', 'Shipped', 299, 5, 1),
-('2025-05-19 05:22:00', 'Shipped', 90, 7, 6),
+('2025-08-28 07:32:00', 'Delivered', 299, 5, 1),
+('2025-05-19 05:22:00', 'Delivered', 90, 7, 6),
 ('2026-03-21 15:20:00', 'Delivered', 288, 5, 5),
-('2025-10-23 17:58:00', 'Out for Delivery', 236, 7, 1),
+('2025-10-23 17:58:00', 'Delivered', 236, 7, 1),
 ((NOW() - INTERVAL 12 HOUR), 'Preparing', 72, 6, 3),
 ('2025-04-23 14:36:00', 'Delivered', 287, 7, 2),
 ('2026-06-09 15:12:00', 'Cancelled', 8, 7, 3),
-('2025-10-14 19:37:00', 'Out for Delivery', 45, 8, 6),
+('2025-10-14 19:37:00', 'Delivered', 45, 8, 6),
 ('2026-06-01 04:56:00', 'Delivered', 5, 4, 3),
 ('2025-10-17 22:14:00', 'Delivered', 69, 6, 3),
 ('2026-02-27 22:15:00', 'Delivered', 250, 3, 3),
-('2025-09-15 10:44:00', 'Out for Delivery', 210, 3, 4),
+('2025-09-15 10:44:00', 'Delivered', 210, 3, 4),
 ((NOW() - INTERVAL 35 HOUR), 'Preparing', 39, 1, 6);
 
 -- (Orders seeded: 179)
@@ -3415,13 +3450,13 @@ INSERT INTO PAYMENTS (payment_method, amount_paid, payment_status, gateway_refer
 -- ------------------------------------------------------------
 -- SHIPMENTS (insert-then-update so after_shipment_status_change fires)
 -- ------------------------------------------------------------
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (1, 2, 'TRK1001', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (1, 2, 'TRK1001', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-11-21 19:50:00' WHERE order_id=1;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=1;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (4, 2, 'TRK1002', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (4, 2, 'TRK1002', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-07-18 06:00:00' WHERE order_id=4;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=4;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (5, 1, 'TRK1003', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (5, 1, 'TRK1003', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-02-03 21:41:00' WHERE order_id=5;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=5;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (8, 1, 'TRK1004', 'Preparing');
@@ -3432,13 +3467,13 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (9,
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-10-01 19:31:00' WHERE order_id=9;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=9;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=9;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (11, 3, 'TRK1006', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (11, 3, 'TRK1006', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-05-13 09:02:00' WHERE order_id=11;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (12, 3, 'TRK1007', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (12, 3, 'TRK1007', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-11-24 02:48:00' WHERE order_id=12;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (13, 2, 'TRK1008', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (13, 2, 'TRK1008', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-07-21 16:00:00' WHERE order_id=13;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (14, 1, 'TRK1009', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (14, 1, 'TRK1009', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-07-18 15:00:00' WHERE order_id=14;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (15, 3, 'TRK1010', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-05-22 02:04:00' WHERE order_id=15;
@@ -3460,10 +3495,10 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (23
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-05-10 23:08:00' WHERE order_id=23;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=23;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=23;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (24, 4, 'TRK1015', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (24, 4, 'TRK1015', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-06-12 15:02:00' WHERE order_id=24;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=24;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (25, 2, 'TRK1016', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (25, 2, 'TRK1016', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-12-04 03:29:00' WHERE order_id=25;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (26, 3, 'TRK1017', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-01-06 06:48:00' WHERE order_id=26;
@@ -3473,14 +3508,14 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (27
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-06-14 07:48:00' WHERE order_id=27;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=27;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=27;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (28, 4, 'TRK1019', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (28, 4, 'TRK1019', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-07-26 00:25:00' WHERE order_id=28;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=28;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (29, 1, 'TRK1020', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-03-22 21:56:00' WHERE order_id=29;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=29;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=29;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (31, 3, 'TRK1021', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (31, 3, 'TRK1021', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-02-03 06:47:00' WHERE order_id=31;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=31;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (32, 4, 'TRK1022', 'Preparing');
@@ -3495,39 +3530,39 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (34
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-12-17 11:21:00' WHERE order_id=34;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=34;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=34;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (36, 3, 'TRK1025', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (36, 3, 'TRK1025', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-02-16 22:34:00' WHERE order_id=36;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (38, 3, 'TRK1026', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-03-08 00:06:00' WHERE order_id=38;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=38;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=38;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (39, 3, 'TRK1027', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (39, 3, 'TRK1027', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-01-15 09:15:00' WHERE order_id=39;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=39;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (41, 3, 'TRK1028', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (41, 3, 'TRK1028', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-01-17 17:43:00' WHERE order_id=41;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=41;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (42, 1, 'TRK1029', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (42, 1, 'TRK1029', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-11-06 13:02:00' WHERE order_id=42;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (43, 4, 'TRK1030', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (43, 4, 'TRK1030', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-02-25 04:24:00' WHERE order_id=43;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (44, 4, 'TRK1031', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-07-03 06:32:00' WHERE order_id=44;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=44;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=44;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (45, 3, 'TRK1032', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (45, 3, 'TRK1032', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-01-18 01:57:00' WHERE order_id=45;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=45;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (46, 2, 'TRK1033', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (46, 2, 'TRK1033', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-01-09 18:55:00' WHERE order_id=46;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=46;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (47, 3, 'TRK1034', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-07-19 23:28:00' WHERE order_id=47;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=47;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=47;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (48, 3, 'TRK1035', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (48, 3, 'TRK1035', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-03-24 07:10:00' WHERE order_id=48;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (49, 4, 'TRK1036', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (49, 4, 'TRK1036', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-01-09 16:58:00' WHERE order_id=49;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (51, 3, 'TRK1037', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-02-13 12:37:00' WHERE order_id=51;
@@ -3545,10 +3580,10 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (54
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-03-31 05:27:00' WHERE order_id=54;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=54;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=54;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (55, 3, 'TRK1041', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (55, 3, 'TRK1041', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-05-19 01:19:00' WHERE order_id=55;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=55;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (57, 2, 'TRK1042', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (57, 2, 'TRK1042', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-07-18 18:34:00' WHERE order_id=57;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (58, 1, 'TRK1043', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-06-17 06:05:00' WHERE order_id=58;
@@ -3562,14 +3597,14 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (60
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-02-08 15:53:00' WHERE order_id=60;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=60;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=60;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (61, 2, 'TRK1046', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (61, 2, 'TRK1046', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-04-13 13:48:00' WHERE order_id=61;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=61;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (62, 1, 'TRK1047', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-10-25 09:11:00' WHERE order_id=62;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=62;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=62;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (63, 2, 'TRK1048', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (63, 2, 'TRK1048', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-06-03 07:54:00' WHERE order_id=63;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (64, 3, 'TRK1049', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-06-28 12:16:00' WHERE order_id=64;
@@ -3583,14 +3618,14 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (66
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-05-10 18:34:00' WHERE order_id=66;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=66;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=66;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (67, 2, 'TRK1052', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (67, 2, 'TRK1052', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-10-11 06:51:00' WHERE order_id=67;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=67;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (69, 4, 'TRK1053', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-04-14 02:23:00' WHERE order_id=69;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=69;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=69;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (70, 2, 'TRK1054', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (70, 2, 'TRK1054', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-08-19 02:20:00' WHERE order_id=70;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (71, 3, 'TRK1055', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-01-16 10:08:00' WHERE order_id=71;
@@ -3620,15 +3655,15 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (78
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-01-20 20:59:00' WHERE order_id=78;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=78;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=78;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (79, 2, 'TRK1062', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (79, 2, 'TRK1062', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-07-08 07:57:00' WHERE order_id=79;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (80, 1, 'TRK1063', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-04-11 00:34:00' WHERE order_id=80;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=80;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=80;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (81, 4, 'TRK1064', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (81, 4, 'TRK1064', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-01-18 01:14:00' WHERE order_id=81;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (83, 1, 'TRK1065', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (83, 1, 'TRK1065', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-08-05 08:41:00' WHERE order_id=83;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (84, 4, 'TRK1066', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-11-22 05:42:00' WHERE order_id=84;
@@ -3638,7 +3673,7 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (86
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-06-12 23:23:00' WHERE order_id=86;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=86;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=86;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (88, 3, 'TRK1068', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (88, 3, 'TRK1068', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-02-10 00:38:00' WHERE order_id=88;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=88;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (89, 2, 'TRK1069', 'Preparing');
@@ -3653,7 +3688,7 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (93
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-05-09 20:40:00' WHERE order_id=93;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=93;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=93;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (97, 3, 'TRK1072', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (97, 3, 'TRK1072', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-05-27 07:15:00' WHERE order_id=97;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=97;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (98, 4, 'TRK1073', 'Preparing');
@@ -3672,9 +3707,9 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (10
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-04-04 21:48:00' WHERE order_id=105;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=105;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=105;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (106, 2, 'TRK1077', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (106, 2, 'TRK1077', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-04-12 00:42:00' WHERE order_id=106;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (108, 2, 'TRK1078', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (108, 2, 'TRK1078', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-05-02 05:25:00' WHERE order_id=108;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=108;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (109, 2, 'TRK1079', 'Preparing');
@@ -3689,7 +3724,7 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (11
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-03-27 16:29:00' WHERE order_id=111;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=111;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=111;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (112, 4, 'TRK1082', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (112, 4, 'TRK1082', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-05-01 10:32:00' WHERE order_id=112;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=112;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (113, 4, 'TRK1083', 'Preparing');
@@ -3716,7 +3751,7 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (12
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-07-16 22:26:00' WHERE order_id=121;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=121;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=121;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (122, 1, 'TRK1089', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (122, 1, 'TRK1089', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-07-02 00:45:00' WHERE order_id=122;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=122;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (123, 3, 'TRK1090', 'Preparing');
@@ -3731,22 +3766,22 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (12
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-07-06 19:52:00' WHERE order_id=125;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=125;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=125;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (126, 1, 'TRK1093', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (126, 1, 'TRK1093', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-11-21 16:47:00' WHERE order_id=126;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=126;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (127, 4, 'TRK1094', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (127, 4, 'TRK1094', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-03-12 02:30:00' WHERE order_id=127;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=127;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (128, 3, 'TRK1095', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-05-03 10:10:00' WHERE order_id=128;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=128;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=128;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (129, 2, 'TRK1096', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (129, 2, 'TRK1096', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-09-13 09:24:00' WHERE order_id=129;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=129;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (130, 3, 'TRK1097', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (130, 3, 'TRK1097', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-01-28 10:06:00' WHERE order_id=130;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (131, 3, 'TRK1098', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (131, 3, 'TRK1098', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-05-12 08:27:00' WHERE order_id=131;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (133, 3, 'TRK1099', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-02-15 09:36:00' WHERE order_id=133;
@@ -3768,11 +3803,11 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (14
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-04-29 13:40:00' WHERE order_id=140;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=140;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=140;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (142, 2, 'TRK1104', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (142, 2, 'TRK1104', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-03-26 14:59:00' WHERE order_id=142;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (143, 1, 'TRK1105', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (143, 1, 'TRK1105', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-05-27 01:03:00' WHERE order_id=143;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (145, 3, 'TRK1106', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (145, 3, 'TRK1106', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-01-12 03:49:00' WHERE order_id=145;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (146, 4, 'TRK1107', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-04-16 15:08:00' WHERE order_id=146;
@@ -3790,26 +3825,26 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (14
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-02-03 09:54:00' WHERE order_id=149;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=149;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=149;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (150, 1, 'TRK1111', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (150, 1, 'TRK1111', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-07-11 13:37:00' WHERE order_id=150;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=150;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (152, 3, 'TRK1112', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (152, 3, 'TRK1112', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-09-18 02:53:00' WHERE order_id=152;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (153, 1, 'TRK1113', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-06-12 09:28:00' WHERE order_id=153;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=153;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=153;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (154, 3, 'TRK1114', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (154, 3, 'TRK1114', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-06-17 15:24:00' WHERE order_id=154;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=154;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (156, 1, 'TRK1115', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (156, 1, 'TRK1115', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-07-01 20:15:00' WHERE order_id=156;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=156;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (158, 4, 'TRK1116', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-06-22 16:33:00' WHERE order_id=158;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=158;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=158;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (159, 4, 'TRK1117', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (159, 4, 'TRK1117', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-07-20 13:17:00' WHERE order_id=159;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (160, 2, 'TRK1118', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-05-08 06:22:00' WHERE order_id=160;
@@ -3827,7 +3862,7 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (16
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-11-19 08:55:00' WHERE order_id=163;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=163;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=163;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (164, 3, 'TRK1122', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (164, 3, 'TRK1122', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-06-24 07:24:00' WHERE order_id=164;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (165, 2, 'TRK1123', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-02-22 04:53:00' WHERE order_id=165;
@@ -3837,22 +3872,22 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (16
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-04-27 03:48:00' WHERE order_id=166;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=166;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=166;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (167, 4, 'TRK1125', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (167, 4, 'TRK1125', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-08-30 22:32:00' WHERE order_id=167;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (168, 4, 'TRK1126', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (168, 4, 'TRK1126', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-05-21 08:22:00' WHERE order_id=168;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (169, 4, 'TRK1127', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-03-23 00:20:00' WHERE order_id=169;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=169;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=169;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (170, 3, 'TRK1128', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (170, 3, 'TRK1128', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-10-25 21:58:00' WHERE order_id=170;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=170;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (172, 2, 'TRK1129', 'Preparing');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-04-25 08:36:00' WHERE order_id=172;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=172;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=172;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (174, 3, 'TRK1130', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (174, 3, 'TRK1130', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-10-16 01:37:00' WHERE order_id=174;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=174;
 INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (175, 4, 'TRK1131', 'Preparing');
@@ -3867,7 +3902,7 @@ INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (17
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2026-03-01 13:15:00' WHERE order_id=177;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=177;
 UPDATE SHIPMENTS SET status='Delivered' WHERE order_id=177;
-INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (178, 3, 'TRK1134', 'Preparing');
+INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (178, 3, 'TRK1134', 'Delivered');
 UPDATE SHIPMENTS SET status='Shipped', shipped_date='2025-09-17 11:44:00' WHERE order_id=178;
 UPDATE SHIPMENTS SET status='Out for Delivery' WHERE order_id=178;
 -- (Shipments progressed for 134 orders)
@@ -4325,3 +4360,14 @@ UPDATE LISTING_ANALYTICS SET view_count=168, follower_count=8034, details_score=
 UPDATE LISTING_ANALYTICS SET view_count=493, follower_count=10008, details_score=57.36, condition_score=61.76, shipping_score=96.03, pricing_score=88.22, view_to_bid_score=10.04, completeness_score=ROUND((IFNULL(photo_score,60)+57.36+61.76+96.03+88.22)/5,2) WHERE listing_id=309;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- ------------------------------------------------------------
+-- Seeding fires the same triggers a live app would (new order,
+-- payment, penalty, etc.), which queues emails/notifications for all
+-- of this demo data. Not real events - clear the noise so the first
+-- real thing a user does is the first thing they actually see.
+-- ------------------------------------------------------------
+TRUNCATE TABLE EMAIL_QUEUE;
+SET SQL_SAFE_UPDATES = 0;
+DELETE FROM NOTIFICATIONS;
+SET SQL_SAFE_UPDATES = 1;

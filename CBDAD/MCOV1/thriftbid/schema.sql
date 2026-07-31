@@ -12,10 +12,11 @@ CREATE TABLE SELLER (
     shop_name VARCHAR(100) DEFAULT NULL, -- storefront/display name shown to buyers; falls back to username if not set
     password_hash VARCHAR(255) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    cellphone_number VARCHAR(15) NOT NULL,
+    cellphone_number VARCHAR(11) NOT NULL,       -- PH mobile numbers are always 11 digits: 09XXXXXXXXX
+    phone_verified_at DATETIME DEFAULT NULL,     -- Rule 8: set once phone/OTP verification completes
     is_verified BOOLEAN DEFAULT FALSE,
     ig_follower_count INT DEFAULT 0, -- For Sales Bias Dashboard  
-    seller_status ENUM('Active', 'Suspended', 'Banned') DEFAULT 'Active',
+    seller_status ENUM('Active', 'Flagged', 'Suspended', 'Banned') DEFAULT 'Active', -- 'Flagged' = Rule 6, 1st shipping offense
     offense_count INT DEFAULT 0,                 -- Tracks seller rules violations[cite: 1]
     wallet_frozen_until DATETIME DEFAULT NULL,   -- Temporary payout freezes[cite: 1]
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -24,7 +25,13 @@ CREATE TABLE SELLER (
     -- DO NOT DELETE the row, otherwise past ORDERS and PAYMENTS will break.
     deactivated_at DATETIME DEFAULT NULL,        
     
-    CONSTRAINT PK_SELLER PRIMARY KEY (seller_id)
+    CONSTRAINT PK_SELLER PRIMARY KEY (seller_id),
+    -- Rule 8 (Account Verification): one account per verified phone number.
+    -- Cross-table (Buyer vs Seller) duplicate checking is enforced in PHP
+    -- via findAccountByPhone() in includes/auth.php, since a UNIQUE
+    -- constraint can only guard within a single table.
+    CONSTRAINT UQ_SELLER_PHONE UNIQUE (cellphone_number),
+    CONSTRAINT CHK_SELLER_PHONE_FORMAT CHECK (cellphone_number REGEXP '^09[0-9]{9}$')
 );
 
 -- =========================================================================
@@ -37,7 +44,8 @@ CREATE TABLE BUYER (
     last_name VARCHAR(50) NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
-    cellphone_number VARCHAR(15) NOT NULL,
+    cellphone_number VARCHAR(11) NOT NULL,       -- PH mobile numbers are always 11 digits: 09XXXXXXXXX
+    phone_verified_at DATETIME DEFAULT NULL,     -- Rule 8: set once phone/OTP verification completes
     is_verified BOOLEAN DEFAULT FALSE,
     buyer_status ENUM('Active', 'Suspended', 'Banned') DEFAULT 'Active',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -46,7 +54,10 @@ CREATE TABLE BUYER (
     -- This preserves their past purchase history and transaction logs.
     deactivated_at DATETIME DEFAULT NULL,        
     
-    CONSTRAINT PK_BUYER PRIMARY KEY (buyer_id)
+    CONSTRAINT PK_BUYER PRIMARY KEY (buyer_id),
+    -- Rule 8 (Account Verification): one account per verified phone number.
+    CONSTRAINT UQ_BUYER_PHONE UNIQUE (cellphone_number),
+    CONSTRAINT CHK_BUYER_PHONE_FORMAT CHECK (cellphone_number REGEXP '^09[0-9]{9}$')
 );
 
 -- =====
@@ -126,7 +137,7 @@ CREATE TABLE CATEGORY_SIZES (
     -- given listing is still controlled by category_id, not by this list.
     size_value ENUM(
         'XXS','XS','S','M','L','XL','XXL','XXXL',
-        '24','25','26','27','28','29','30','31','32','33','34','35','36','38','40','42',
+        '22','23','24','25','26','27','28','29','30','31','32','33','34','34+','35','36','38','40','42',
         '35.5','36.5','37','37.5','38.5','39','39.5','40.5','41','41.5','42.5','43','43.5','44','45',
         'Mini','Small','Medium','Large','One Size',
         '5','6','7','8','9','10','11','12'
@@ -284,6 +295,16 @@ CREATE TABLE ORDERS (
     listing_id INT(12) NOT NULL,
     buyer_id INT(12) NOT NULL,
     seller_id INT(12) NOT NULL,
+
+    -- Snapshot of the buyer's address at the moment payment completed
+    -- (see after_payment_insert_create_transaction trigger below), NOT a
+    -- live reference to ADDRESSES. A buyer editing their address later
+    -- must not retroactively change where a past order says it shipped
+    -- to - the seller ships to what was true at time of payment.
+    shipping_street VARCHAR(255) DEFAULT NULL,
+    shipping_city VARCHAR(100) DEFAULT NULL,
+    shipping_province VARCHAR(100) DEFAULT NULL,
+    shipping_zip VARCHAR(10) DEFAULT NULL,
     
     -- ARCHIVING LOGIC: Orders are legal/financial history and should NEVER be hard deleted.
     -- If an order is canceled, its status changes to 'Cancelled', we don't delete the row.
@@ -587,6 +608,60 @@ CREATE TABLE AUDIT_LOGS (
     CONSTRAINT FK_AUDIT_ADMIN FOREIGN KEY (admin_id) REFERENCES ADMIN(admin_id)
 );
 
+-- =========================================================================
+-- 31. EMAIL_OTPS TABLE — backs both registration email verification and
+--     the payment confirmation OTP step (see includes/otp.php).
+-- =========================================================================
+CREATE TABLE EMAIL_OTPS (
+    otp_id INT(12) NOT NULL AUTO_INCREMENT,
+    owner_type ENUM('Buyer','Seller') NOT NULL,
+    owner_id INT(12) NOT NULL,
+    purpose ENUM('Registration','Payment') NOT NULL,
+    related_order_id INT(12) DEFAULT NULL,     -- set only for purpose='Payment'
+    otp_code CHAR(6) NOT NULL,
+    expires_at DATETIME NOT NULL,
+    is_used BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT PK_EMAIL_OTPS PRIMARY KEY (otp_id),
+    INDEX IDX_OTP_LOOKUP (owner_type, owner_id, purpose, is_used)
+);
+
+-- =========================================================================
+-- 32. EMAIL_QUEUE TABLE — Communication / email-forwarding.
+-- ----------------------------------------------------------------------
+-- Order-created and order-shipped emails are enqueued HERE by triggers
+-- (see after_order_insert_deactivate_listing and sp_ship_order below),
+-- not sent directly from SQL (MySQL can't make an HTTPS/SMTP call on its
+-- own). includes/mailer.php's flushEmailQueue() gets called opportunistically
+-- on every page load (see layout.php) and sends whatever's pending. This
+-- way EVERY order-creation path (cart checkout, Buy Now, auction win via
+-- sp_close_auction) reliably queues its email the same way, without PHP
+-- needing to remember to call sendMail() at every single call site that
+-- can create an ORDERS row.
+-- =========================================================================
+CREATE TABLE EMAIL_QUEUE (
+    queue_id INT(12) NOT NULL AUTO_INCREMENT,
+    recipient_type ENUM('Buyer','Seller') NOT NULL,
+    recipient_id INT(12) NOT NULL,
+    subject VARCHAR(200) NOT NULL,
+    body TEXT NOT NULL,
+    -- Richer emails (payment confirmation, auction win) are built in PHP
+    -- from live order data rather than assembled as an HTML table inside
+    -- a SQL CONCAT() — far easier to keep readable and to change the look
+    -- of later. When `template` is set, flushEmailQueue() in mailer.php
+    -- ignores `subject`/`body` above and calls buildTemplatedEmail()
+    -- instead, using `related_order_id` to pull full order/buyer/seller
+    -- details. When `template` is NULL, the simple stored subject/body is
+    -- sent as-is (the "new order" and "shipped" emails still work this way).
+    template VARCHAR(50) DEFAULT NULL,
+    related_order_id INT(12) DEFAULT NULL,
+    is_sent BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    sent_at DATETIME DEFAULT NULL,
+    CONSTRAINT PK_EMAIL_QUEUE PRIMARY KEY (queue_id),
+    INDEX IDX_EMAIL_QUEUE_PENDING (is_sent, created_at)
+);
+
 SET FOREIGN_KEY_CHECKS = 1;
 
 
@@ -597,19 +672,21 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- ============================================================
 -- ThriftBid — Core Trigger Set (updated schema: thriftbid_db2)
 -- ------------------------------------------------------------
--- 16 triggers covering the auction/bidding engine, order/payment
+-- 19 triggers covering the auction/bidding engine, order/payment
 -- automation, seller shipping-obligation penalties, the luxury
--- authentication workflow, and listing analytics upkeep.
+-- authentication workflow, listing analytics upkeep, the 3-tier
+-- auction-deletion rule, and the Rule 6 shipping-escalation fix.
 -- Run this AFTER schema.sql (all referenced tables must exist).
 -- ============================================================
 
-DELIMITER $$
 
 -- ------------------------------------------------------------
 -- 1. BEFORE INSERT ON BIDDINGS — validate the bid before it lands
 --    (auction must be Active and not past end_time; amount must
 --    clear current_highest_bid + min_increment)
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS before_bid_validate_amount$$
 CREATE TRIGGER before_bid_validate_amount
 BEFORE INSERT ON BIDDINGS
@@ -619,6 +696,7 @@ BEGIN
     DECLARE v_incr    DECIMAL(10,2);
     DECLARE v_status  VARCHAR(20);
     DECLARE v_end     DATETIME;
+    DECLARE v_last_bidder INT;
 
     SELECT current_highest_bid, min_increment, status, end_time
       INTO v_highest, v_incr, v_status, v_end
@@ -631,13 +709,33 @@ BEGIN
     IF NEW.bid_amount < (v_highest + v_incr) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Bid does not meet the minimum increment requirement.';
     END IF;
+
+    /* Blocks a bidder from re-bidding against themselves while already
+       leading - not proxy/auto-bidding, so raising your own price with
+       no one else in between serves no purpose. Must be outbid by
+       someone else first. v_last_bidder is whoever placed the most
+       recent non-deleted bid (the current leader), not just "has this
+       buyer bid here before" - that would wrongly block a legitimate
+       re-bid after being outbid. NULL on the first bid, which never
+       matches NEW.buyer_id, so the first bid is always allowed. */
+    SELECT buyer_id INTO v_last_bidder
+      FROM BIDDINGS WHERE auction_id = NEW.auction_id AND is_deleted = 0
+      ORDER BY bid_time DESC, bidding_id DESC LIMIT 1;
+
+    IF v_last_bidder = NEW.buyer_id THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'You are already the highest bidder on this auction.';
+    END IF;
 END$$
+
+DELIMITER ;
 
 -- ------------------------------------------------------------
 -- 2. AFTER INSERT ON BIDDINGS — bump the auction's highest bid AND
 --    apply the anti-snipe rule (extend by 2 min if bid lands inside
 --    the last 2 minutes, capped at 10 extensions / +20 min total)
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS after_bid_update_auction$$
 CREATE TRIGGER after_bid_update_auction
 AFTER INSERT ON BIDDINGS
@@ -664,15 +762,22 @@ BEGIN
       FROM AUCTIONS a WHERE a.auction_id = NEW.auction_id;
 END$$
 
+DELIMITER ;
+
 -- ------------------------------------------------------------
 -- 3. AFTER INSERT ON ORDERS — deactivate the sold listing and
 --    notify the seller
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS after_order_insert_deactivate_listing$$
 CREATE TRIGGER after_order_insert_deactivate_listing
 AFTER INSERT ON ORDERS
 FOR EACH ROW
 BEGIN
+    DECLARE v_title VARCHAR(200);
+    DECLARE v_buyer_name VARCHAR(100);
+
     UPDATE LISTINGS SET is_active = FALSE WHERE listing_id = NEW.listing_id;
 
     INSERT INTO NOTIFICATIONS (seller_id, title, message, notification_type)
@@ -682,32 +787,82 @@ BEGIN
         CONCAT('Order #', NEW.order_id, ' has been placed. Ship within 48 hours.'),
         'ORDER'
     );
+
+    -- Communication: queue the seller's "item ordered" email (see
+    -- EMAIL_QUEUE above). Fires here so it covers every path that can
+    -- create an ORDERS row (cart checkout, Buy Now, auction win),
+    -- not just the ones checkout.php happens to touch.
+    SELECT title INTO v_title FROM LISTINGS WHERE listing_id = NEW.listing_id;
+    SELECT COALESCE(first_name, username) INTO v_buyer_name FROM BUYER WHERE buyer_id = NEW.buyer_id;
+
+    INSERT INTO EMAIL_QUEUE (recipient_type, recipient_id, subject, body)
+    VALUES (
+        'Seller', NEW.seller_id, 'You have a new order on ThriftBid!',
+        CONCAT(
+            '<p>Your listing "<strong>', v_title, '</strong>" was just ordered by <strong>', v_buyer_name, '</strong> (Order #', NEW.order_id, ').</p>',
+            '<p>Please prepare to ship within 48 hours once payment is confirmed.</p>'
+        )
+    );
 END$$
+
+DELIMITER ;
 
 -- ------------------------------------------------------------
 -- 4. AFTER INSERT ON PAYMENTS — per the buyer flow rule, a payment
 --    is treated as confirmed/completed as soon as it's recorded, so
---    auto-create the TRANSACTIONS ledger row and notify the buyer.
+--    auto-create the TRANSACTIONS ledger row, notify the buyer, and
+--    queue a detailed payment-confirmation email to BOTH buyer and
+--    seller (built in PHP by buildTemplatedEmail() in mailer.php,
+--    which pulls full order/buyer/seller detail — see EMAIL_QUEUE).
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS after_payment_insert_create_transaction$$
 CREATE TRIGGER after_payment_insert_create_transaction
 AFTER INSERT ON PAYMENTS
 FOR EACH ROW
 BEGIN
+    DECLARE v_buyer_id INT;
+    DECLARE v_seller_id INT;
+
     IF NEW.payment_status = 'Completed' THEN
         INSERT INTO TRANSACTIONS (amount, order_id, payment_id)
         VALUES (NEW.amount_paid, NEW.order_id, NEW.payment_id);
 
+        SELECT o.buyer_id, o.seller_id INTO v_buyer_id, v_seller_id FROM ORDERS o WHERE o.order_id = NEW.order_id;
+
+        -- Snapshot the buyer's current default address onto the order.
+        -- checkout.php requires an address to exist before payment can
+        -- start, so this is expected to find one; if somehow none exists
+        -- the columns just stay NULL rather than blocking the payment.
+        UPDATE ORDERS o
+        JOIN ADDRESSES a ON a.user_id = o.buyer_id AND a.user_type = 'Buyer' AND a.is_default = 1
+        SET o.shipping_street = a.street_address,
+            o.shipping_city = a.city,
+            o.shipping_province = a.province,
+            o.shipping_zip = a.zip_code
+        WHERE o.order_id = NEW.order_id;
+
         INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
-        SELECT o.buyer_id, 'Payment Confirmed', CONCAT('Your payment for Order #', o.order_id, ' was received.'), 'PAYMENT'
-          FROM ORDERS o WHERE o.order_id = NEW.order_id;
+        VALUES (v_buyer_id, 'Payment Confirmed', CONCAT('Your payment for Order #', NEW.order_id, ' was received.'), 'PAYMENT');
+
+        -- Communication: detailed payment-confirmation email, both sides.
+        INSERT INTO EMAIL_QUEUE (recipient_type, recipient_id, subject, body, template, related_order_id)
+        VALUES ('Buyer', v_buyer_id, 'Payment Confirmed', '(generated from template)', 'payment_confirmed_buyer', NEW.order_id);
+
+        INSERT INTO EMAIL_QUEUE (recipient_type, recipient_id, subject, body, template, related_order_id)
+        VALUES ('Seller', v_seller_id, 'Payment Received', '(generated from template)', 'payment_confirmed_seller', NEW.order_id);
     END IF;
 END$$
+
+DELIMITER ;
 
 -- ------------------------------------------------------------
 -- 5. AFTER UPDATE ON PAYMENTS — if a payment flips to Completed
 --    later (edge case), still backfill the transaction ledger.
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS after_payment_update_create_transaction$$
 CREATE TRIGGER after_payment_update_create_transaction
 AFTER UPDATE ON PAYMENTS
@@ -719,10 +874,14 @@ BEGIN
     END IF;
 END$$
 
+DELIMITER ;
+
 -- ------------------------------------------------------------
 -- 6. BEFORE UPDATE ON SHIPMENTS — a shipment can't move to
 --    'Shipped' (or beyond) without a tracking number on file.
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS before_shipment_require_tracking$$
 CREATE TRIGGER before_shipment_require_tracking
 BEFORE UPDATE ON SHIPMENTS
@@ -734,10 +893,14 @@ BEGIN
     END IF;
 END$$
 
+DELIMITER ;
+
 -- ------------------------------------------------------------
 -- 7. AFTER UPDATE ON SHIPMENTS — auto-log every status change and
 --    keep the parent ORDER's status in sync.
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS after_shipment_status_change$$
 CREATE TRIGGER after_shipment_status_change
 AFTER UPDATE ON SHIPMENTS
@@ -751,12 +914,16 @@ BEGIN
     END IF;
 END$$
 
+DELIMITER ;
+
 -- ------------------------------------------------------------
 -- 7b. AFTER UPDATE ON ORDERS — notify the buyer any time their
 --     order's status changes (covers the sync from trigger #7 above
 --     AND any other manual status change), so this is the single
 --     place that owns "tell the buyer their order moved forward."
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS after_order_status_change_notify_buyer$$
 CREATE TRIGGER after_order_status_change_notify_buyer
 AFTER UPDATE ON ORDERS
@@ -773,6 +940,8 @@ BEGIN
     END IF;
 END$$
 
+DELIMITER ;
+
 -- ------------------------------------------------------------
 -- 8. Late-shipment flagging — a scheduled EVENT, not a trigger,
 --    since "48 hours have now passed with no shipment" is a fact
@@ -785,6 +954,8 @@ END$$
 --    (PENALTIES has no order_id column to key off of directly).
 -- ------------------------------------------------------------
 SET GLOBAL event_scheduler = ON$$
+
+DELIMITER $$
 
 DROP EVENT IF EXISTS flag_late_shipments$$
 CREATE EVENT flag_late_shipments
@@ -809,41 +980,97 @@ BEGIN
       );
 END$$
 
+DELIMITER ;
+
 -- ------------------------------------------------------------
--- 9. AFTER INSERT ON PENALTIES — enforce the escalating penalty
---    structure: 1st = flag only, 2nd = 30-day selling suspension +
---    wallet freeze, 3rd+ = permanent ban.
+-- 9. AFTER INSERT ON PENALTIES — Rule 6 (Shipping Escalation), enforces
+--    the escalating penalty structure: 1st = seller status set to
+--    'Flagged' (visible badge downgrade), 2nd = 30-day selling
+--    suspension + wallet freeze, 3rd+ = permanent ban AND an automatic
+--    full refund on the specific late-shipment order that triggered it.
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS after_penalty_insert_escalate$$
 CREATE TRIGGER after_penalty_insert_escalate
 AFTER INSERT ON PENALTIES
 FOR EACH ROW
 BEGIN
     DECLARE v_count INT;
+    DECLARE v_tag VARCHAR(60);
+    DECLARE v_order_id INT DEFAULT NULL;
+    DECLARE v_buyer_id INT;
+    DECLARE v_seller_id INT;
+    DECLARE v_payment_id INT;
 
     IF NEW.seller_id IS NOT NULL THEN
         UPDATE SELLER SET offense_count = offense_count + 1 WHERE seller_id = NEW.seller_id;
         SELECT offense_count INTO v_count FROM SELLER WHERE seller_id = NEW.seller_id;
 
-        IF v_count = 2 THEN
+        IF v_count = 1 THEN
+            -- Rule 6, 1st offense: flagged + visible badge downgrade
+            -- (previously did nothing visible at all).
+            UPDATE SELLER SET seller_status = 'Flagged' WHERE seller_id = NEW.seller_id AND seller_status = 'Active';
+
+        ELSEIF v_count = 2 THEN
             UPDATE SELLER
                SET seller_status = 'Suspended',
                    wallet_frozen_until = DATE_ADD(NOW(), INTERVAL 30 DAY)
              WHERE seller_id = NEW.seller_id;
+
         ELSEIF v_count >= 3 THEN
             UPDATE SELLER SET seller_status = 'Banned' WHERE seller_id = NEW.seller_id;
+
+            -- Rule 6, 3rd offense: automatic full refund on the order that
+            -- triggered this penalty (extracted from the flag_late_shipments
+            -- event's "[LATE-SHIP-ORDER-#id]" tag). Runs inside this same
+            -- trigger execution, i.e. effectively instant — comfortably
+            -- inside the "within 24 hours" the spec calls for.
+            IF NEW.reason LIKE '%LATE-SHIP-ORDER-#%' THEN
+                SET v_tag = REGEXP_SUBSTR(NEW.reason, 'ORDER-#[0-9]+');
+                IF v_tag IS NOT NULL THEN
+                    SET v_order_id = CAST(SUBSTRING(v_tag, 8) AS UNSIGNED); -- 'ORDER-#' is 7 chars
+                END IF;
+            END IF;
+
+            IF v_order_id IS NOT NULL THEN
+                SELECT o.buyer_id, o.seller_id INTO v_buyer_id, v_seller_id FROM ORDERS o WHERE o.order_id = v_order_id;
+                SELECT p.payment_id INTO v_payment_id FROM PAYMENTS p WHERE p.order_id = v_order_id AND p.payment_status = 'Completed' LIMIT 1;
+
+                IF v_payment_id IS NOT NULL AND v_buyer_id IS NOT NULL THEN
+                    UPDATE PAYMENTS SET payment_status = 'Refunded' WHERE payment_id = v_payment_id;
+
+                    INSERT INTO DISPUTES (order_id, buyer_id, seller_id, reason, status, resolution_type, opened_at, resolved_at)
+                    VALUES (v_order_id, v_buyer_id, v_seller_id,
+                            'Automatic full refund: seller banned after 3rd shipping-time violation', 'Resolved', 'Full Refund', NOW(), NOW());
+
+                    UPDATE ORDERS SET status = 'Cancelled' WHERE order_id = v_order_id;
+
+                    INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
+                    VALUES (v_buyer_id, 'Automatic Full Refund Issued',
+                            CONCAT('Order #', v_order_id, ' was automatically refunded in full because the seller repeatedly failed to ship on time.'), 'ORDER');
+                END IF;
+            END IF;
         END IF;
 
         INSERT INTO NOTIFICATIONS (seller_id, title, message, notification_type)
         VALUES (NEW.seller_id, 'Penalty Issued', CONCAT('Reason: ', NEW.reason), 'SYSTEM');
+    ELSEIF NEW.buyer_id IS NOT NULL THEN
+        -- Rule 7 (Non-Paying Buyer) penalties land here too.
+        INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
+        VALUES (NEW.buyer_id, 'Penalty Issued', CONCAT('Reason: ', NEW.reason), 'SYSTEM');
     END IF;
 END$$
+
+DELIMITER ;
 
 -- ------------------------------------------------------------
 -- 10. AFTER UPDATE ON DISPUTES — 3+ resolved misrepresentation
 --     disputes against the same seller auto-issues a penalty,
 --     which then cascades through trigger #9 above.
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS after_dispute_resolved_check_pattern$$
 CREATE TRIGGER after_dispute_resolved_check_pattern
 AFTER UPDATE ON DISPUTES
@@ -867,10 +1094,14 @@ BEGIN
     END IF;
 END$$
 
+DELIMITER ;
+
 -- ------------------------------------------------------------
 -- 11. BEFORE UPDATE ON AUTHENTICATION — a status can't move to
 --     Verified/Rejected without an admin attached.
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS before_authentication_require_admin$$
 CREATE TRIGGER before_authentication_require_admin
 BEFORE UPDATE ON AUTHENTICATION
@@ -884,11 +1115,15 @@ BEGIN
     END IF;
 END$$
 
+DELIMITER ;
+
 -- ------------------------------------------------------------
 -- 12. AFTER UPDATE ON AUTHENTICATION — the luxury-item workflow:
 --     Verified => auto-post the listing (is_active = 1).
 --     Rejected => keep the listing inactive and notify the seller.
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS after_authentication_status_change$$
 CREATE TRIGGER after_authentication_status_change
 AFTER UPDATE ON AUTHENTICATION
@@ -913,11 +1148,15 @@ BEGIN
     END IF;
 END$$
 
+DELIMITER ;
+
 -- ------------------------------------------------------------
 -- 13. AFTER INSERT ON LISTINGS — seed a LISTING_ANALYTICS row so
 --     the seller dashboards (Performance/Optimization reports)
 --     always have something to aggregate against.
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS after_listing_insert_seed_analytics$$
 CREATE TRIGGER after_listing_insert_seed_analytics
 AFTER INSERT ON LISTINGS
@@ -929,11 +1168,15 @@ BEGIN
             60.00);
 END$$
 
+DELIMITER ;
+
 -- ------------------------------------------------------------
 -- 14. AFTER INSERT ON LISTING_IMAGES — recompute the listing's
 --     photo_score (and roll it into completeness_score) every time
 --     a new photo is attached. 3+ photos = full marks.
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS after_listing_image_insert_update_score$$
 CREATE TRIGGER after_listing_image_insert_update_score
 AFTER INSERT ON LISTING_IMAGES
@@ -951,9 +1194,13 @@ BEGIN
      WHERE listing_id = NEW.listing_id;
 END$$
 
+DELIMITER ;
+
 -- ------------------------------------------------------------
 -- 15. BEFORE INSERT ON REVIEWS — one review per order, no dupes.
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS before_review_prevent_duplicate$$
 CREATE TRIGGER before_review_prevent_duplicate
 BEFORE INSERT ON REVIEWS
@@ -966,9 +1213,13 @@ BEGIN
     END IF;
 END$$
 
+DELIMITER ;
+
 -- ------------------------------------------------------------
 -- 16. AFTER INSERT ON SELLER_AWARDS — congratulate the seller.
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS after_seller_award_notify$$
 CREATE TRIGGER after_seller_award_notify
 AFTER INSERT ON SELLER_AWARDS
@@ -978,49 +1229,109 @@ BEGIN
     VALUES (NEW.seller_id, 'You earned an award!', NEW.reason, 'SYSTEM');
 END$$
 
+DELIMITER ;
+
 -- ------------------------------------------------------------
--- 17. BEFORE UPDATE ON LISTINGS, block an illegal soft-delete.
---     Fires only when deleted_at is actually being set for the first
---     time (OLD NULL -> NEW NOT NULL), so ordinary edits (price,
---     description, photos) are never affected. Two separate business
---     rules, two separate SIGNALs: a listing currently tied to a live
---     auction can't be pulled out from under active bidders, and a
---     listing that's already been bought can't be deleted out from
---     under a buyer who already paid for it. This is the database-level
---     backstop, it applies no matter which application code path (or
---     future one) tries to set deleted_at, not just the current
---     sp_soft_delete_listing procedure.
+-- 17. BEFORE UPDATE ON LISTINGS — enforce the 3-tier auction deletion
+--     rule. Fires only when deleted_at is actually being set for the
+--     first time (OLD NULL -> NEW NOT NULL), so ordinary edits (price,
+--     description, photos) are never affected. This is the database-level
+--     backstop: it applies no matter which application code path (or
+--     future one) tries to set deleted_at.
 -- ------------------------------------------------------------
+-- Auction Deletion rule, 3 tiers:
+--   1) No bids                          -> free to end/delete
+--   2) Has bids, > 12h before end_time   -> only via a valid reason, which
+--                                          auto-files a notice to the top
+--                                          bidder (see the follow-up trigger
+--                                          right below this one)
+--   3) Within 12h of end_time            -> fully locked, no override
+--
+-- A BEFORE UPDATE trigger can't receive a "reason" parameter directly, so
+-- the reason travels via a session variable (@tb_deletion_reason) set by
+-- sp_seller_delete_listing immediately before the UPDATE. Any other,
+-- unsanctioned path that tries a raw `UPDATE LISTINGS SET deleted_at=...`
+-- still gets tier-2 blocked, since that variable won't be set.
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS before_listing_delete_enforce_rules$$
 CREATE TRIGGER before_listing_delete_enforce_rules
 BEFORE UPDATE ON LISTINGS
 FOR EACH ROW
 BEGIN
     DECLARE v_active_auctions INT;
+    DECLARE v_bid_count INT;
+    DECLARE v_end_time DATETIME;
     DECLARE v_existing_orders INT;
 
     IF OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL THEN
 
-        SELECT COUNT(*) INTO v_active_auctions
-        FROM AUCTIONS
-        WHERE listing_id = OLD.listing_id AND status = 'Active' AND deleted_at IS NULL;
+        SELECT COUNT(*) INTO v_existing_orders FROM ORDERS WHERE listing_id = OLD.listing_id;
+        IF v_existing_orders > 0 THEN
+            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Cannot delete a listing that has already been purchased.';
+        END IF;
+
+        SELECT COUNT(*), MIN(end_time) INTO v_active_auctions, v_end_time
+        FROM AUCTIONS WHERE listing_id = OLD.listing_id AND status = 'Active' AND deleted_at IS NULL;
 
         IF v_active_auctions > 0 THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Cannot delete a listing with an active auction currently accepting bids.';
+
+            -- Tier 3: within 12 hours of ending — fully locked, no override possible.
+            IF TIMESTAMPDIFF(HOUR, NOW(), v_end_time) < 12 THEN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'This auction ends within 12 hours and can no longer be cancelled.';
+            END IF;
+
+            SELECT COUNT(*) INTO v_bid_count
+            FROM BIDDINGS b JOIN AUCTIONS a ON b.auction_id = a.auction_id
+            WHERE a.listing_id = OLD.listing_id AND a.status = 'Active' AND b.is_deleted = 0;
+
+            IF v_bid_count > 0 THEN
+                -- Tier 2: has bids -> only allowed through sp_seller_delete_listing.
+                IF @tb_deletion_reason IS NULL OR @tb_deletion_reason = '' THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'This auction has active bids. A valid reason is required to cancel it.';
+                END IF;
+            END IF;
+            -- Tier 1 (no bids, >12h left): falls through, no restriction.
         END IF;
-
-        SELECT COUNT(*) INTO v_existing_orders
-        FROM ORDERS
-        WHERE listing_id = OLD.listing_id;
-
-        IF v_existing_orders > 0 THEN
-            SIGNAL SQLSTATE '45000'
-            SET MESSAGE_TEXT = 'Cannot delete a listing that has already been purchased.';
-        END IF;
-
     END IF;
 END$$
+
+DELIMITER ;
+
+-- Runs right after the guard above allows a bid-having deletion through
+-- (i.e. @tb_deletion_reason was actually set) — closes out the auction and
+-- notifies the top bidder, so there's a transparent record of why a live
+-- auction with bids got pulled.
+DELIMITER $$
+
+DROP TRIGGER IF EXISTS after_listing_delete_file_dispute$$
+CREATE TRIGGER after_listing_delete_file_dispute
+AFTER UPDATE ON LISTINGS
+FOR EACH ROW
+BEGIN
+    DECLARE v_auction_id INT;
+    DECLARE v_top_buyer_id INT;
+
+    IF OLD.deleted_at IS NULL AND NEW.deleted_at IS NOT NULL AND @tb_deletion_reason IS NOT NULL AND @tb_deletion_reason <> '' THEN
+        SELECT a.auction_id INTO v_auction_id FROM AUCTIONS a WHERE a.listing_id = NEW.listing_id AND a.status = 'Active' LIMIT 1;
+
+        IF v_auction_id IS NOT NULL THEN
+            SELECT b.buyer_id INTO v_top_buyer_id FROM BIDDINGS b
+             WHERE b.auction_id = v_auction_id AND b.is_deleted = 0
+             ORDER BY b.bid_amount DESC LIMIT 1;
+
+            UPDATE AUCTIONS SET status = 'Closed', deleted_at = NOW() WHERE auction_id = v_auction_id;
+
+            IF v_top_buyer_id IS NOT NULL THEN
+                INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
+                VALUES (v_top_buyer_id, 'Auction Cancelled by Seller',
+                        CONCAT('The auction for "', NEW.title, '" was cancelled by the seller. Reason: ', @tb_deletion_reason), 'AUCTION');
+            END IF;
+        END IF;
+    END IF;
+END$$
+
+DELIMITER ;
 
 -- ------------------------------------------------------------
 -- 18. AFTER UPDATE ON LISTINGS, archive a frozen snapshot the moment
@@ -1028,6 +1339,8 @@ END$$
 --     above, so it only ever fires for a deletion that was actually
 --     allowed to go through.
 -- ------------------------------------------------------------
+DELIMITER $$
+
 DROP TRIGGER IF EXISTS after_listing_soft_delete_archive$$
 CREATE TRIGGER after_listing_soft_delete_archive
 AFTER UPDATE ON LISTINGS
@@ -1040,6 +1353,8 @@ BEGIN
                 OLD.condition_grade, OLD.category_id, OLD.product_line_id, OLD.size_id);
     END IF;
 END$$
+
+DELIMITER ;
 
 -- ================================================================
 -- STORED PROCEDURES
@@ -1056,6 +1371,8 @@ END$$
 -- ================================================================
 
 -- 1. Close an auction, pick the highest bidder, create their order.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_close_auction$$
 CREATE PROCEDURE sp_close_auction(IN p_auction_id INT)
 BEGIN
@@ -1067,111 +1384,192 @@ BEGIN
     DECLARE v_winner_bid DECIMAL(10,2);
     DECLARE v_order_id INT;
 
-    SELECT a.listing_id, l.seller_id, l.title INTO v_listing_id, v_seller_id, v_title
-    FROM AUCTIONS a JOIN LISTINGS l ON a.listing_id = l.listing_id
-    WHERE a.auction_id = p_auction_id;
+    -- ACID: explicit transaction (Atomicity).
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
 
-    UPDATE AUCTIONS SET status = 'Closed' WHERE auction_id = p_auction_id;
+    START TRANSACTION;
+        SELECT a.listing_id, l.seller_id, l.title INTO v_listing_id, v_seller_id, v_title
+        FROM AUCTIONS a JOIN LISTINGS l ON a.listing_id = l.listing_id
+        WHERE a.auction_id = p_auction_id;
 
-    SELECT b.buyer_id, bu.username, b.bid_amount INTO v_winner_buyer_id, v_winner_username, v_winner_bid
-    FROM BIDDINGS b JOIN BUYER bu ON b.buyer_id = bu.buyer_id
-    WHERE b.auction_id = p_auction_id AND b.is_deleted = 0
-    ORDER BY b.bid_amount DESC LIMIT 1;
+        UPDATE AUCTIONS SET status = 'Closed' WHERE auction_id = p_auction_id;
 
-    IF v_winner_buyer_id IS NOT NULL THEN
-        INSERT INTO ORDERS (listing_id, buyer_id, seller_id) VALUES (v_listing_id, v_winner_buyer_id, v_seller_id);
-        SET v_order_id = LAST_INSERT_ID();
+        SELECT b.buyer_id, bu.username, b.bid_amount INTO v_winner_buyer_id, v_winner_username, v_winner_bid
+        FROM BIDDINGS b JOIN BUYER bu ON b.buyer_id = bu.buyer_id
+        WHERE b.auction_id = p_auction_id AND b.is_deleted = 0
+        ORDER BY b.bid_amount DESC LIMIT 1;
 
-        INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
-        VALUES (v_winner_buyer_id, 'You Won the Auction!',
-                CONCAT('Congratulations! You won "', v_title, '" with a bid of PHP ', v_winner_bid, '. Please proceed to checkout.'), 'AUCTION');
-        INSERT INTO NOTIFICATIONS (seller_id, title, message, notification_type)
-        VALUES (v_seller_id, 'Auction Closed', CONCAT('Your auction for "', v_title, '" ended. Winner: @', v_winner_username, '.'), 'AUCTION');
-    END IF;
+        IF v_winner_buyer_id IS NOT NULL THEN
+            INSERT INTO ORDERS (listing_id, buyer_id, seller_id) VALUES (v_listing_id, v_winner_buyer_id, v_seller_id);
+            SET v_order_id = LAST_INSERT_ID();
+
+            INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
+            VALUES (v_winner_buyer_id, 'You Won the Auction!',
+                    CONCAT('Congratulations! You won "', v_title, '" with a bid of PHP ', v_winner_bid, '. Please pay within 24 hours or your win will be forfeited.'), 'AUCTION');
+            INSERT INTO NOTIFICATIONS (seller_id, title, message, notification_type)
+            VALUES (v_seller_id, 'Auction Closed', CONCAT('Your auction for "', v_title, '" ended. Winner: @', v_winner_username, '.'), 'AUCTION');
+
+            -- Communication: detailed auction-won email, both sides (the
+            -- ORDERS insert above also separately queues the generic
+            -- "new order" seller email via after_order_insert_deactivate_listing —
+            -- this one is auction-specific: winning bid amount + the
+            -- 24-hour payment deadline notice).
+            INSERT INTO EMAIL_QUEUE (recipient_type, recipient_id, subject, body, template, related_order_id)
+            VALUES ('Buyer', v_winner_buyer_id, 'You Won the Auction!', '(generated from template)', 'auction_won_buyer', v_order_id);
+
+            INSERT INTO EMAIL_QUEUE (recipient_type, recipient_id, subject, body, template, related_order_id)
+            VALUES ('Seller', v_seller_id, 'Your Auction Has Ended', '(generated from template)', 'auction_won_seller', v_order_id);
+        END IF;
+    COMMIT;
 END$$
+
+DELIMITER ;
 
 -- 2. Mark an order shipped — inserts the shipment as Preparing, then
 --    updates to Shipped, which is what fires the tracking-log +
 --    order-status-sync trigger.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_ship_order$$
 CREATE PROCEDURE sp_ship_order(IN p_order_id INT, IN p_courier_id INT, IN p_tracking_number VARCHAR(100))
 BEGIN
     DECLARE v_shipment_id INT;
     DECLARE v_buyer_id INT;
     DECLARE v_title VARCHAR(200);
+    DECLARE v_courier_name VARCHAR(50);
+    DECLARE v_seller_name VARCHAR(100);
 
-    INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (p_order_id, p_courier_id, p_tracking_number, 'Preparing');
-    SET v_shipment_id = LAST_INSERT_ID();
-    UPDATE SHIPMENTS SET status = 'Shipped', shipped_date = NOW() WHERE shipment_id = v_shipment_id;
+    -- ACID: explicit transaction (Atomicity).
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
 
-    SELECT o.buyer_id, l.title INTO v_buyer_id, v_title
-    FROM ORDERS o JOIN LISTINGS l ON o.listing_id = l.listing_id WHERE o.order_id = p_order_id;
+    START TRANSACTION;
+        INSERT INTO SHIPMENTS (order_id, courier_id, tracking_number, status) VALUES (p_order_id, p_courier_id, p_tracking_number, 'Preparing');
+        SET v_shipment_id = LAST_INSERT_ID();
+        UPDATE SHIPMENTS SET status = 'Shipped', shipped_date = NOW() WHERE shipment_id = v_shipment_id;
 
-    INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
-    VALUES (v_buyer_id, 'Your Order Has Shipped!', CONCAT('Your order #', p_order_id, ' has been shipped! Tracking: ', p_tracking_number), 'ORDER');
+        SELECT o.buyer_id, l.title, COALESCE(se.shop_name, se.username)
+          INTO v_buyer_id, v_title, v_seller_name
+        FROM ORDERS o
+        JOIN LISTINGS l ON o.listing_id = l.listing_id
+        JOIN SELLER se ON o.seller_id = se.seller_id
+        WHERE o.order_id = p_order_id;
+
+        SELECT courier_name INTO v_courier_name FROM COURIERS WHERE courier_id = p_courier_id;
+
+        INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
+        VALUES (
+            v_buyer_id, 'Your Order Has Shipped!',
+            CONCAT('Your order #', p_order_id, ' has been shipped via ', v_courier_name, ' by ', v_seller_name, '. Tracking: ', p_tracking_number),
+            'ORDER'
+        );
+
+        -- Communication: queue the buyer's "your order has shipped" email
+        -- (see EMAIL_QUEUE above) — flushed by flushEmailQueue() on any
+        -- page load, so this doesn't depend on to-ship.php remembering to
+        -- call sendMail() itself.
+        INSERT INTO EMAIL_QUEUE (recipient_type, recipient_id, subject, body)
+        VALUES (
+            'Buyer', v_buyer_id, 'Your ThriftBid order has shipped!',
+            CONCAT(
+                '<p>Good news — your order for "<strong>', v_title, '</strong>" (Order #', p_order_id, ') is on its way.</p>',
+                '<p>Shipped by <strong>', v_seller_name, '</strong> via <strong>', v_courier_name, '</strong>.</p>',
+                '<p>Tracking number: <strong>', p_tracking_number, '</strong></p>'
+            )
+        );
+    COMMIT;
 END$$
+
+DELIMITER ;
 
 -- 3. Resolve an order dispute (Full/Partial Refund), optionally
 --    penalizing the seller.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_resolve_dispute$$
 CREATE PROCEDURE sp_resolve_dispute(IN p_dispute_id INT, IN p_admin_id INT, IN p_resolution_type VARCHAR(20), IN p_penalize_seller BOOLEAN)
 BEGIN
     DECLARE v_buyer_id INT; DECLARE v_seller_id INT; DECLARE v_reason VARCHAR(255);
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
 
-    SELECT buyer_id, seller_id, reason INTO v_buyer_id, v_seller_id, v_reason FROM DISPUTES WHERE dispute_id = p_dispute_id;
+    -- ACID: explicit transaction (Atomicity).
+    START TRANSACTION;
+        SELECT buyer_id, seller_id, reason INTO v_buyer_id, v_seller_id, v_reason FROM DISPUTES WHERE dispute_id = p_dispute_id;
 
-    UPDATE DISPUTES SET status = 'Resolved', resolution_type = p_resolution_type, assigned_admin_id = p_admin_id, resolved_at = NOW()
-    WHERE dispute_id = p_dispute_id;
+        UPDATE DISPUTES SET status = 'Resolved', resolution_type = p_resolution_type, assigned_admin_id = p_admin_id, resolved_at = NOW()
+        WHERE dispute_id = p_dispute_id;
 
-    INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
-    VALUES (v_buyer_id, CONCAT('Dispute Resolved - ', p_resolution_type),
-            CONCAT('Your dispute #', p_dispute_id, ' has been resolved (', LOWER(p_resolution_type), '). Your refund will be processed within 24 hours.'), 'ORDER');
+        INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
+        VALUES (v_buyer_id, CONCAT('Dispute Resolved - ', p_resolution_type),
+                CONCAT('Your dispute #', p_dispute_id, ' has been resolved (', LOWER(p_resolution_type), '). Your refund will be processed within 24 hours.'), 'ORDER');
 
-    IF p_penalize_seller THEN
-        INSERT INTO PENALTIES (seller_id, reason, penalty_type) VALUES (v_seller_id, CONCAT('Dispute #', p_dispute_id, ' resolved against seller: ', v_reason), 'Selling Suspension');
-    END IF;
+        IF p_penalize_seller THEN
+            INSERT INTO PENALTIES (seller_id, reason, penalty_type) VALUES (v_seller_id, CONCAT('Dispute #', p_dispute_id, ' resolved against seller: ', v_reason), 'Selling Suspension');
+        END IF;
 
-    INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value)
-    VALUES (p_admin_id, CONCAT('Resolved dispute (', p_resolution_type, ')'), 'DISPUTES', p_dispute_id, 'Open', 'Resolved');
+        INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value)
+        VALUES (p_admin_id, CONCAT('Resolved dispute (', p_resolution_type, ')'), 'DISPUTES', p_dispute_id, 'Open', 'Resolved');
+    COMMIT;
 END$$
 
+DELIMITER ;
+
 -- 4. Reject an order dispute.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_reject_dispute$$
 CREATE PROCEDURE sp_reject_dispute(IN p_dispute_id INT, IN p_admin_id INT)
 BEGIN
     DECLARE v_buyer_id INT;
-    SELECT buyer_id INTO v_buyer_id FROM DISPUTES WHERE dispute_id = p_dispute_id;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
 
-    UPDATE DISPUTES SET status = 'Rejected', assigned_admin_id = p_admin_id, resolved_at = NOW() WHERE dispute_id = p_dispute_id;
+    -- ACID: explicit transaction (Atomicity).
+    START TRANSACTION;
+        SELECT buyer_id INTO v_buyer_id FROM DISPUTES WHERE dispute_id = p_dispute_id;
 
-    INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
-    VALUES (v_buyer_id, 'Dispute Rejected', CONCAT('Your dispute #', p_dispute_id, ' was reviewed and rejected - no policy violation was found.'), 'ORDER');
+        UPDATE DISPUTES SET status = 'Rejected', assigned_admin_id = p_admin_id, resolved_at = NOW() WHERE dispute_id = p_dispute_id;
 
-    INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value)
-    VALUES (p_admin_id, 'Rejected dispute', 'DISPUTES', p_dispute_id, 'Open', 'Rejected');
+        INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
+        VALUES (v_buyer_id, 'Dispute Rejected', CONCAT('Your dispute #', p_dispute_id, ' was reviewed and rejected - no policy violation was found.'), 'ORDER');
+
+        INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value)
+        VALUES (p_admin_id, 'Rejected dispute', 'DISPUTES', p_dispute_id, 'Open', 'Rejected');
+    COMMIT;
 END$$
+
+DELIMITER ;
 
 -- 5. Uphold a listing fraud report — take the listing down and
 --    penalize the seller.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_uphold_fraud_report$$
 CREATE PROCEDURE sp_uphold_fraud_report(IN p_fraud_flag_id INT, IN p_admin_id INT)
 BEGIN
     DECLARE v_listing_id INT; DECLARE v_seller_id INT; DECLARE v_signals VARCHAR(255);
-    SELECT listing_id, seller_id, signals_detected INTO v_listing_id, v_seller_id, v_signals FROM FRAUD_FLAGS WHERE fraud_flag_id = p_fraud_flag_id;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
 
-    IF v_listing_id IS NOT NULL THEN
-        UPDATE LISTINGS SET is_active = 0 WHERE listing_id = v_listing_id;
-    END IF;
-    IF v_seller_id IS NOT NULL THEN
-        INSERT INTO PENALTIES (seller_id, reason, penalty_type) VALUES (v_seller_id, CONCAT('Reported listing upheld: ', v_signals), 'Selling Suspension');
-    END IF;
+    -- ACID: explicit transaction (Atomicity).
+    START TRANSACTION;
+        SELECT listing_id, seller_id, signals_detected INTO v_listing_id, v_seller_id, v_signals FROM FRAUD_FLAGS WHERE fraud_flag_id = p_fraud_flag_id;
 
-    UPDATE FRAUD_FLAGS SET status = 'Resolved', reviewed_by_admin_id = p_admin_id WHERE fraud_flag_id = p_fraud_flag_id;
-    INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value)
-    VALUES (p_admin_id, 'Upheld listing report - listing taken down, seller penalized', 'FRAUD_FLAGS', p_fraud_flag_id, 'Pending', 'Resolved');
+        IF v_listing_id IS NOT NULL THEN
+            UPDATE LISTINGS SET is_active = 0 WHERE listing_id = v_listing_id;
+        END IF;
+        IF v_seller_id IS NOT NULL THEN
+            INSERT INTO PENALTIES (seller_id, reason, penalty_type) VALUES (v_seller_id, CONCAT('Reported listing upheld: ', v_signals), 'Selling Suspension');
+        END IF;
+
+        UPDATE FRAUD_FLAGS SET status = 'Resolved', reviewed_by_admin_id = p_admin_id WHERE fraud_flag_id = p_fraud_flag_id;
+        INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value)
+        VALUES (p_admin_id, 'Upheld listing report - listing taken down, seller penalized', 'FRAUD_FLAGS', p_fraud_flag_id, 'Pending', 'Resolved');
+    COMMIT;
 END$$
 
+DELIMITER ;
+
 -- 6. Dismiss a listing fraud report — no action taken.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_dismiss_fraud_report$$
 CREATE PROCEDURE sp_dismiss_fraud_report(IN p_fraud_flag_id INT, IN p_admin_id INT)
 BEGIN
@@ -1180,10 +1578,14 @@ BEGIN
     VALUES (p_admin_id, 'Dismissed listing report - no violation found', 'FRAUD_FLAGS', p_fraud_flag_id, 'Pending', 'Reviewed');
 END$$
 
+DELIMITER ;
+
 -- 7. Approve (Verify) or reject a luxury authenticity request.
 --    before_authentication_require_admin / after_authentication_status_change
 --    (triggers 10 & 11) still do the actual is_active flip + seller
 --    notification - this just performs the UPDATE + audit log.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_review_authentication$$
 CREATE PROCEDURE sp_review_authentication(IN p_listing_id INT, IN p_admin_id INT, IN p_status VARCHAR(20), IN p_remarks VARCHAR(255))
 BEGIN
@@ -1194,8 +1596,12 @@ BEGIN
     VALUES (p_admin_id, CONCAT('Set authenticity status to ', p_status), 'AUTHENTICATION', p_listing_id, 'Pending', p_status);
 END$$
 
+DELIMITER ;
+
 -- 8. Issue a penalty. after_penalty_insert_escalate handles the
 --    offense-count/suspension/ban escalation and seller notification.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_issue_penalty$$
 CREATE PROCEDURE sp_issue_penalty(IN p_seller_id INT, IN p_admin_id INT, IN p_reason VARCHAR(255), IN p_penalty_type VARCHAR(30))
 BEGIN
@@ -1204,8 +1610,12 @@ BEGIN
     VALUES (p_admin_id, CONCAT('Issued penalty: ', p_reason), 'PENALTIES', p_seller_id, NULL, p_penalty_type);
 END$$
 
+DELIMITER ;
+
 -- 9. Issue a seller award. after_seller_award_notify handles the
 --    congratulatory notification.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_issue_award$$
 CREATE PROCEDURE sp_issue_award(IN p_seller_id INT, IN p_admin_id INT, IN p_reason VARCHAR(255), IN p_award_type VARCHAR(30))
 BEGIN
@@ -1214,9 +1624,13 @@ BEGIN
     VALUES (p_admin_id, CONCAT('Issued award: ', p_reason), 'SELLER_AWARDS', p_seller_id, NULL, p_award_type);
 END$$
 
+DELIMITER ;
+
 -- 10. Batch-expire penalties/awards whose period_end (or a year from
 --     issued_at for awards, which have no period_end column) has
 --     passed. Meant to be run on a schedule (or manually by an admin).
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_expire_stale_penalties_and_awards$$
 CREATE PROCEDURE sp_expire_stale_penalties_and_awards()
 BEGIN
@@ -1224,31 +1638,77 @@ BEGIN
     UPDATE SELLER_AWARDS SET status = 'Expired' WHERE status = 'Active' AND issued_at < DATE_SUB(NOW(), INTERVAL 1 YEAR);
 END$$
 
+DELIMITER ;
+
 -- 11. Suspend / ban / reactivate a seller or buyer account, with an
 --     audit log entry - used by admin/users.php instead of writing
 --     the same UPDATE + AUDIT_LOGS insert pattern four different ways.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_set_account_status$$
 CREATE PROCEDURE sp_set_account_status(IN p_table_name VARCHAR(10), IN p_account_id INT, IN p_new_status VARCHAR(20), IN p_admin_id INT)
 BEGIN
-    IF p_table_name = 'SELLER' THEN
-        UPDATE SELLER SET seller_status = p_new_status WHERE seller_id = p_account_id;
-    ELSE
-        UPDATE BUYER SET buyer_status = p_new_status WHERE buyer_id = p_account_id;
-    END IF;
-    INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value)
-    VALUES (p_admin_id, CONCAT('Set account status to ', p_new_status), p_table_name, p_account_id, NULL, p_new_status);
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
+
+    -- ACID: explicit transaction (Atomicity).
+    START TRANSACTION;
+        IF p_table_name = 'SELLER' THEN
+            UPDATE SELLER SET seller_status = p_new_status WHERE seller_id = p_account_id;
+        ELSE
+            UPDATE BUYER SET buyer_status = p_new_status WHERE buyer_id = p_account_id;
+        END IF;
+        INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value)
+        VALUES (p_admin_id, CONCAT('Set account status to ', p_new_status), p_table_name, p_account_id, NULL, p_new_status);
+    COMMIT;
 END$$
+
+DELIMITER ;
 
 -- 12. Soft-delete a listing (archiving rule: never hard-delete
 --     something ORDERS might reference).
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_soft_delete_listing$$
 CREATE PROCEDURE sp_soft_delete_listing(IN p_listing_id INT, IN p_seller_id INT)
 BEGIN
     UPDATE LISTINGS SET deleted_at = NOW(), is_active = 0 WHERE listing_id = p_listing_id AND seller_id = p_seller_id;
 END$$
 
+DELIMITER ;
+
+-- 12b. Preferred deletion entry point (edit-listing.php calls this one, not
+--      sp_soft_delete_listing above): carries an optional reason through a
+--      session variable so before_listing_delete_enforce_rules can apply
+--      the real 3-tier auction-deletion rule (no bids: free / has bids:
+--      reason required / within 12h of ending: locked either way).
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS sp_seller_delete_listing$$
+CREATE PROCEDURE sp_seller_delete_listing(IN p_listing_id INT, IN p_seller_id INT, IN p_reason VARCHAR(255))
+BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        SET @tb_deletion_reason = NULL;
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    -- ACID: explicit transaction (Atomicity) — the reason session var and
+    -- the soft-delete UPDATE must succeed or fail together, and the var
+    -- must never leak into a later, unrelated UPDATE on this connection.
+    START TRANSACTION;
+        SET @tb_deletion_reason = NULLIF(TRIM(IFNULL(p_reason, '')), '');
+        UPDATE LISTINGS SET deleted_at = NOW(), is_active = 0 WHERE listing_id = p_listing_id AND seller_id = p_seller_id;
+        SET @tb_deletion_reason = NULL;
+    COMMIT;
+END$$
+
+DELIMITER ;
+
 -- 13. Seller dashboard summary — one call instead of five separate
 --     COUNT/SUM queries scattered across seller/dashboard.php.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_seller_dashboard_stats$$
 CREATE PROCEDURE sp_seller_dashboard_stats(IN p_seller_id INT)
 BEGIN
@@ -1261,8 +1721,12 @@ BEGIN
         (SELECT COUNT(*) FROM AUTHENTICATION au JOIN LISTINGS l ON au.listing_id=l.listing_id WHERE l.seller_id=p_seller_id AND au.authentication_status='Pending') AS pending_authenticity;
 END$$
 
+DELIMITER ;
+
 -- 14. Admin platform-wide KPI summary — one call instead of the ten
 --     separate COUNT queries in admin/dashboard.php.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_admin_platform_stats$$
 CREATE PROCEDURE sp_admin_platform_stats()
 BEGIN
@@ -1277,7 +1741,11 @@ BEGIN
         (SELECT COALESCE(SUM(amount_paid),0) FROM PAYMENTS WHERE payment_status='Completed') AS total_revenue;
 END$$
 
+DELIMITER ;
+
 -- 15. Top customers by spending, for one seller (Sales Drivers report).
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_top_customers_for_seller$$
 CREATE PROCEDURE sp_top_customers_for_seller(IN p_seller_id INT, IN p_limit INT)
 BEGIN
@@ -1290,9 +1758,13 @@ BEGIN
     LIMIT p_limit;
 END$$
 
+DELIMITER ;
+
 -- 16. Revenue by PARENT category, for one seller (Overview donut chart
 --     groups into ~7 broad slices — Tops/Bottoms/Footwear/etc — not
 --     23 individual subcategories, which would be unreadable in a donut).
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_revenue_by_category$$
 CREATE PROCEDURE sp_revenue_by_category(IN p_seller_id INT)
 BEGIN
@@ -1308,8 +1780,12 @@ BEGIN
     LIMIT 8;
 END$$
 
+DELIMITER ;
+
 -- 17. Monthly revenue trend, for one seller (Overview line chart /
 --     Forecast baseline). p_months controls the lookback window.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_monthly_revenue_trend$$
 CREATE PROCEDURE sp_monthly_revenue_trend(IN p_seller_id INT, IN p_months INT)
 BEGIN
@@ -1323,6 +1799,8 @@ BEGIN
     ORDER BY yr, mn;
 END$$
 
+DELIMITER ;
+
 -- 18. Checkout one listing: creates the ORDER, then the matching
 --     Completed PAYMENT for it. after_order_insert_deactivate_listing
 --     still handles deactivating the listing + notifying the seller;
@@ -1334,6 +1812,21 @@ END$$
 --     (each item always gets its own order + its own payment — there
 --     is no "combined payment across items" at the schema level,
 --     same-shop or not, since PAYMENTS.order_id is one-to-one).
+--
+--     IMPORTANT — deliberately NO START TRANSACTION/COMMIT in this
+--     procedure (unlike most others in this file): checkout.php already
+--     wraps its call to this procedure inside its own PDO transaction,
+--     once per cart item. MySQL does not support true nested
+--     transactions — issuing a fresh START TRANSACTION while one is
+--     already open on the connection silently COMMITs the existing one
+--     first. That mismatch is exactly what caused "There is no active
+--     transaction" when PHP later tried to roll back: the procedure's
+--     own COMMIT had already ended PHP's outer transaction, so there was
+--     nothing left to roll back. Atomicity here is provided entirely by
+--     checkout.php's own beginTransaction()/commit()/rollBack() — do not
+--     re-add an inner transaction here.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_checkout_listing$$
 CREATE PROCEDURE sp_checkout_listing(
     IN p_listing_id INT, IN p_buyer_id INT, IN p_seller_id INT,
@@ -1359,10 +1852,16 @@ BEGIN
     -- "I just need the ID that got created."
 END$$
 
+DELIMITER ;
+
 -- 19. Pay for an ORDER that already exists (the "Buy Now" flow creates
 --     the order immediately, then the buyer pays for it separately at
 --     checkout) — the counterpart to sp_checkout_listing above for
 --     when there's no order left to create, just a payment to record.
+--     Same reasoning as above: no inner transaction, checkout.php's own
+--     PDO transaction already covers this.
+DELIMITER $$
+
 DROP PROCEDURE IF EXISTS sp_pay_for_order$$
 CREATE PROCEDURE sp_pay_for_order(
     IN p_order_id INT, IN p_listing_id INT, IN p_buyer_id INT,
@@ -1376,3 +1875,129 @@ BEGIN
 END$$
 
 DELIMITER ;
+
+-- ================================================================
+-- RULE 7 — NON-PAYING BUYER
+-- ----------------------------------------------------------------
+-- Applies only to orders from a *won auction* (ORDERS whose listing has a
+-- Closed AUCTIONS row). A "Buy Now" order is paid for in the same request
+-- that creates it, so it never sits unpaid the way an auction-win order
+-- legitimately can while the winner decides whether to pay.
+--   12h mark: reminder notification (tagged so it only ever fires once)
+--   24h mark: order cancelled, the non-paying bid excluded (but kept, so
+--             prior bid history is retained per spec), auction reopened
+--             for 24 more hours among the remaining bidders, buyer
+--             penalized (Bidding Suspension), both parties notified.
+-- ================================================================
+
+DELIMITER $$
+
+DROP EVENT IF EXISTS remind_non_paying_buyers$$
+CREATE EVENT remind_non_paying_buyers
+ON SCHEDULE EVERY 1 HOUR
+STARTS CURRENT_TIMESTAMP
+DO
+BEGIN
+    INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
+    SELECT o.buyer_id, 'Payment Reminder',
+           CONCAT('[NPB-REMIND-ORDER-#', o.order_id, '] You won "', l.title, '" — please pay within 12 hours or your win will be forfeited and the item re-listed.'),
+           'ORDER'
+    FROM ORDERS o
+    JOIN LISTINGS l ON o.listing_id = l.listing_id
+    JOIN AUCTIONS a ON a.listing_id = l.listing_id AND a.status = 'Closed'
+    LEFT JOIN PAYMENTS p ON p.order_id = o.order_id AND p.payment_status = 'Completed'
+    WHERE o.status = 'Preparing'
+      AND p.payment_id IS NULL
+      AND o.order_date <= DATE_SUB(NOW(), INTERVAL 12 HOUR)
+      AND o.order_date >  DATE_SUB(NOW(), INTERVAL 24 HOUR)
+      AND NOT EXISTS (
+          SELECT 1 FROM NOTIFICATIONS n
+          WHERE n.buyer_id = o.buyer_id
+            AND n.message LIKE CONCAT('%[NPB-REMIND-ORDER-#', o.order_id, ']%')
+      );
+END$$
+
+DELIMITER ;
+
+DELIMITER $$
+
+DROP EVENT IF EXISTS enforce_non_paying_buyers$$
+CREATE EVENT enforce_non_paying_buyers
+ON SCHEDULE EVERY 1 HOUR
+STARTS CURRENT_TIMESTAMP
+DO
+BEGIN
+    DECLARE done INT DEFAULT 0;
+    DECLARE v_order_id INT;
+    DECLARE v_buyer_id INT;
+    DECLARE v_listing_id INT;
+    DECLARE v_title VARCHAR(200);
+    DECLARE v_auction_id INT;
+    DECLARE v_seller_id INT;
+    DECLARE v_new_highest DECIMAL(10,2);
+    DECLARE v_start_bid DECIMAL(10,2);
+
+    DECLARE npb_cursor CURSOR FOR
+        SELECT o.order_id, o.buyer_id, o.listing_id, l.title, l.seller_id, a.auction_id
+        FROM ORDERS o
+        JOIN LISTINGS l ON o.listing_id = l.listing_id
+        JOIN AUCTIONS a ON a.listing_id = l.listing_id AND a.status = 'Closed'
+        LEFT JOIN PAYMENTS p ON p.order_id = o.order_id AND p.payment_status = 'Completed'
+        WHERE o.status = 'Preparing'
+          AND p.payment_id IS NULL
+          AND o.order_date <= DATE_SUB(NOW(), INTERVAL 24 HOUR);
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+    OPEN npb_cursor;
+    read_loop: LOOP
+        FETCH npb_cursor INTO v_order_id, v_buyer_id, v_listing_id, v_title, v_seller_id, v_auction_id;
+        IF done THEN LEAVE read_loop; END IF;
+
+        -- ACID: explicit transaction per non-paying order (Atomicity), so a
+        -- failure on one order never leaves another half-processed.
+        START TRANSACTION;
+
+            UPDATE ORDERS SET status = 'Cancelled' WHERE order_id = v_order_id;
+
+            -- Exclude the non-paying buyer's winning bid from being picked
+            -- again, but keep the row (retains prior bid history per spec).
+            UPDATE BIDDINGS SET is_deleted = 1
+             WHERE auction_id = v_auction_id AND buyer_id = v_buyer_id
+             ORDER BY bid_amount DESC LIMIT 1;
+
+            SELECT MAX(bid_amount) INTO v_new_highest FROM BIDDINGS WHERE auction_id = v_auction_id AND is_deleted = 0;
+            SELECT start_bid INTO v_start_bid FROM AUCTIONS WHERE auction_id = v_auction_id;
+
+            -- If the non-paying buyer was the only bidder, reopen at the
+            -- original start_bid rather than dropping to 0. (start_bid was
+            -- read into a variable above, not re-selected from AUCTIONS
+            -- inside this UPDATE, since MySQL disallows a subquery on the
+            -- same table you're updating.)
+            UPDATE AUCTIONS
+               SET status = 'Active',
+                   end_time = DATE_ADD(NOW(), INTERVAL 24 HOUR),
+                   current_highest_bid = IFNULL(v_new_highest, v_start_bid)
+             WHERE auction_id = v_auction_id;
+
+            UPDATE LISTINGS SET is_active = 1 WHERE listing_id = v_listing_id;
+
+            INSERT INTO PENALTIES (buyer_id, reason, penalty_type)
+            VALUES (v_buyer_id, CONCAT('Did not pay for won auction "', v_title, '" (Order #', v_order_id, ') within 24 hours'), 'Bidding Suspension');
+
+            INSERT INTO NOTIFICATIONS (buyer_id, title, message, notification_type)
+            VALUES (v_buyer_id, 'Auction Win Forfeited',
+                    CONCAT('You did not pay for "', v_title, '" within 24 hours, so your win was forfeited and a bidding restriction was applied.'), 'AUCTION');
+
+            INSERT INTO NOTIFICATIONS (seller_id, title, message, notification_type)
+            VALUES (v_seller_id, 'Buyer Did Not Pay — Re-listed',
+                    CONCAT('The winning bidder for "', v_title, '" did not pay in time. Bidding has reopened for 24 more hours among the remaining bidders.'), 'AUCTION');
+
+        COMMIT;
+    END LOOP;
+    CLOSE npb_cursor;
+END$$
+
+DELIMITER ;
+
+
+SET GLOBAL event_scheduler = ON;

@@ -7,7 +7,7 @@ requireLogin('../login.php');
 
 $user    = currentUser();
 $tab     = $_GET['tab'] ?? 'active';
-$buyerId = $user['buyer_id'] ?? 0; // session row IS the buyer row now
+$buyerId = $user['buyer_id'] ?? 0; /* session row IS the buyer row */
 
 $imgSub = '(SELECT image_url FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id ORDER BY is_primary DESC, image_id ASC LIMIT 1) AS cover_image';
 
@@ -63,11 +63,14 @@ if ($buyerId) {
     );
 
     $completed = DB::fetchAll(
-        "SELECT o.*, l.title, COALESCE(se.shop_name, se.username) AS seller_name, se.seller_id, p.amount_paid, $imgSub
+        "SELECT o.*, l.title, l.listing_id, COALESCE(se.shop_name, se.username) AS seller_name, se.seller_id, p.amount_paid, p.payment_method,
+                sh.tracking_number, sh.delivered_date, co.courier_name, $imgSub
          FROM ORDERS o
          JOIN LISTINGS l ON o.listing_id=l.listing_id
          JOIN SELLER se  ON o.seller_id=se.seller_id
          LEFT JOIN PAYMENTS p ON o.order_id=p.order_id AND p.payment_status='Completed'
+         LEFT JOIN SHIPMENTS sh ON o.order_id=sh.order_id
+         LEFT JOIN COURIERS co ON sh.courier_id=co.courier_id
          WHERE o.buyer_id=? AND o.status='Delivered'
          ORDER BY o.order_date DESC",
         [$buyerId]
@@ -92,7 +95,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['remove_cart'])) {
     header('Location: orders.php?tab=cart'); exit;
 }
 
-// groupByDate() and renderDateHeader() 
+/* groupByDate() and renderDateHeader() (from layout.php) group each
+   tab's rows under date headers further down this page */
 
 $tabs = [
     'active'  => ['label'=>'Active Bids',   'count'=>count($activeBids)],
@@ -310,15 +314,27 @@ renderHead('My Orders');
     <div style="width:60px;height:60px;border-radius:var(--radius-sm);overflow:hidden;background:var(--clr-surface-mid);flex-shrink:0;display:flex;align-items:center;justify-content:center">
       <?php if ($o['cover_image']): ?><img src="<?= htmlspecialchars($o['cover_image']) ?>" alt="" style="width:100%;height:100%;object-fit:cover"><?php else: ?><span class="material-symbols-outlined icon-sm" style="color:var(--clr-outline)">checkroom</span><?php endif; ?>
     </div>
-    <div style="flex:1;min-width:0">
+    <div style="flex:1;min-width:240px">
       <p style="font-weight:700;color:var(--clr-text)"><?= htmlspecialchars($o['title']) ?></p>
-      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)"><?= htmlspecialchars($o['seller_name']) ?></p>
-      <?php if ($o['amount_paid']): ?><p style="font-weight:700;color:var(--clr-coral);font-size:var(--fs-label-md)"><?= convertCurrency((float)$o['amount_paid']) ?></p><?php endif; ?>
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">Sold by <?= htmlspecialchars($o['seller_name']) ?> &bull; Order #<?= $o['order_id'] ?></p>
+      <?php if ($o['tracking_number']): ?>
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);display:flex;align-items:center;gap:4px;margin-top:2px">
+        <span class="material-symbols-outlined icon-sm" style="font-size:14px">local_shipping</span>
+        <?= htmlspecialchars($o['courier_name'] ?? 'Courier') ?> &bull; Tracking: <strong style="color:var(--clr-text)"><?= htmlspecialchars($o['tracking_number']) ?></strong>
+      </p>
+      <?php endif; ?>
+      <?php if ($o['delivered_date']): ?>
+      <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-top:2px">Delivered <?= date('M d, Y', strtotime($o['delivered_date'])) ?></p>
+      <?php endif; ?>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+        <?php if ($o['amount_paid']): ?><span style="font-weight:700;color:var(--clr-coral);font-size:var(--fs-label-md)"><?= convertCurrency((float)$o['amount_paid']) ?></span><?php endif; ?>
+        <?php if ($o['payment_method']): ?><span style="font-size:11px;color:var(--clr-tertiary)">Paid via <?= htmlspecialchars($o['payment_method']) ?></span><?php endif; ?>
+      </div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-      <span class="tb-badge tb-badge-active"><span class="material-symbols-outlined icon-sm">check_circle</span>Delivered</span>
-      <a href="seller_profile.php?id=<?= $o['seller_id'] ?>#reviews" style="font-size:var(--fs-label-sm);color:var(--clr-coral);font-weight:600">Leave a review &rarr;</a>
-      <a href="request-refund.php?order=<?= $o['order_id'] ?>" style="font-size:var(--fs-label-sm);color:var(--clr-error);font-weight:600">Request Refund</a>
+    <div style="display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:150px">
+      <span class="tb-badge tb-badge-active" style="align-self:flex-end"><span class="material-symbols-outlined icon-sm">check_circle</span>Delivered</span>
+      <a href="seller_profile.php?id=<?= $o['seller_id'] ?>#reviews" class="btn btn-primary btn-sm">Leave a Review</a>
+      <a href="request-refund.php?order=<?= $o['order_id'] ?>" class="btn btn-outline btn-sm" style="color:var(--clr-error);border-color:var(--clr-error)">Request Refund</a>
     </div>
   </div>
   <?php endforeach; endforeach; endif; ?>
@@ -330,7 +346,8 @@ renderHead('My Orders');
   <div style="text-align:center;padding:64px;background:var(--clr-white);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);color:var(--clr-tertiary)">No refund requests yet.</div>
   <?php else:
 
-    // Groups by creation date if unresolved (resolved_at IS NULL), otherwise by resolution date.
+    /* Group by creation date if still unresolved (resolved_at IS NULL),
+       otherwise by the date it got resolved */
     foreach ($refunded as &$d) { $d['group_date'] = $d['resolved_at'] ?? $d['opened_at']; } unset($d);
     foreach (groupByDate($refunded, 'group_date') as $dateLabel => $rows): renderDateHeader($dateLabel); foreach ($rows as $d):
       $statusBadge = match($d['status']) {
@@ -378,7 +395,7 @@ function recalcCart(){
   document.getElementById('cartSubtotal').textContent = '₱' + total.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
   document.getElementById('cartCheckoutBtn').disabled = boxes.length === 0;
 
-  // Shop-level and select-all checkboxes items
+  /* Keeps each shop's "select all" checkbox in sync with its individual item checkboxes */
   document.querySelectorAll('.shop-checkbox').forEach(shopBox => {
     const group = shopBox.closest('.tb-card').querySelectorAll('.item-checkbox:not(:disabled)');
     const checked = shopBox.closest('.tb-card').querySelectorAll('.item-checkbox:checked');

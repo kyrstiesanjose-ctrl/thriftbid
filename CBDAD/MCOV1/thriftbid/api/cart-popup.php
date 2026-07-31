@@ -1,5 +1,7 @@
 <?php
-// api/cart-popup.php returns cart items + active bids
+/* api/cart-popup.php - feeds the navbar cart dropdown: recent cart items
+   plus the buyer's active bids (each try/catch below fails silently so
+   one broken query never blanks out the other section). */
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 header('Content-Type: application/json');
@@ -43,6 +45,8 @@ if ($buyerId) {
             [$buyerId]
         );
         foreach ($bidRows as $r) {
+            /* This buyer's own past bid still equals the auction's current
+               highest bid = they're currently winning it */
             $winning = (float)$r['bid_amount'] >= (float)$r['current_highest_bid'];
             $items[] = [
                 'type'          => $winning ? 'Winning Bid' : 'Active Bid',

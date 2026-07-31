@@ -2,6 +2,7 @@
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
 require_once __DIR__ . '/../../includes/currency.php';
+require_once __DIR__ . '/../../includes/mailer.php';
 require_once __DIR__ . '/../../includes/layout.php';
 requireLogin('../login.php');
 
@@ -33,11 +34,12 @@ $isOwnListing = ($user['role']==='seller' && (int)($user['seller_id'] ?? 0) === 
 
 $images = DB::fetchAll('SELECT * FROM LISTING_IMAGES WHERE listing_id=? ORDER BY is_primary DESC, image_id ASC', [$id]);
 
-// Redirect if this listing is actually an active auction, not a buy-now item
+/* If this listing is actually an active auction (not a buy-now item),
+   send the visitor to the bidding room instead */
 $auction = DB::fetch('SELECT auction_id FROM AUCTIONS WHERE listing_id=? AND status="Active"', [$id]);
 if ($auction) { header('Location: auction_room.php?id='.$auction['auction_id']); exit; }
 
-$buyerId = $buyerIdForAccess; // session row IS the buyer row now
+$buyerId = $buyerIdForAccess; /* session row IS the buyer row */
 
 $inCart = $buyerId ? DB::fetch('SELECT cart_item_id FROM CART_ITEMS WHERE buyer_id=? AND listing_id=?', [$buyerId, $id]) : null;
 
@@ -54,9 +56,10 @@ $related = DB::fetchAll(
 $errorMsg = '';
 $successMsg = isset($_GET['added']) ? 'Item added to your cart.' : (isset($_GET['reported']) ? 'Thanks, our team will review this listing.' : '');
 
-// Buy Now order creation.
-// The DB trigger (`after_order_insert_deactivate_listing`, see database/schema.sql)
-// handles listing deactivation and seller notification post-INSERT.
+/* Buy Now creates an unpaid ORDERS row right away (payment happens next,
+   on checkout.php). after_order_insert_deactivate_listing (schema.sql)
+   handles deactivating the listing and notifying the seller - this
+   doesn't need to duplicate that logic here. */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now'])) {
     if (!$buyerId) {
         $errorMsg = 'Only registered buyers can purchase items.';
@@ -66,11 +69,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now'])) {
         DB::query('INSERT INTO NOTIFICATIONS (buyer_id,title,message,notification_type) VALUES (?,?,?,?)',
             [$buyerId, 'Order Placed!', 'Your order for "'.$listing['title'].'" has been placed. Proceed to checkout.', 'ORDER']);
 
+        /* Send the seller's "new order" email right now, instead of
+           waiting on layout.php's opportunistic flush later. */
+        flushEmailQueue(3);
+
         header('Location: ../customer/checkout.php?order='.$orderId); exit;
     }
 }
 
-// Add to Cart 
+/* Add to Cart */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     if (!$buyerId) {
         $errorMsg = 'Only registered buyers can use the cart.';
@@ -80,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_to_cart'])) {
     }
 }
 
-// Report this listing -> FRAUD_FLAGS, reviewed by admin on reported-listings.php
+/* Report this listing -> FRAUD_FLAGS, reviewed by admin on reported-listings.php */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['report_listing'])) {
     $reportReason = trim($_POST['report_reason'] ?? '');
     if (!$buyerId) {

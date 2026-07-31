@@ -748,10 +748,27 @@ a:hover { text-decoration: underline; }
   .tb-navbar  { padding:0 16px; }
   .tb-nav-links { display:none; }
   .tb-auth-card { padding:28px 20px; }
-  .tb-sidebar { display:none; }
   .tb-hero    { flex-direction:column; padding:28px 20px; }
   .tb-hero-visual { flex:none; width:100%; height:180px; }
+
+  /* Seller/admin sidebar: was `display:none` with nothing to replace it,
+     so narrowing the window below 768px left seller/admin pages with no
+     navigation at all. Now it's an off-canvas drawer instead. */
+  .tb-sidebar {
+    position: fixed; top: 56px; left: 0; bottom: 0; z-index: 220;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.18);
+  }
+  .tb-sidebar.open { transform: translateX(0); }
+  .tb-mobile-menu-btn { display: inline-flex !important; }
 }
+.tb-mobile-menu-btn { display: none; }
+.tb-sidebar-overlay {
+  display: none; position: fixed; top: 56px; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.4); z-index: 210;
+}
+.tb-sidebar-overlay.open { display: block; }
 
 /* ── Dropdown menu ─────── */
 .tb-dropdown-menu::before {

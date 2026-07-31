@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/otp.php';
 require_once __DIR__ . '/../includes/layout.php';
 
 if (isLoggedIn()) { header('Location: ./customer/home.php'); exit; }
@@ -9,6 +10,7 @@ $errors = []; $vals = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $vals = [
         'first'   => trim($_POST['first_name']??''), 'last' => trim($_POST['last_name']??''),
+        'username'=> trim($_POST['username']??''),
         'email'   => trim($_POST['email']??''),      'phone'=> trim($_POST['phone']??''),
         'address' => trim($_POST['address']??''),    'city' => trim($_POST['city']??''),
         'province'=> trim($_POST['province']??''),   'zip'  => trim($_POST['zip']??''),
@@ -18,51 +20,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
     if (!$vals['first'])                                   $errors[]='First name required.';
     if (!$vals['last'])                                    $errors[]='Last name required.';
+    if (!preg_match('/^[a-zA-Z0-9_]{3,32}$/', $vals['username'])) $errors[]='Username must be 3-32 characters (letters, numbers, underscores only).';
     if (!filter_var($vals['email'],FILTER_VALIDATE_EMAIL)) $errors[]='Valid email required.';
-    if (!$vals['phone'])                                   $errors[]='Cellphone number is required.';
+    if (!preg_match('/^09\d{9}$/', $vals['phone']))        $errors[]='Enter a valid PH cellphone number (09XXXXXXXXX).';
     if (strlen($vals['pass'])<8)                           $errors[]='Password must be 8+ characters.';
     if ($vals['pass']!==$vals['confirm'])                  $errors[]='Passwords do not match.';
     if (!$vals['terms'])                                   $errors[]='You must agree to the Terms.';
+    /* Required for buyers - an order can't ship without one. Optional for
+       sellers, who don't receive shipments through this marketplace. */
+    if ($vals['role'] !== 'seller' && (!$vals['address'] || !$vals['city'] || !$vals['province'] || !$vals['zip'])) {
+        $errors[] = 'Please fill in your complete address - orders can\'t be delivered without one.';
+    }
 
     if (empty($errors)) {
         $found = findAccountByEmail($vals['email']);
+        /* Rule 8 - Account Verification: one account per verified contact
+           number, enforced across BOTH Buyer and Seller tables (a DB-level
+           UNIQUE constraint on cellphone_number only guards each table on
+           its own - see UQ_BUYER_PHONE/UQ_SELLER_PHONE in schema.sql) */
+        $foundPhone = findAccountByPhone($vals['phone']);
+        /* Same cross-table gap as phone: username is NOT NULL UNIQUE per
+           table, so it has to be checked across all three tables here too. */
+        $foundUsername = findAccountByUsername($vals['username']);
+
         if ($found) {
             $errors[] = 'Email already registered.';
+        } elseif ($foundPhone) {
+            $errors[] = 'This cellphone number is already registered to another account. One account per verified phone number is allowed.';
+        } elseif ($foundUsername) {
+            $errors[] = 'That username is already taken.';
         } else {
-            $uname = strtolower($vals['first']).'_'.strtolower($vals['last']).'_'.rand(100,999);
             $hash  = hashPassword($vals['pass']);
 
-            if ($vals['role'] === 'seller') {
-                // Sellers have `username` (real name/login) plus an optional
-                // `shop_name` buyers see instead, if set.
-                $newId = DB::insert(
-                    'INSERT INTO SELLER (username,shop_name,password_hash,email,cellphone_number) VALUES (?,?,?,?,?)',
-                    [$uname, trim($_POST['shop_name'] ?? '') ?: null, $hash, $vals['email'], $vals['phone']]
-                );
-                $userType = 'Seller';
-            } else {
-                $newId = DB::insert(
-                    'INSERT INTO BUYER (username,first_name,last_name,password_hash,email,cellphone_number) VALUES (?,?,?,?,?,?)',
-                    [$uname, $vals['first'], $vals['last'], $hash, $vals['email'], $vals['phone']]
-                );
-                $userType = 'Buyer';
+            try {
+                if ($vals['role'] === 'seller') {
+                    /* Sellers have `username` (real name/login) plus an optional
+                       `shop_name` buyers see instead, if set */
+                    $newId = DB::insert(
+                        'INSERT INTO SELLER (username,shop_name,password_hash,email,cellphone_number) VALUES (?,?,?,?,?)',
+                        [$vals['username'], trim($_POST['shop_name'] ?? '') ?: null, $hash, $vals['email'], $vals['phone']]
+                    );
+                    $userType = 'Seller';
+                } else {
+                    $newId = DB::insert(
+                        'INSERT INTO BUYER (username,first_name,last_name,password_hash,email,cellphone_number) VALUES (?,?,?,?,?,?)',
+                        [$vals['username'], $vals['first'], $vals['last'], $hash, $vals['email'], $vals['phone']]
+                    );
+                    $userType = 'Buyer';
+                }
+            } catch (\PDOException $e) {
+                /* Backstop for a race condition between the checks above and
+                   this INSERT - a UNIQUE constraint (cellphone_number,
+                   username, or email) catches a duplicate here if two
+                   requests slipped through at the same instant */
+                $errors[] = match(true) {
+                    str_contains($e->getMessage(), 'cellphone_number') => 'This cellphone number is already registered to another account.',
+                    str_contains($e->getMessage(), 'username')         => 'That username is already taken.',
+                    default => 'Could not create your account (duplicate email, username, or phone). Please try again.',
+                };
             }
 
-            // Optional address -> ADDRESSES table (user_id/user_type per updated schema)
-            if ($vals['address'] || $vals['city']) {
-                DB::query(
-                    'INSERT INTO ADDRESSES (user_id, user_type, street_address, city, province, zip_code, is_default)
-                     VALUES (?,?,?,?,?,?,1)',
-                    [$newId, $userType, $vals['address'] ?: '-', $vals['city'] ?: '-', $vals['province'] ?: '-', $vals['zip'] ?: '0000']
-                );
+            if (empty($errors)) {
+                /* Optional address -> ADDRESSES table (user_id/user_type per updated schema) */
+                if ($vals['address'] || $vals['city']) {
+                    DB::query(
+                        'INSERT INTO ADDRESSES (user_id, user_type, street_address, city, province, zip_code, is_default)
+                         VALUES (?,?,?,?,?,?,1)',
+                        [$newId, $userType, $vals['address'] ?: '-', $vals['city'] ?: '-', $vals['province'] ?: '-', $vals['zip'] ?: '0000']
+                    );
+                }
+
+                $notifCol = $vals['role'] === 'seller' ? 'seller_id' : 'buyer_id';
+                DB::query("INSERT INTO NOTIFICATIONS ($notifCol,title,message,notification_type) VALUES (?,?,?,?)",
+                    [$newId,'Welcome to ThriftBid!','Your account has been created.','SYSTEM']);
+
+                /* Communication / Account Verification: email OTP instead of
+                   an immediate login. is_verified stays 0 until the buyer or
+                   seller enters the 6-digit code just emailed to them via
+                   generateAndSendOtp() (includes/otp.php) - verified on
+                   verify-email.php, which is where the account actually
+                   logs in for the first time. */
+                generateAndSendOtp($userType, $newId, $vals['email'], $vals['first'] ?: $vals['username'], 'Registration');
+
+                $_SESSION['pending_verification'] = [
+                    'type'  => $userType,          /* 'Buyer' | 'Seller' */
+                    'id'    => $newId,
+                    'email' => $vals['email'],
+                    'name'  => $vals['first'] ?: $vals['username'],
+                ];
+
+                header('Location: verify-email.php'); exit;
             }
-
-            $notifCol = $vals['role'] === 'seller' ? 'seller_id' : 'buyer_id';
-            DB::query("INSERT INTO NOTIFICATIONS ($notifCol,title,message,notification_type) VALUES (?,?,?,?)",
-                [$newId,'Welcome to ThriftBid!','Your account has been created.','SYSTEM']);
-
-            flash('success','Account created! Please log in.');
-            header('Location: login.php'); exit;
         }
     }
 }
@@ -106,22 +154,34 @@ renderHeadRoot('Create Account');
         <div class="tb-form-group"><label class="tb-label">First Name</label><input class="tb-input" name="first_name" type="text" placeholder="First" value="<?= htmlspecialchars($vals['first']??'') ?>" required></div>
         <div class="tb-form-group"><label class="tb-label">Last Name</label><input class="tb-input" name="last_name" type="text" placeholder="Last" value="<?= htmlspecialchars($vals['last']??'') ?>" required></div>
       </div>
+      <div class="tb-form-group">
+        <label class="tb-label">Username</label>
+        <input class="tb-input" name="username" type="text" placeholder="e.g. ana_delacruz" pattern="[a-zA-Z0-9_]{3,32}" maxlength="32" value="<?= htmlspecialchars($vals['username']??'') ?>" required>
+        <p class="opt" style="font-size:11px;color:var(--clr-tertiary);margin-top:4px">3-32 characters, letters/numbers/underscores only. Must be unique across all accounts.</p>
+      </div>
       <div class="tb-form-group"><label class="tb-label">Email Address</label><input class="tb-input" name="email" type="email" placeholder="you@email.com" value="<?= htmlspecialchars($vals['email']??'') ?>" required></div>
-      <div class="tb-form-group"><label class="tb-label">Cellphone Number</label><input class="tb-input" name="phone" type="tel" placeholder="09XXXXXXXXX" value="<?= htmlspecialchars($vals['phone']??'') ?>" required></div>
+      <div class="tb-form-group">
+        <label class="tb-label">Cellphone Number</label>
+        <input class="tb-input" name="phone" type="tel" placeholder="09XXXXXXXXX" pattern="09[0-9]{9}" value="<?= htmlspecialchars($vals['phone']??'') ?>" required>
+        <p class="opt" style="font-size:11px;color:var(--clr-tertiary);margin-top:4px">One account per phone number. This can't be reused across a buyer and a seller account.</p>
+      </div>
 
       <div class="tb-form-group" id="shopNameField" style="display:<?= ($vals['role']??'buyer')==='seller'?'block':'none' ?>">
         <label class="tb-label">Shop Name <span class="opt">(optional — shown to buyers instead of your name)</span></label>
         <input class="tb-input" name="shop_name" type="text" maxlength="100" placeholder="e.g. Leila's Closet" value="<?= htmlspecialchars($_POST['shop_name']??'') ?>">
       </div>
 
-      <!-- Address (optional, feeds the ADDRESSES table) -->
+      <!-- Address, feeds the ADDRESSES table. Required for buyers - an
+           order can't ship without one; optional for sellers, who don't
+           receive shipments through this. -->
+      <p class="tb-label" style="margin-top:4px">Address <span id="addressSectionNote" style="font-weight:400;color:var(--clr-tertiary);text-transform:none;letter-spacing:0"><?= ($vals['role']??'buyer')==='seller' ? 'Optional for sellers.' : ':' ?></span></p>
       <div class="grid grid-cols-2 gap-4">
-        <div class="tb-form-group"><label class="tb-label">Street Address <span class="opt">(optional)</span></label><input class="tb-input" name="address" type="text" value="<?= htmlspecialchars($vals['address']??'') ?>"></div>
-        <div class="tb-form-group"><label class="tb-label">City <span class="opt">(optional)</span></label><input class="tb-input" name="city" type="text" value="<?= htmlspecialchars($vals['city']??'') ?>"></div>
+        <div class="tb-form-group"><label class="tb-label">Street Address</label><input class="tb-input" id="addr_street" name="address" type="text" value="<?= htmlspecialchars($vals['address']??'') ?>" <?= ($vals['role']??'buyer')!=='seller'?'required':'' ?>></div>
+        <div class="tb-form-group"><label class="tb-label">City</label><input class="tb-input" id="addr_city" name="city" type="text" value="<?= htmlspecialchars($vals['city']??'') ?>" <?= ($vals['role']??'buyer')!=='seller'?'required':'' ?>></div>
       </div>
       <div class="grid grid-cols-2 gap-4">
-        <div class="tb-form-group"><label class="tb-label">Province <span class="opt">(optional)</span></label><input class="tb-input" name="province" type="text" value="<?= htmlspecialchars($vals['province']??'') ?>"></div>
-        <div class="tb-form-group"><label class="tb-label">ZIP Code <span class="opt">(optional)</span></label><input class="tb-input" name="zip" type="text" value="<?= htmlspecialchars($vals['zip']??'') ?>"></div>
+        <div class="tb-form-group"><label class="tb-label">Province</label><input class="tb-input" id="addr_province" name="province" type="text" value="<?= htmlspecialchars($vals['province']??'') ?>" <?= ($vals['role']??'buyer')!=='seller'?'required':'' ?>></div>
+        <div class="tb-form-group"><label class="tb-label">ZIP Code</label><input class="tb-input" id="addr_zip" name="zip" type="text" value="<?= htmlspecialchars($vals['zip']??'') ?>" <?= ($vals['role']??'buyer')!=='seller'?'required':'' ?>></div>
       </div>
 
       <div class="grid grid-cols-2 gap-4">
@@ -147,6 +207,10 @@ renderHeadRoot('Create Account');
 </div>
 <script>
 function togglePw(id,btn){const i=document.getElementById(id);const ic=btn.querySelector('.material-symbols-outlined');i.type=i.type==='password'?'text':'password';ic.textContent=i.type==='password'?'visibility':'visibility_off';}
-function styleRoles(){['buyer','seller'].forEach(r=>{const c=document.getElementById('r_'+r).checked;document.getElementById('rc_'+r).style.borderColor=c?'var(--clr-coral)':'var(--clr-outline)';document.getElementById('rc_'+r).style.background=c?'rgba(255,107,107,0.04)':''});document.getElementById('shopNameField').style.display=document.getElementById('r_seller').checked?'block':'none';}
+function styleRoles(){['buyer','seller'].forEach(r=>{const c=document.getElementById('r_'+r).checked;document.getElementById('rc_'+r).style.borderColor=c?'var(--clr-coral)':'var(--clr-outline)';document.getElementById('rc_'+r).style.background=c?'rgba(255,107,107,0.04)':''});document.getElementById('shopNameField').style.display=document.getElementById('r_seller').checked?'block':'none';
+const isBuyer = document.getElementById('r_buyer').checked;
+['addr_street','addr_city','addr_province','addr_zip'].forEach(id=>document.getElementById(id).required=isBuyer);
+document.getElementById('addressSectionNote').textContent = isBuyer ? ':' : 'Optional for sellers.';
+}
 </script>
 </body></html>

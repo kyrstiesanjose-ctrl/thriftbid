@@ -10,7 +10,7 @@ $user    = currentUser();
 $buyerId = $user['buyer_id'] ?? $user['id'];
 $orderId = (int)($_GET['order'] ?? 0);
 
-// Valid buyer-side reasons
+/* Valid buyer-side dispute reasons */
 $BUYER_REASONS = [
     'Item condition misrepresented',
     'Not as described',
@@ -31,7 +31,8 @@ $order = DB::fetch(
 );
 if (!$order) { header('Location: orders.php?tab=receive'); exit; }
 
-// Eligibility window: 7 days from delivery date, or 7 days from shipping date for non-delivery claims.
+/* 7-day window: from delivery date if delivered, otherwise from order
+   date (covers "never arrived" claims where there's no delivery date yet) */
 $referenceDate = $order['delivered_date'] ?? $order['order_date'];
 $daysSince = (time() - strtotime($referenceDate)) / 86400;
 $withinWindow = $daysSince <= 7;

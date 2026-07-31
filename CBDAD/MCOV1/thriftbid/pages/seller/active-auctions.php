@@ -7,20 +7,17 @@ requireLogin('/pages/login.php');
 requireRole(['seller','admin'],'/pages/login.php');
 
 $user     = currentUser();
-$sellerId = $user['seller_id'] ?? $user['id']; // session row IS the seller row now
+$sellerId = $user['seller_id'] ?? $user['id']; /* session row IS the seller row */
 
 $tab     = $_GET['tab'] ?? 'active';
 $created = isset($_GET['created']);
 
-// ------------------------------------------------------------
-// Close auction manually -> pick the winner -> create the ORDER.
-// All of this now lives in sp_close_auction() so admin tools and
-// the seller UI both get the exact same behavior, it still relies
-// on after_order_insert_deactivate_listing (AFTER INSERT ON ORDERS)
-// to deactivate the listing and notify the seller; the procedure
-// only sends the two messages the trigger can't know about (who
-// won, and the seller-facing "closed" summary).
-// ------------------------------------------------------------
+/* Closing an auction manually (pick winner, create the ORDER) lives in
+   sp_close_auction() so admin tools and this seller page get identical
+   behavior. after_order_insert_deactivate_listing (AFTER INSERT ON
+   ORDERS) handles deactivating the listing and notifying the seller;
+   this procedure only sends the two messages that trigger can't know
+   (who won, and the seller-facing "closed" summary). */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['close_auction']) && verifyCsrf($_POST['csrf'] ?? '')) {
     $aid   = (int)$_POST['auction_id'];
     $owns  = DB::fetch('SELECT a.auction_id FROM AUCTIONS a JOIN LISTINGS l ON a.listing_id=l.listing_id WHERE a.auction_id=? AND l.seller_id=?', [$aid, $sellerId]);
@@ -33,21 +30,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['close_auction']) && v
 
 $imgSub = '(SELECT image_url FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id ORDER BY is_primary DESC, image_id ASC LIMIT 1) AS cover_image';
 
-// ------------------------------------------------------------
-// Filters, search by title, filter by category, luxury-only toggle.
-// Applied across all three tabs so the view stays consistent no
-// matter which one you're on.
-// ------------------------------------------------------------
+/* Search by title, category filter, luxury-only toggle - applied
+   identically across all tabs so switching tabs doesn't reset the view */
 $q          = trim($_GET['q'] ?? '');
 $catFilter  = (int)($_GET['cat'] ?? 0);
 $luxuryOnly = isset($_GET['luxury']);
 $statusFilter = in_array($_GET['status'] ?? '', ['active','inactive'], true) ? $_GET['status'] : '';
 
-// Filters from analytics recommendations
-$photoFilter   = $_GET['photo_filter']   ?? '';   // 'low'         -> listings with ≤1 photo
-$detailsFilter = $_GET['details_filter'] ?? '';   // 'incomplete'  -> missing color/gender/material/made_in
-$detailsIncompleteBy = $_GET['incomplete_by'] ?? ''; // color|gender|material|made_in
-$pricingFilter = $_GET['pricing_filter'] ?? '';   // 'inconsistent'-> same product_line, different prices
+/* Arriving from an analytics recommendation card (see analytics.php's
+   Optimization tab) - these narrow the list to flagged listings only */
+$photoFilter   = $_GET['photo_filter']   ?? '';   /* 'low' = listings with <=1 photo */
+$detailsFilter = $_GET['details_filter'] ?? '';   /* 'incomplete' = missing color/gender/material/made_in */
+$detailsIncompleteBy = $_GET['incomplete_by'] ?? ''; /* color|gender|material|made_in */
+$pricingFilter = $_GET['pricing_filter'] ?? '';   /* 'inconsistent' = same product_line, different prices */
 
 $sellerCategories = DB::fetchAll(
     'SELECT DISTINCT c.category_id, c.name FROM CATEGORIES c
@@ -63,7 +58,8 @@ if ($luxuryOnly) { $filterSql .= ' AND pl.tier="High"'; }
 if ($statusFilter === 'active')   { $filterSql .= ' AND l.is_active=1'; }
 if ($statusFilter === 'inactive') { $filterSql .= ' AND l.is_active=0'; }
 
-// Analytics recommendation filters
+/* Same 3 thresholds as analytics.php's recommendation counts - if one
+   changes, the other must too, or the count and this list disagree */
 if ($photoFilter === 'low') {
     $filterSql .= ' AND (SELECT COUNT(*) FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id) <= 1';
 }
@@ -77,7 +73,7 @@ if ($detailsFilter === 'incomplete') {
     } elseif ($detailsIncompleteBy === 'made_in') {
         $filterSql .= " AND (l.made_in IS NULL OR l.made_in='')";
     } else {
-        // No sub-filter: show all incomplete (any missing field)
+        /* No specific field chosen: match any missing field */
         $filterSql .= " AND (l.color IS NULL OR l.color='' OR l.target_gender IS NULL OR l.target_gender=''
                              OR l.material IS NULL OR l.material='' OR l.made_in IS NULL OR l.made_in='')";
     }
@@ -91,9 +87,8 @@ if ($pricingFilter === 'inconsistent') {
     $filterParams[] = $sellerId;
 }
 
-// Groups a flat list of rows (each with a 'created_at' key) into
-// ['January 2026' => [...], 'December 2025' => [...], ...] ordered
-// newest month first, for the "organize by month" view.
+/* Groups listings by month (newest first) for the "organize by month"
+   view - e.g. ['January 2026' => [...], 'December 2025' => [...]] */
 function groupByMonth(array $rows): array {
     $groups = [];
     foreach ($rows as $row) {
@@ -196,7 +191,8 @@ renderHead('My Listings &amp; Auctions');
   </div>
 
   <?php
-  // Show a contextual banner when arriving from an analytics recommendation
+  /* Contextual banner shown only when arriving via an analytics
+     recommendation link (photo_filter/details_filter/pricing_filter) */
   if ($photoFilter === 'low'): ?>
   <div class="tb-alert tb-alert-warning show" style="margin-bottom:16px">
     <span class="material-symbols-outlined icon-sm">image</span>
@@ -259,12 +255,10 @@ renderHead('My Listings &amp; Auctions');
   </form>
 
   <?php
-  // ------------------------------------------------------------
-  // One shared card component for every tab. $stats is a list of
-  // [label, value] column pairs (Highest Bid / Bids / Ends In / Views,
-  // or just Price / Views depending on tab) laid out like a mini table,
-  // plus one primary action and a compact "⋮" menu for the rest.
-  // ------------------------------------------------------------
+  /* Shared card component for every tab. $stats is a list of [label, value]
+     pairs shown like a mini table (Highest Bid/Bids/Ends In/Views for
+     auctions, or just Price/Views for fixed price), plus one primary
+     action button and a compact "..." menu for the rest. */
   $cardIndex = 0;
   function renderListingCard(?string $image, string $badgesHtml, string $title, string $itemDetailsHtml,
                               array $stats, string $primaryHtml, array $menuItems, ?string $clickHref = null): void {
@@ -314,8 +308,8 @@ renderHead('My Listings &amp; Auctions');
   </div>
   <?php }
 
-  // Item ID / Size / Original Price / Selling Price, the same detail
-  // line used under every listing's title, regardless of tab.
+  /* Builds the "ID # / Size / Retail / Selling" detail line shown under
+     every listing's title, the same across all tabs */
   function itemDetailsLine(array $l, string $priceLabel = 'Selling', ?float $priceOverride = null): string {
       $parts = [
           'ID #' . $l['listing_id'],

@@ -8,10 +8,19 @@ requireLogin('../../pages/login.php');
 requireRole(['seller','admin'], '../../pages/login.php');
 
 $user      = currentUser();
-$sellerId  = $user['seller_id'] ?? $user['id']; // session row IS the seller row now
+$sellerId  = $user['seller_id'] ?? $user['id']; /* session row IS the seller row */
 $listingId = (int)($_GET['id'] ?? 0);
 
 if (!$listingId) { header('Location: active-auctions.php?tab=fixed'); exit; }
+
+/* Optional return URL (set by optimization-review.php so editing a
+   flagged listing brings the seller back to that exact filtered list,
+   not the generic My Listings page). Guard against open-redirect: only
+   accept a same-page-relative path, never an absolute/external URL. */
+$returnUrl = $_GET['return'] ?? null;
+if ($returnUrl !== null && (str_contains($returnUrl, '://') || str_starts_with($returnUrl, '//'))) {
+    $returnUrl = null;
+}
 
 function loadListing(int $listingId, int $sellerId): array|false {
     return DB::fetch(
@@ -38,6 +47,24 @@ $hasAuction = !empty($listing['auction_id']);
 $hasBids    = $hasAuction && (DB::fetch('SELECT COUNT(*) c FROM BIDDINGS WHERE auction_id=? AND is_deleted=0', [$listing['auction_id']])['c'] ?? 0) > 0;
 $hasSold    = (bool) DB::fetch('SELECT order_id FROM ORDERS WHERE listing_id=? LIMIT 1', [$listingId]);
 
+/* Item Listing rule: title/category/size/condition/color/material/
+   gender/made-in/price/original price stay editable until someone is
+   actually relying on the listing - the first bid (auction) or the
+   first completed sale. Before that, editing breaks nothing since no
+   buyer has acted on it yet. After that:
+     - a bidder placed a bid based on the stated condition/price, or
+     - an ORDER now references this listing's data, and other pages
+       (receipts, order history, disputes) read that data live, not a
+       frozen snapshot - editing after a sale would silently rewrite
+       what a completed order refers to.
+   Description, photos, and the active/inactive toggle stay editable
+   unconditionally either way, since those never affect a bidder/buyer. */
+$fieldsLocked = $hasBids || $hasSold;
+
+/* How close the auction is to ending, for the "locked within 12h" banner */
+$hoursToEnd = ($hasAuction && $listing['end_time']) ? (strtotime($listing['end_time']) - time()) / 3600 : null;
+$within12h  = $hasAuction && $hoursToEnd !== null && $hoursToEnd < 12;
+
 const UPLOAD_DIR_EDIT = __DIR__ . '/../../uploads/listings/';
 const UPLOAD_URL_EDIT = '/uploads/listings/';
 
@@ -55,38 +82,49 @@ function saveEditPhoto(array $file): ?string {
 $successMsg = '';
 $errors     = [];
 
-// ------------------------------------------------------------
-// Save details
-// ------------------------------------------------------------
+/* Save details */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
-    $title       = trim($_POST['title'] ?? '');
     $description = trim($_POST['description'] ?? '');
-    $catId       = $hasBids ? $listing['category_id'] : (int)($_POST['category_id'] ?? 0);
-    $sizeId      = $hasBids ? $listing['size_id']     : (int)($_POST['size_id'] ?? 0);
-    $condition   = $_POST['condition_grade'] ?? '';
-    $color       = trim($_POST['color'] ?? '');
-    $material    = trim($_POST['material'] ?? '');
-    $targetGender= $_POST['target_gender'] ?? '';
-    $madeIn      = trim($_POST['made_in'] ?? '');
-    $price       = (float)($_POST['price'] ?? 0);
-    $originalPrice = (float)($_POST['original_price'] ?? 0);
     $isActive    = isset($_POST['is_active']) ? 1 : 0;
-    $conditions  = ['Brand New','Like New','Lightly Used','Well Used','Heavily Used'];
 
-    if (!$title) $errors[] = 'Item title is required.';
-    if (!$catId) $errors[] = 'Please select a category.';
-    if (!$sizeId) $errors[] = 'Please select a size.';
-    if (!in_array($condition, $conditions, true)) $errors[] = 'Please select a valid condition.';
-    if (!$hasAuction && $price <= 0) $errors[] = 'Enter a valid price.';
+    if (!$fieldsLocked) {
+        /* Still pre-bid / pre-sale: every field is editable */
+        $title         = trim($_POST['title'] ?? '');
+        $catId         = (int)($_POST['category_id'] ?? 0);
+        $sizeId        = (int)($_POST['size_id'] ?? 0);
+        $condition     = $_POST['condition_grade'] ?? '';
+        $color         = trim($_POST['color'] ?? '');
+        $material      = trim($_POST['material'] ?? '');
+        $targetGender  = $_POST['target_gender'] ?? '';
+        $madeIn        = trim($_POST['made_in'] ?? '');
+        $price         = (float)($_POST['price'] ?? 0);
+        $originalPrice = (float)($_POST['original_price'] ?? 0);
+        $conditions    = ['Brand New','Like New','Lightly Used','Well Used','Heavily Used'];
+
+        if (!$title) $errors[] = 'Item title is required.';
+        if (!$catId) $errors[] = 'Please select a category.';
+        if (!$sizeId) $errors[] = 'Please select a size.';
+        if (!in_array($condition, $conditions, true)) $errors[] = 'Please select a valid condition.';
+        if (!$hasAuction && $price <= 0) $errors[] = 'Enter a valid price.';
+
+        if (empty($errors)) {
+            DB::query(
+                'UPDATE LISTINGS SET title=?, description=?, category_id=?, size_id=?, condition_grade=?, color=?, material=?, target_gender=?, made_in=?, price=?, original_price=?, is_active=? WHERE listing_id=? AND seller_id=?',
+                [$title, $description ?: null, $catId, $sizeId, $condition, $color ?: null, $material ?: null, $targetGender ?: null, $madeIn ?: null,
+                 $hasAuction ? $listing['price'] : $price, $originalPrice > 0 ? $originalPrice : null, $isActive, $listingId, $sellerId]
+            );
+        }
+    } else {
+        /* Locked: only description/active status can change, regardless
+           of whatever was posted for the other fields */
+        DB::query(
+            'UPDATE LISTINGS SET description=?, is_active=? WHERE listing_id=? AND seller_id=?',
+            [$description ?: null, $isActive, $listingId, $sellerId]
+        );
+    }
 
     if (empty($errors)) {
-        DB::query(
-            'UPDATE LISTINGS SET title=?, description=?, category_id=?, size_id=?, condition_grade=?, color=?, material=?, target_gender=?, made_in=?, price=?, original_price=?, is_active=? WHERE listing_id=? AND seller_id=?',
-            [$title, $description ?: null, $catId, $sizeId, $condition, $color ?: null, $material ?: null, $targetGender ?: null, $madeIn ?: null,
-             $hasAuction ? $listing['price'] : $price, $originalPrice > 0 ? $originalPrice : null, $isActive, $listingId, $sellerId]
-        );
-
-        // New photos (appended, not replacing existing ones)
+        /* New photos are appended, not replacing existing ones - always allowed */
         if (!empty($_FILES['new_photos']['tmp_name'][0] ?? '')) {
             foreach ($_FILES['new_photos']['tmp_name'] as $i => $tmp) {
                 if ($tmp === '') continue;
@@ -101,7 +139,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     }
 }
 
-// Delete a single photo (must always keep at least 1)
+/* Delete a single photo (must always keep at least 1) */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_photo'])) {
     $imgId = (int)$_POST['image_id'];
     if (count($images) > 1) {
@@ -115,7 +153,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_photo'])) {
     }
 }
 
-// Make a photo the primary/cover photo
+/* Make a photo the primary/cover photo */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['make_primary'])) {
     $imgId = (int)$_POST['image_id'];
     DB::query('UPDATE LISTING_IMAGES SET is_primary=0 WHERE listing_id=?', [$listingId]);
@@ -123,23 +161,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['make_primary'])) {
     $images = DB::fetchAll('SELECT * FROM LISTING_IMAGES WHERE listing_id=? ORDER BY is_primary DESC, image_id ASC', [$listingId]);
 }
 
-// Deactivate / reactivate
+/* Deactivate / reactivate */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_active'])) {
     $newActive = $listing['is_active'] ? 0 : 1;
     DB::query('UPDATE LISTINGS SET is_active=? WHERE listing_id=? AND seller_id=?', [$newActive, $listingId, $sellerId]);
-    header('Location: edit-listing.php?id='.$listingId.'&updated=1'); exit;
+    header('Location: edit-listing.php?id='.$listingId.'&updated=1' . ($returnUrl ? '&return='.urlencode($returnUrl) : '')); exit;
 }
 
-// Soft-delete (archiving rule: never hard-delete a listing that might be
-// referenced by past ORDERS, set deleted_at instead)
+/* Soft-delete, routed through sp_seller_delete_listing so the 3-tier
+   auction-deletion rule (no bids: free / has bids: reason required +
+   auto dispute filed / within 12h of ending: fully locked) is enforced
+   by the trigger, not re-implemented here. Separate rule from the
+   fields-editability rule above - a listing with bids can still be
+   cancelled (with a reason) even though its fields are now locked. */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_listing'])) {
-    if ($hasBids) {
-        $errors[] = 'Cannot delete a listing with active bids.';
-    } elseif ($hasSold) {
+    if ($hasSold) {
         $errors[] = 'Cannot delete a listing that has already been purchased.';
+    } elseif ($hasBids && trim($_POST['delete_reason'] ?? '') === '') {
+        $errors[] = 'This auction has active bids. Please provide a reason to cancel it.';
     } else {
-        DB::callProc('sp_soft_delete_listing', [$listingId, $sellerId]);
-        header('Location: active-auctions.php?tab=fixed&deleted=1'); exit;
+        try {
+            DB::callProc('sp_seller_delete_listing', [$listingId, $sellerId, trim($_POST['delete_reason'] ?? '')]);
+            header('Location: ' . ($returnUrl ?: 'active-auctions.php?tab=fixed&deleted=1')); exit;
+        } catch (\PDOException $e) {
+            $errors[] = str_contains($e->getMessage(), '45000')
+                ? preg_replace('/^.*45000\s*/', '', $e->getMessage())
+                : 'Could not delete this listing.';
+        }
     }
 }
 
@@ -156,14 +204,18 @@ renderHead('Edit Listing - ' . htmlspecialchars($listing['title']));
 <main class="flex-1 overflow-auto bg-background">
   <div class="max-w-[1400px] mx-auto px-6 py-8">
 
-    <a href="active-auctions.php?tab=<?= $hasAuction ? 'active' : 'fixed' ?>" class="inline-flex items-center gap-1 text-sm text-tertiary mb-5">
+    <a href="<?= $returnUrl ?: 'active-auctions.php?tab=' . ($hasAuction ? 'active' : 'fixed') ?>" class="inline-flex items-center gap-1 text-sm text-tertiary mb-5">
       <span class="material-symbols-outlined text-sm">arrow_back</span>Back to My Listings
     </a>
 
     <header class="flex items-start justify-between gap-4 flex-wrap mb-6">
       <div>
         <h1 class="text-3xl font-bold text-on-surface" style="font-family:'Hanken Grotesk',sans-serif">Edit Listing</h1>
-        <p class="text-tertiary mt-1">Update your listing details below.</p>
+        <p class="text-tertiary mt-1">
+          <?= $fieldsLocked
+              ? 'Core details are locked because this listing has ' . ($hasSold ? 'already sold' : 'active bids') . '. You can still add photos or update the description.'
+              : 'This listing hasn\'t sold or received any bids yet, so every field below is still editable.' ?>
+        </p>
       </div>
       <div class="flex items-center gap-2">
         <span class="px-3 py-1 rounded-full text-xs font-bold <?= $listing['is_active'] ? 'bg-green-600 text-white' : 'bg-surface-container text-tertiary' ?>">
@@ -198,12 +250,24 @@ renderHead('Edit Listing - ' . htmlspecialchars($listing['title']));
           &bull; Ends: <strong><?= $listing['end_time'] ? date('M d, Y h:i A', strtotime($listing['end_time'])) : 'N/A' ?></strong>
         </span>
       </div>
-      <?php if ($hasBids): ?>
+      <?php if ($within12h): ?>
+      <p class="text-xs text-error mt-2 flex items-center gap-1 font-semibold">
+        <span class="material-symbols-outlined text-sm">lock</span>
+        This auction ends within 12 hours and can no longer be cancelled or deleted, with or without a reason.
+      </p>
+      <?php elseif ($hasBids): ?>
       <p class="text-xs text-tertiary mt-2 flex items-center gap-1">
         <span class="material-symbols-outlined text-sm">info</span>
-        This auction has active bids. Title, description, and photos can still be edited. Category, size, and price cannot be changed.
+        This auction has active bids — core details are locked, and cancelling it now requires a reason that will be shown to the highest bidder.
       </p>
       <?php endif; ?>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($fieldsLocked): ?>
+    <div class="p-4 rounded-xl mb-6 bg-surface-container flex items-center gap-2 text-xs text-tertiary">
+      <span class="material-symbols-outlined text-sm">lock</span>
+      Title, category, size, condition, color, material, gender, made-in, and price are locked because this listing has <?= $hasSold ? 'already sold' : 'active bids' ?>. Only the description, photos, and active/inactive status can be changed here.
     </div>
     <?php endif; ?>
 
@@ -254,11 +318,15 @@ renderHead('Edit Listing - ' . htmlspecialchars($listing['title']));
 
           <section class="bg-white border border-outline-variant rounded-xl p-6 space-y-4">
             <div class="space-y-1">
-              <label class="block text-sm font-medium text-on-surface">Item Title <span class="text-thrift-coral">*</span></label>
+              <label class="block text-sm font-medium text-on-surface">Item Title <?php if (!$fieldsLocked): ?><span class="text-thrift-coral">*</span><?php endif; ?></label>
+              <?php if ($fieldsLocked): ?>
+              <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container text-tertiary" type="text" value="<?= htmlspecialchars($listing['title']) ?>" disabled>
+              <?php else: ?>
               <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm" name="title" type="text" value="<?= htmlspecialchars($listing['title']) ?>" maxlength="200" required>
+              <?php endif; ?>
             </div>
             <div class="space-y-1">
-              <label class="block text-sm font-medium text-on-surface">Description <span class="text-tertiary font-normal">(optional)</span></label>
+              <label class="block text-sm font-medium text-on-surface">Description <span class="text-tertiary font-normal">(always editable)</span></label>
               <textarea class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm" name="description" rows="6"><?= htmlspecialchars($listing['description'] ?? '') ?></textarea>
             </div>
           </section>
@@ -267,12 +335,43 @@ renderHead('Edit Listing - ' . htmlspecialchars($listing['title']));
             <h2 class="font-bold text-sm mb-1 text-tertiary uppercase tracking-wide">Category &amp; Condition</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
 
+              <?php if ($fieldsLocked): ?>
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface">Category</label>
+                <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container text-tertiary" type="text" value="<?= htmlspecialchars($listing['cat_name']) ?>" disabled>
+              </div>
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface">Size</label>
+                <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container text-tertiary" type="text" value="<?= htmlspecialchars((string) (DB::fetch('SELECT size_value FROM CATEGORY_SIZES WHERE size_id=?', [$listing['size_id']])['size_value'] ?? '')) ?>" disabled>
+              </div>
+              <div class="space-y-1 md:col-span-2">
+                <label class="block text-sm font-medium text-on-surface">Condition</label>
+                <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container text-tertiary" type="text" value="<?= htmlspecialchars($listing['condition_grade']) ?>" disabled>
+              </div>
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface">Color</label>
+                <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container text-tertiary" type="text" value="<?= htmlspecialchars($listing['color'] ?? '—') ?>" disabled>
+              </div>
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface">Material</label>
+                <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container text-tertiary" type="text" value="<?= htmlspecialchars($listing['material'] ?? '—') ?>" disabled>
+              </div>
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface">Target Gender</label>
+                <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container text-tertiary" type="text" value="<?= htmlspecialchars($listing['target_gender'] ?? '—') ?>" disabled>
+              </div>
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface">Made In</label>
+                <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container text-tertiary" type="text" value="<?= htmlspecialchars($listing['made_in'] ?? '—') ?>" disabled>
+              </div>
+
+              <?php else: ?>
               <?php
-              function tb_dropdown_edit(string $name, string $id, string $placeholder, array $options, $selected, bool $required = false, bool $disabled = false): void {
+              function tb_dropdown_edit(string $name, string $id, string $placeholder, array $options, $selected, bool $required = false): void {
                   $selectedLabel = $placeholder;
                   foreach ($options as $opt) { if ((string)$opt['value'] === (string)$selected) { $selectedLabel = $opt['label']; break; } }
                   ?>
-                  <div class="tb-dd <?= $disabled ? 'opacity-50 pointer-events-none' : '' ?>" data-name="<?= $name ?>">
+                  <div class="tb-dd" data-name="<?= $name ?>">
                     <button type="button" class="tb-dd-btn">
                       <span class="tb-dd-btn-label"><?= htmlspecialchars($selectedLabel) ?></span>
                       <span class="material-symbols-outlined icon-sm">expand_more</span>
@@ -292,16 +391,14 @@ renderHead('Edit Listing - ' . htmlspecialchars($listing['title']));
                 <label class="block text-sm font-medium text-on-surface">Category <span class="text-thrift-coral">*</span></label>
                 <?php tb_dropdown_edit('category_id', 'categorySelect', 'Select a category',
                   array_map(fn($c)=>['value'=>$c['category_id'],'label'=>$c['name']], $categories),
-                  $listing['category_id'], true, $hasBids); ?>
-                <?php if ($hasBids): ?><p class="text-xs text-tertiary">Locked, auction has active bids.</p><?php endif; ?>
+                  $listing['category_id'], true); ?>
               </div>
 
               <div class="space-y-1">
                 <label class="block text-sm font-medium text-on-surface">Size <span class="text-thrift-coral">*</span></label>
                 <?php tb_dropdown_edit('size_id', 'sizeSelect', 'Select size',
                   array_map(fn($s)=>['value'=>$s['size_id'],'label'=>$s['size_value']], $sizes),
-                  $listing['size_id'], true, $hasBids); ?>
-                <?php if ($hasBids): ?><p class="text-xs text-tertiary">Locked, auction has active bids.</p><?php endif; ?>
+                  $listing['size_id'], true); ?>
               </div>
 
               <div class="space-y-1 md:col-span-2">
@@ -332,52 +429,82 @@ renderHead('Edit Listing - ' . htmlspecialchars($listing['title']));
                 <label class="block text-sm font-medium text-on-surface">Made In <span class="text-tertiary font-normal">(optional)</span></label>
                 <input type="text" name="made_in" value="<?= htmlspecialchars($listing['made_in'] ?? '') ?>" placeholder="e.g. Philippines, Italy" class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm">
               </div>
+              <?php endif; ?>
+
             </div>
           </section>
 
           <section class="bg-white border border-outline-variant rounded-xl p-6 space-y-4">
             <h2 class="font-bold text-sm mb-1 text-tertiary uppercase tracking-wide">Pricing</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <?php if (!$hasAuction): ?>
-            <div class="space-y-1">
-              <label class="block text-sm font-medium text-on-surface">Selling Price (₱) <span class="text-thrift-coral">*</span></label>
-              <div class="relative">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">₱</span>
-                <input class="w-full pl-8 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="price" type="number" min="1" step="0.01" value="<?= $listing['price'] ?>" required>
-              </div>
-            </div>
-            <?php else: ?>
-            <div class="max-w-xs px-4 py-3 bg-surface-container border border-outline-variant rounded-lg text-sm font-bold text-tertiary">
-              <?= convertCurrency((float)$listing['price']) ?> <span class="font-normal text-xs">(auction, can't edit)</span>
-            </div>
-            <?php endif; ?>
 
-            <div class="space-y-1">
-              <label class="block text-sm font-medium text-on-surface">Original Retail Price (₱) <span class="text-tertiary font-normal">(optional)</span></label>
-              <div class="relative">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">₱</span>
-                <input class="w-full pl-8 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="original_price" type="number" min="0" step="0.01" value="<?= $listing['original_price'] ?? '' ?>">
+              <?php if ($fieldsLocked): ?>
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface">Selling Price</label>
+                <div class="max-w-xs px-4 py-3 bg-surface-container border border-outline-variant rounded-lg text-sm font-bold text-tertiary">
+                  <?= convertCurrency((float)$listing['price']) ?>
+                </div>
               </div>
-            </div>
+              <?php if ($listing['original_price']): ?>
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface">Original Retail Price</label>
+                <div class="max-w-xs px-4 py-3 bg-surface-container border border-outline-variant rounded-lg text-sm font-bold text-tertiary">
+                  <?= convertCurrency((float)$listing['original_price']) ?>
+                </div>
+              </div>
+              <?php endif; ?>
+
+              <?php else: ?>
+              <?php if (!$hasAuction): ?>
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface">Selling Price (₱) <span class="text-thrift-coral">*</span></label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">₱</span>
+                  <input class="w-full pl-8 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="price" type="number" min="1" step="0.01" value="<?= $listing['price'] ?>" required>
+                </div>
+              </div>
+              <?php else: ?>
+              <div class="max-w-xs px-4 py-3 bg-surface-container border border-outline-variant rounded-lg text-sm font-bold text-tertiary">
+                <?= convertCurrency((float)$listing['price']) ?> <span class="font-normal text-xs">(auction start price)</span>
+              </div>
+              <?php endif; ?>
+
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface">Original Retail Price (₱) <span class="text-tertiary font-normal">(optional)</span></label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">₱</span>
+                  <input class="w-full pl-8 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="original_price" type="number" min="0" step="0.01" value="<?= $listing['original_price'] ?? '' ?>">
+                </div>
+              </div>
+              <?php endif; ?>
+
             </div>
           </section>
 
           <div class="flex justify-end items-center gap-4">
-            <a href="active-auctions.php?tab=<?= $hasAuction ? 'active' : 'fixed' ?>" class="btn btn-ghost px-6 py-3 rounded-xl text-sm font-medium">Cancel</a>
+            <a href="<?= $returnUrl ?: 'active-auctions.php?tab=' . ($hasAuction ? 'active' : 'fixed') ?>" class="btn btn-ghost px-6 py-3 rounded-xl text-sm font-medium">Cancel</a>
             <button type="submit" class="btn btn-primary px-10 py-3 rounded-xl font-bold"><span class="material-symbols-outlined icon-sm">save</span>Save Changes</button>
           </div>
 
-          <?php if (!$hasBids): ?>
+          <?php if (!$hasSold && !$within12h): ?>
           <section class="bg-white border rounded-xl overflow-hidden" style="border-color:var(--clr-error-bg,#f5e0de)">
             <div class="px-6 py-3" style="background:var(--clr-error-bg,#f5e0de)"><span class="font-bold text-error text-sm">Danger Zone</span></div>
-            <div class="p-6 flex items-center justify-between flex-wrap gap-3">
-              <div>
-                <p class="font-semibold text-sm text-on-surface">Delete this listing</p>
-                <p class="text-xs text-tertiary mt-0.5">
-                  <?= $hasSold ? "This item has order history, so it's archived (hidden) rather than fully removed." : "Permanently hides this listing from buyers." ?>
-                </p>
+            <div class="p-6 flex flex-col gap-3">
+              <div class="flex items-center justify-between flex-wrap gap-3">
+                <div>
+                  <p class="font-semibold text-sm text-on-surface">Delete this listing</p>
+                  <p class="text-xs text-tertiary mt-0.5">
+                    <?= $hasBids ? 'This auction has active bids. A reason is required and the highest bidder will be notified.' : 'Permanently hides this listing from buyers.' ?>
+                  </p>
+                </div>
               </div>
-              <form method="POST" onsubmit="return confirm('Delete this listing? This cannot be undone from the UI.')">
+              <form method="POST" onsubmit="return confirm('Delete this listing? This cannot be undone from the UI.')" class="flex items-end gap-3 flex-wrap">
+                <?php if ($hasBids): ?>
+                <div class="flex-1 min-w-[240px]">
+                  <label class="block text-xs font-medium text-tertiary mb-1">Reason for cancelling (required, shown to the highest bidder)</label>
+                  <input class="w-full border border-outline-variant rounded-lg px-3 py-2 text-sm" name="delete_reason" type="text" maxlength="255" required>
+                </div>
+                <?php endif; ?>
                 <button type="submit" name="delete_listing" value="1" class="btn btn-danger btn-sm">Delete Listing</button>
               </form>
             </div>
@@ -409,6 +536,7 @@ renderHead('Edit Listing - ' . htmlspecialchars($listing['title']));
 .tb-dd-option:hover { background: var(--clr-surface-low, #f7f7f7); }
 </style>
 
+<?php if (!$fieldsLocked): ?>
 <script>
 document.querySelectorAll('.tb-dd').forEach(dd => {
   const btn = dd.querySelector('.tb-dd-btn');
@@ -430,8 +558,7 @@ document.querySelectorAll('.tb-dd').forEach(dd => {
 });
 document.addEventListener('click', () => document.querySelectorAll('.tb-dd-menu.open').forEach(m => m.classList.remove('open')));
 
-<?php if (!$hasBids): ?>
-// Category -> Size dependency (only relevant when editing is still allowed)
+/* Category -> Size dependency: rebuilds the size dropdown when category changes */
 const SIZES_BY_CATEGORY = <?= json_encode((function() {
     $all = DB::fetchAll('SELECT * FROM CATEGORY_SIZES ORDER BY size_id');
     $out = [];
@@ -455,6 +582,6 @@ categoryDd.querySelector('input[type=hidden]').addEventListener('change', functi
   hidden.value = '';
   sizeDd.querySelector('.tb-dd-btn-label').textContent = sizes.length ? 'Select size' : 'No sizes configured';
 });
-<?php endif; ?>
 </script>
+<?php endif; ?>
 </body></html>

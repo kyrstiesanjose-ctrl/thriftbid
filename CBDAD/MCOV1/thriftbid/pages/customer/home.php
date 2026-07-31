@@ -27,7 +27,7 @@ $fixedListings = DB::fetchAll(
      ORDER BY l.created_at DESC LIMIT 8"
 );
 
-// Parent categoriesin  "Browse by Category"
+/* Parent categories shown in "Browse by Category" */
 $parentCats = DB::fetchAll('SELECT DISTINCT parent_category FROM PARENT_CATEGORIES ORDER BY parent_category');
 $catIcons   = [
     'Tops'=>'checkroom','Bottoms'=>'layers','Dresses & Co_ords'=>'dry_cleaning','Footwear'=>'footprint',

@@ -49,9 +49,10 @@ $reviews = loadReviews($sellerId);
 $user    = currentUser();
 $buyerId = $user['buyer_id'] ?? 0;
 
-// Finds the buyer's most recent delivered order for this seller.
-// Duplicate reviews are allowed; uses  the before_review_prevent_duplicate database trigger 
-// handles the rejection and returns the appropriate error message.
+/* Buyer's most recent delivered order with this seller determines review
+   eligibility. Duplicate reviews on the same order are still possible to
+   submit here - the before_review_prevent_duplicate DB trigger rejects
+   them, and the catch block below turns that into a clear error message. */
 $eligibleOrder = null;
 if ($buyerId) {
     $eligibleOrder = DB::fetch(
@@ -60,6 +61,12 @@ if ($buyerId) {
     );
 }
 $canReview = (bool)$eligibleOrder;
+
+/* $hasOrderedFromSeller isn't used to hide the contact block - that's
+   shown to any buyer, same as a storefront's public "contact us". It's
+   there in case a "message" CTA is added later that should only appear
+   once there's an actual order relationship between them. */
+$hasOrderedFromSeller = $buyerId && (bool) DB::fetch('SELECT order_id FROM ORDERS WHERE buyer_id=? AND seller_id=? LIMIT 1', [$buyerId, $sellerId]);
 
 $reviewSuccess = $reviewError = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_review']) && $canReview) {
@@ -98,9 +105,20 @@ renderHead(($seller['shop_name'] ?: $seller['username']) . ' — Seller Profile'
         <h1 style="font-family:'Hanken Grotesk',sans-serif;font-size:var(--fs-headline-md);font-weight:800;color:var(--clr-text)"><?= htmlspecialchars($seller['shop_name'] ?: $seller['username']) ?></h1>
         <?php if ($seller['shop_name']): ?><p style="font-size:11px;color:var(--clr-tertiary)">@<?= htmlspecialchars($seller['username']) ?></p><?php endif; ?>
         <?php if ($seller['is_verified']): ?><span class="tb-badge tb-badge-active">Verified Seller</span><?php endif; ?>
-        <?php if ($seller['seller_status'] !== 'Active'): ?><span class="tb-badge tb-badge-red"><?= $seller['seller_status'] ?></span><?php endif; ?>
+        <?php if ($seller['seller_status'] !== 'Active'): ?><span class="tb-badge tb-badge-red"><?= htmlspecialchars($seller['seller_status']) ?></span><?php endif; ?>
       </div>
       <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">Member since <?= date('M Y', strtotime($seller['joined'])) ?></p>
+
+      <!-- Communication: buyer-visible seller contact info, so a buyer can
+           reach out directly (mirrors the seller-side buyer_profile.php view). -->
+      <div style="display:flex;gap:18px;flex-wrap:wrap;margin-top:10px">
+        <a href="mailto:<?= htmlspecialchars($seller['email']) ?>" style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md);color:var(--clr-coral);text-decoration:none;font-weight:600">
+          <span class="material-symbols-outlined icon-sm">mail</span><?= htmlspecialchars($seller['email']) ?>
+        </a>
+        <span style="display:flex;align-items:center;gap:6px;font-size:var(--fs-label-md);color:var(--clr-text-variant)">
+          <span class="material-symbols-outlined icon-sm">call</span><?= htmlspecialchars($seller['cellphone_number']) ?>
+        </span>
+      </div>
     </div>
     <div style="display:flex;gap:28px;flex-wrap:wrap">
       <?php $stats = [

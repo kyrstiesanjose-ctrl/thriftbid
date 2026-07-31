@@ -5,12 +5,18 @@ require_once __DIR__ . '/../includes/layout.php';
 requireLogin('./login.php');
 
 $user = currentUser();
-// Mark all read
-DB::query('UPDATE NOTIFICATIONS SET is_read=1 WHERE user_id=?', [$user['user_id']]);
+$role = $user['role'] ?? 'buyer';
+/* NOTIFICATIONS has separate buyer_id/seller_id columns, not a generic
+   user_id - admins never get rows here either way, since neither column
+   applies to them. Pick the column that matches whoever's logged in. */
+$idCol = $role === 'seller' ? 'seller_id' : 'buyer_id';
+
+/* Mark all read */
+DB::query("UPDATE NOTIFICATIONS SET is_read=1 WHERE $idCol=?", [$user['id']]);
 
 $notifs = DB::fetchAll(
-    'SELECT * FROM NOTIFICATIONS WHERE user_id=? ORDER BY created_at DESC LIMIT 60',
-    [$user['user_id']]
+    "SELECT * FROM NOTIFICATIONS WHERE $idCol=? ORDER BY created_at DESC LIMIT 60",
+    [$user['id']]
 );
 
 $iconMap = ['BID'=>'gavel','ORDER'=>'package_2','AUCTION'=>'timer','SYSTEM'=>'notifications','PAYMENT'=>'payments','ALERT'=>'warning'];

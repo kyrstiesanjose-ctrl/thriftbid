@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/layout.php';
 requireLogin('./login.php');
 
 $user  = currentUser();
-$role  = $user['role'];               // admin | seller | buyer
+$role  = $user['role'];               /* admin | seller | buyer */
 $table = ['admin'=>'ADMIN','seller'=>'SELLER','buyer'=>'BUYER'][$role];
 $idCol = ['admin'=>'admin_id','seller'=>'seller_id','buyer'=>'buyer_id'][$role];
 $id    = $user['id'];
@@ -24,14 +24,13 @@ if ($role === 'buyer') {
     $spendTrend = DB::fetchAll('SELECT DATE_FORMAT(p.payment_date,"%b") mo,SUM(p.amount_paid) total FROM PAYMENTS p JOIN ORDERS o ON p.order_id=o.order_id WHERE o.buyer_id=? AND p.payment_status="Completed" AND p.payment_date>=DATE_SUB(NOW(),INTERVAL 6 MONTH) GROUP BY MONTH(p.payment_date),DATE_FORMAT(p.payment_date,"%b") ORDER BY MONTH(p.payment_date)', [$id]);
 } elseif ($role === 'seller') {
     $stats['orders'] = DB::fetch('SELECT COUNT(*) c FROM ORDERS WHERE seller_id=?', [$id])['c']??0;
-    $stats['spent']  = DB::fetch('SELECT COALESCE(SUM(p.amount_paid),0) s FROM PAYMENTS p JOIN ORDERS o ON p.order_id=o.order_id WHERE o.seller_id=? AND p.payment_status="Completed"', [$id])['s']??0; // revenue, not spend
+    $stats['spent']  = DB::fetch('SELECT COALESCE(SUM(p.amount_paid),0) s FROM PAYMENTS p JOIN ORDERS o ON p.order_id=o.order_id WHERE o.seller_id=? AND p.payment_status="Completed"', [$id])['s']??0; /* this is seller revenue, key name just reuses the buyer branch's 'spent' */
 }
 
 $successMsg = $errorMsg = '';
 
-// ------------------------------------------------------------
-// Profile details form
-// ------------------------------------------------------------
+/* Profile details form - handles all 3 roles since ADMIN/SELLER/BUYER
+   each have slightly different editable fields */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_profile'])) {
     $username = trim($_POST['username'] ?? '');
     $phone    = trim($_POST['phone'] ?? '');
@@ -50,15 +49,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_profile'])) {
         $errorMsg = 'Username already taken.';
     } else {
         if ($role === 'seller') {
-            // Sellers have a `username` (their real name/login) and an
-            // optional `shop_name` (what buyers see instead, if set).
+            /* Sellers have a `username` (their real name/login) and an
+               optional `shop_name` (what buyers see instead, if set) */
             DB::query('UPDATE SELLER SET username=?, shop_name=?, cellphone_number=? WHERE seller_id=?',
                 [$username, trim($_POST['shop_name'] ?? '') ?: null, $phone ?: $profile['cellphone_number'], $id]);
         } elseif ($role === 'buyer') {
             if (!$firstName || !$lastName) { $errorMsg = 'First and last name are required.'; }
             else DB::query('UPDATE BUYER SET username=?, first_name=?, last_name=?, cellphone_number=? WHERE buyer_id=?',
                 [$username, $firstName, $lastName, $phone ?: $profile['cellphone_number'], $id]);
-        } else { // admin
+        } else { /* admin */
             if (!$firstName || !$lastName) { $errorMsg = 'First and last name are required.'; }
             else DB::query('UPDATE ADMIN SET username=?, first_name=?, last_name=? WHERE admin_id=?', [$username, $firstName, $lastName, $id]);
         }
@@ -73,7 +72,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_profile'])) {
                         [$id, ucfirst($role), $street ?: '-', $city ?: '-', $province ?: '-', $zip ?: '0000']);
                 }
             }
-            // Refresh the session copy so the navbar/greeting update immediately
+            /* Refresh the session copy so the navbar/greeting update immediately,
+               without needing the user to log out and back in */
             $_SESSION['auth']['username'] = $username;
             if (isset($_SESSION['auth']['first_name'])) $_SESSION['auth']['first_name'] = $firstName;
             flash('profile_success', 'Profile updated.');
@@ -82,9 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_profile'])) {
     }
 }
 
-// ------------------------------------------------------------
-// Password change
-// ------------------------------------------------------------
+/* Password change */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_password'])) {
     $current = $_POST['current_password'] ?? '';
     $new     = $_POST['new_password'] ?? '';
@@ -269,6 +267,7 @@ renderHeadRoot('My Profile');
             ['href'=>'./customer/orders.php?tab=cart','icon'=>'shopping_cart','label'=>'My Cart'],
             ['href'=>'./notifications.php','icon'=>'notifications','label'=>'Notifications'],
             ['href'=>'./customer/live-bids.php','icon'=>'gavel','label'=>'Live Auctions'],
+            ['href'=>'./customer/browsing-history.php','icon'=>'history','label'=>'Browsing History'],
           ],
           'seller' => [
             ['href'=>'./seller/active-auctions.php','icon'=>'storefront','label'=>'My Listings'],
