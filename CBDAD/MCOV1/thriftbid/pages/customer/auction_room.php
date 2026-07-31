@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bid_amount'])) {
             /* SQLSTATE 45000 = the SIGNAL raised by before_bid_validate_amount
                ("auction closed" or "bid too low") - surfaced plainly here */
             $bidError = str_contains($e->getMessage(), '45000')
-                ? preg_replace('/^.*45000\s*/', '', $e->getMessage())
+                ? preg_replace('/^.*45000\]:\s*(<<[^>]+>>:\s*)?\d*\s*/', '', $e->getMessage())
                 : 'Could not place bid. Please try again.';
         }
     }

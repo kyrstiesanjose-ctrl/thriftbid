@@ -185,7 +185,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_listing'])) {
             header('Location: ' . ($returnUrl ?: 'active-auctions.php?tab=fixed&deleted=1')); exit;
         } catch (\PDOException $e) {
             $errors[] = str_contains($e->getMessage(), '45000')
-                ? preg_replace('/^.*45000\s*/', '', $e->getMessage())
+                ? preg_replace('/^.*45000\]:\s*(<<[^>]+>>:\s*)?\d*\s*/', '', $e->getMessage())
                 : 'Could not delete this listing.';
         }
     }

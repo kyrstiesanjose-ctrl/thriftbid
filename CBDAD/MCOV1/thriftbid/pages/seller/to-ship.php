@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['ship_order']) && verify
                 flushEmailQueue(3);
             } catch (\PDOException $e) {
                 $errorMsg = str_contains($e->getMessage(), '45000')
-                    ? preg_replace('/^.*45000\s*/', '', $e->getMessage())
+                    ? preg_replace('/^.*45000\]:\s*(<<[^>]+>>:\s*)?\d*\s*/', '', $e->getMessage())
                     : 'Could not update shipment status.';
             }
         }
