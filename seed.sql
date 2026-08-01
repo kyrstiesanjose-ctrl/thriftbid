@@ -28,35 +28,35 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ADMIN (password: Password123!)
 -- ------------------------------------------------------------
 INSERT INTO ADMIN (username, first_name, last_name, email, password_hash) VALUES
-('admin_root', 'Admin', 'Root', 'admin@gmail.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
-('admin_mod1', 'Jane', 'Ramos', 'mod1@gmail.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
-('admin_mod2', 'Carlo', 'Diaz', 'mod2@gmail.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
-('admin_mod3', 'Sophia', 'Lim', 'mod3@gmail.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
-('admin_mod4', 'Marco', 'Reyes', 'mod4@gmail.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a');
+('kyrstie_sanjose', 'Kyrstie', 'Sanjose', 'kyrstie_sanjose@dlsu.edu.ph', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
+('admin_mod1', 'Jane', 'Ramos', 'mod1@example.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
+('admin_mod2', 'Carlo', 'Diaz', 'mod2@example.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
+('admin_mod3', 'Sophia', 'Lim', 'mod3@example.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a'),
+('admin_mod4', 'Marco', 'Reyes', 'mod4@example.com', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a');
 
 -- ------------------------------------------------------------
 -- SELLER (password: Password123!)
 -- ------------------------------------------------------------
 INSERT INTO SELLER (username, shop_name, password_hash, email, cellphone_number, is_verified, ig_follower_count, seller_status, offense_count) VALUES
-('seller_leila', 'Leila\'s Closet', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'seller_leila@gmail.com', '09171234561', 1, 6200, 'Active', 0),
-('thrift_marco', 'Marco Thrift Finds', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'marco@gmail.com', '09171234562', 1, 3400, 'Active', 0),
-('vintage_crys', 'Crys Vintage Rack', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'crys@gmail.com', '09171234563', 1, 1200, 'Active', 0),
-('closet_jhen', NULL, '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'jhen@gmail.com', '09171234564', 0, 850, 'Active', 0),
-('preloved_ken', 'Preloved by Ken', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'ken@gmail.com', '09171234565', 1, 2100, 'Active', 0),
-('rack_aya', NULL, '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'aya@gmail.com', '09171234566', 1, 400, 'Active', 0);
+('seller_lola', 'Lola\'s Closet', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'seller_lola@example.com', '09171234561', 1, 6200, 'Active', 0),
+('mintea.peaz', 'Mintea Thrifty', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'mintea.peaz@gmail.com', '09171234562', 1, 3400, 'Active', 0),
+('vintage_crys', 'Crys Vintage Rack', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'crys@example.com', '09171234563', 1, 1200, 'Active', 0),
+('closet_jhen', NULL, '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'jhen@example.com', '09171234564', 0, 850, 'Active', 0),
+('preloved_ken', 'Preloved by Ken', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'ken@example.com', '09171234565', 1, 2100, 'Active', 0),
+('daisys.closette', 'Daisy\'s Closette', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'daisys.closette@gmail.com', '09171234566', 1, 400, 'Active', 0);
 
 -- ------------------------------------------------------------
 -- BUYER (password: Password123!)
 -- ------------------------------------------------------------
 INSERT INTO BUYER (username, first_name, last_name, password_hash, email, cellphone_number, is_verified, buyer_status) VALUES
-('ana_delacruz', 'Ana', 'De la Cruz', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'ana_delacruz@gmail.com', '09201234561', 1, 'Active'),
-('kai_rowan', 'Kai', 'Rowan', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'kai_rowan@gmail.com', '09201234562', 1, 'Active'),
-('james_parker', 'James', 'Parker', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'james_parker@gmail.com', '09201234563', 1, 'Active'),
-('riley_avery', 'Riley', 'Avery', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'riley_avery@gmail.com', '09201234564', 0, 'Active'),
-('liza_magsaysay', 'Liza', 'Magsaysay', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'liza_magsaysay@gmail.com', '09201234565', 1, 'Active'),
-('saige_fuentes', 'Saige', 'Fuentes', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'saige_fuentes@gmail.com', '09201234566', 1, 'Active'),
-('john_cruz', 'John', 'Cruz', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'john_cruz@gmail.com', '09201234567', 1, 'Active'),
-('mira_santos', 'Mira', 'Santos', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'mira_santos@gmail.com', '09201234568', 1, 'Active');
+('ana_delacruz', 'Ana', 'De la Cruz', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'ana_delacruz@example.com', '09201234561', 1, 'Active'),
+('leila_lumbao', 'Leila', 'Lumbao', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'leila_lumbao@dlsu.edu.ph', '09201234562', 1, 'Active'),
+('james_parker', 'James', 'Parker', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'james_parker@example.com', '09201234563', 1, 'Active'),
+('riley_avery', 'Riley', 'Avery', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'riley_avery@example.com', '09201234564', 0, 'Active'),
+('liza_magsaysay', 'Liza', 'Magsaysay', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'liza_magsaysay@example.com', '09201234565', 1, 'Active'),
+('saige_fuentes', 'Saige', 'Fuentes', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'saige_fuentes@example.com', '09201234566', 1, 'Active'),
+('dhens_espina', 'Dhens', 'Espina', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'dhens_espina@dlsu.edu.ph', '09201234567', 1, 'Active'),
+('mira_santos', 'Mira', 'Santos', '$2b$10$kioP7lIPAWMOJeunSS97HeUKnKUtRAzmlW8XlyHWyRqvPnBwlAx7a', 'mira_santos@example.com', '09201234568', 1, 'Active');
 
 -- ------------------------------------------------------------
 -- ADDRESSES
@@ -4367,5 +4367,7 @@ SET FOREIGN_KEY_CHECKS = 1;
 -- of this demo data. Not real events - clear the noise so the first
 -- real thing a user does is the first thing they actually see.
 -- ------------------------------------------------------------
--- TRUNCATE TABLE EMAIL_QUEUE;
--- DELETE FROM NOTIFICATIONS;
+TRUNCATE TABLE EMAIL_QUEUE;
+SET SQL_SAFE_UPDATES = 0;
+DELETE FROM NOTIFICATIONS;
+SET SQL_SAFE_UPDATES = 1;

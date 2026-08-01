@@ -48,10 +48,10 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['ship_order']) && verify
                     : 'Order #' . $orderIds[0] . ' marked as shipped!';
                 /* Send the "your order shipped" email right now, instead of
                    waiting on layout.php's opportunistic flush later. */
-                flushEmailQueue();
+                flushEmailQueue(3);
             } catch (\PDOException $e) {
                 $errorMsg = str_contains($e->getMessage(), '45000')
-                    ? preg_replace('/^.*45000\s*/', '', $e->getMessage())
+                    ? preg_replace('/^.*45000\]:\s*(<<[^>]+>>:\s*)?\d*\s*/', '', $e->getMessage())
                     : 'Could not update shipment status.';
             }
         }
