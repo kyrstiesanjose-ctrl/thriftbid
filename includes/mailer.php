@@ -1,9 +1,8 @@
 <?php
 /* ThriftBid - includes/mailer.php
    Sends via Gmail's own SMTP servers (App Password) - Gmail signing its
-   own outgoing mail with its own DKIM key works, unlike a third-party
-   service (e.g. Brevo) trying to send AS gmail.com, which cannot pass
-   Gmail/Yahoo/Microsoft's mandatory sender authentication checks. Send order:
+   own outgoing mail with its own DKIM key works
+   Send order:
      1) Raw-socket SMTP (STARTTLS + AUTH LOGIN) - no PHPMailer/composer needed
      2) PHPMailer, only if separately composer-installed
      3) Native mail() - needs a real MTA on the server
@@ -13,6 +12,18 @@ require_once __DIR__ . '/config.php';
 
 function sendMail(string $toEmail, string $toName, string $subject, string $htmlBody): bool {
     $attempts = [];
+
+    /* Seed/demo accounts use @example.com (an IANA-reserved domain that
+       can never be a real inbox) on purpose, so importing test data or
+       clicking around a demo never burns real send attempts or Gmail's
+       daily sending quota. Swap a specific account's email to a real
+       address in seed.sql (and, if it's one of the login.php quick-login
+       buttons, update that too) whenever you actually want that account
+       to receive real mail - everything else stays permanently inert. */
+    if (preg_match('/@example\.com$/i', $toEmail)) {
+        logMail($toEmail, $subject, $htmlBody, ['Skipped: test/demo address (@example.com), no real send attempted'], true);
+        return true;
+    }
 
     /* 1) Dependency-free raw SMTP */
     if (defined('SMTP_HOST') && SMTP_HOST) {
@@ -191,7 +202,22 @@ function flushEmailQueue(int $limit = 10): void {
         return; /* table not migrated yet, or DB unreachable - fail silently */
     }
 
+    /* Hard wall-clock ceiling for the whole loop, not just one socket
+       read. Each email is a full SMTP round-trip (EHLO/STARTTLS/AUTH/
+       MAIL FROM/RCPT TO/DATA/QUIT) - a per-read timeout alone doesn't
+       bound how long a slow or half-rate-limited server can drag a
+       BATCH out to. Stop early and leave the rest for the next flush,
+       rather than risk PHP's own 120s execution-time limit killing the
+       whole page request. */
+    $startedAt = time();
+    $maxSeconds = 60;
+
     foreach ($pending as $row) {
+        if (time() - $startedAt > $maxSeconds) {
+            error_log('[ThriftBid mailer] flushEmailQueue stopped early after ' . $maxSeconds . 's - remaining rows will retry next flush.');
+            break;
+        }
+
         $isSeller = $row['recipient_type'] === 'Seller';
         $table = $isSeller ? 'SELLER' : 'BUYER';
         $idCol = $isSeller ? 'seller_id' : 'buyer_id';

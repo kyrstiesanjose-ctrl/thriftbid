@@ -696,6 +696,7 @@ BEGIN
     DECLARE v_incr    DECIMAL(10,2);
     DECLARE v_status  VARCHAR(20);
     DECLARE v_end     DATETIME;
+    DECLARE v_last_bidder INT;
 
     SELECT current_highest_bid, min_increment, status, end_time
       INTO v_highest, v_incr, v_status, v_end
@@ -707,6 +708,22 @@ BEGIN
 
     IF NEW.bid_amount < (v_highest + v_incr) THEN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Bid does not meet the minimum increment requirement.';
+    END IF;
+
+    /* Blocks a bidder from re-bidding against themselves while already
+       leading - not proxy/auto-bidding, so raising your own price with
+       no one else in between serves no purpose. Must be outbid by
+       someone else first. v_last_bidder is whoever placed the most
+       recent non-deleted bid (the current leader), not just "has this
+       buyer bid here before" - that would wrongly block a legitimate
+       re-bid after being outbid. NULL on the first bid, which never
+       matches NEW.buyer_id, so the first bid is always allowed. */
+    SELECT buyer_id INTO v_last_bidder
+      FROM BIDDINGS WHERE auction_id = NEW.auction_id AND is_deleted = 0
+      ORDER BY bid_time DESC, bidding_id DESC LIMIT 1;
+
+    IF v_last_bidder = NEW.buyer_id THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'You are already the highest bidder on this auction.';
     END IF;
 END$$
 

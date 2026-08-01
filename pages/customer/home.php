@@ -118,7 +118,7 @@ renderHead('Home');
           <div class="tb-listing-title"><?= htmlspecialchars($a['title']) ?></div>
           <p style="font-size:10px;color:var(--clr-tertiary);margin-bottom:2px;margin-top:2px">Current Bid</p>
           <div class="tb-listing-price"><?= convertCurrency((float)$a['current_highest_bid']) ?></div>
-          <div class="tb-listing-meta"><?= htmlspecialchars($a['cat_name']) ?> &bull; <?= formatTimeLeft($a['end_time']) ?></div>
+          <div class="tb-listing-meta"><?= htmlspecialchars($a['cat_name']) ?> &bull; <span data-end="<?= strtotime($a['end_time']) ?>"><?= formatTimeLeft($a['end_time']) ?></span></div>
           <div class="tb-listing-cta">
             <a href="auction_room.php?id=<?= $a['auction_id'] ?>" class="btn btn-yellow btn-sm btn-full">Join Bid</a>
           </div>
@@ -164,4 +164,17 @@ renderHead('Home');
 
 </main>
 <?php renderFooter(); ?>
+<script>
+document.querySelectorAll('[data-end]').forEach(el => {
+  function upd() {
+    const d = parseInt(el.dataset.end) - Math.floor(Date.now()/1000);
+    if (d <= 0) { el.textContent='Ended'; return; }
+    const h=Math.floor(d/3600),m=Math.floor((d%3600)/60),s=d%60;
+    const hh=Math.floor((d%86400)/3600); // remainder hours within the current day
+    el.textContent = d>=86400 ? Math.floor(d/86400)+'d '+hh+'h '+m+'m'
+                               : String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  }
+  setInterval(upd,1000); upd();
+});
+</script>
 </body></html>

@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bid_amount'])) {
             /* SQLSTATE 45000 = the SIGNAL raised by before_bid_validate_amount
                ("auction closed" or "bid too low") - surfaced plainly here */
             $bidError = str_contains($e->getMessage(), '45000')
-                ? preg_replace('/^.*45000\s*/', '', $e->getMessage())
+                ? preg_replace('/^.*45000\]:\s*(<<[^>]+>>:\s*)?\d*\s*/', '', $e->getMessage())
                 : 'Could not place bid. Please try again.';
         }
     }
@@ -184,7 +184,7 @@ renderHead($auction['title'] . ' - Auction Room');
             </p>
           </div>
         </div>
-        <div style="display:flex;gap:16px;font-size:var(--fs-label-sm);color:var(--clr-tertiary);padding-top:10px;border-top:1px solid var(--clr-outline)">
+        <div style="display:flex;gap:16px;font-size:var(--fs-label-sm);color:var(--clr-text);padding-top:10px;border-top:1px solid var(--clr-outline);font-weight:700">
           <span><?= $bidCount ?> bid<?= $bidCount!==1?'s':'' ?></span>
           <span>&bull;</span>
           <span>Min increment: <?= convertCurrency((float)$auction['min_increment']) ?></span>
@@ -301,7 +301,8 @@ if (cdEl) {
     const d = endTs - Math.floor(Date.now()/1000);
     if (d <= 0) { cdEl.textContent='Ended'; return; }
     const h=Math.floor(d/3600),m=Math.floor((d%3600)/60),s=d%60;
-    cdEl.textContent = d>=86400 ? Math.floor(d/86400)+'d '+h+'h' : String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    const hh=Math.floor((d%86400)/3600); /* remainder hours within the current day, for the "Xd Yh" format below */
+    cdEl.textContent = d>=86400 ? Math.floor(d/86400)+'d '+hh+'h '+m+'m' : String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
     if (d < 3600) cdEl.style.color='var(--clr-error)';
   }
   setInterval(tick, 1000); tick();

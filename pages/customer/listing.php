@@ -71,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['buy_now'])) {
 
         /* Send the seller's "new order" email right now, instead of
            waiting on layout.php's opportunistic flush later. */
-        flushEmailQueue();
+        flushEmailQueue(3);
 
         header('Location: ../customer/checkout.php?order='.$orderId); exit;
     }

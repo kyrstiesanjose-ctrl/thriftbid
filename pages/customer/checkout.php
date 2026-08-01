@@ -179,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_otp'])) {
                 /* Send the payment-confirmation emails right now, instead of
                    waiting on layout.php's opportunistic flush on some later
                    page load - that dependency turned out to be unreliable. */
-                flushEmailQueue();
+                flushEmailQueue(3);
             } catch (\Throwable $e) {
                 $pdo->rollBack();
                 $errorMsg = 'Something went wrong processing your payment: ' . $e->getMessage();
