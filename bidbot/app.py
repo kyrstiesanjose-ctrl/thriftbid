@@ -2,6 +2,7 @@ import os
 import json
 from datetime import datetime
 from typing import List, Dict, Any
+from dotenv import load_dotenv
 
 from dotenv import load_dotenv
 from mysql.connector import pooling
@@ -11,6 +12,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from groq import Groq
+
 
 load_dotenv()
 
@@ -27,6 +29,7 @@ app.add_middleware(
 )
 
 client = Groq(api_key=os.environ["GROQ_API_KEY"])
+
 
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 chroma_client = chromadb.PersistentClient(path=os.environ.get("CHROMA_PATH", "./chroma_db"))
