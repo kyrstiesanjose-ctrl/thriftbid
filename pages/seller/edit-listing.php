@@ -136,6 +136,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         $listing = loadListing($listingId, $sellerId);
         $images  = DB::fetchAll('SELECT * FROM LISTING_IMAGES WHERE listing_id=? ORDER BY is_primary DESC, image_id ASC', [$listingId]);
         $successMsg = 'Listing updated successfully.';
+
+        // Instantly reflect the change (price/description/active status/etc.)
+        // in BidBot's search index instead of waiting for the next full rebuild.
+        notifyBidBotReindex($listingId);
     }
 }
 

@@ -75,6 +75,24 @@ $dateSql  = ''; $dateParams = [];
 if ($dateFrom) { $dateSql .= ' AND d.opened_at >= ?'; $dateParams[] = $dateFrom . ' 00:00:00'; }
 if ($dateTo)   { $dateSql .= ' AND d.opened_at <= ?'; $dateParams[] = $dateTo . ' 23:59:59'; }
 
+// Pagination — same pattern as listings.php: page number from the URL,
+// fixed page size, offset computed from the two, plus a COUNT(*) query
+// (same WHERE clause, no LIMIT) so we know how many pages exist total.
+$page   = max(1,(int)($_GET['page'] ?? 1));
+$per    = 20;
+$offset = ($page-1)*$per;
+
+$total = DB::fetch(
+    "SELECT COUNT(*) c
+     FROM DISPUTES d
+     JOIN ORDERS o    ON d.order_id=o.order_id
+     JOIN LISTINGS l  ON o.listing_id=l.listing_id
+     JOIN BUYER bu    ON d.buyer_id=bu.buyer_id
+     JOIN SELLER se   ON d.seller_id=se.seller_id
+     WHERE d.status=?$dateSql",
+    array_merge([$filter], $dateParams)
+)['c'] ?? 0;
+
 $disputes = DB::fetchAll(
     "SELECT d.*, o.order_id, l.title, l.listing_id,
             bu.username AS buyer_name, bu.email AS buyer_email,
@@ -87,11 +105,15 @@ $disputes = DB::fetchAll(
      JOIN SELLER se   ON d.seller_id=se.seller_id
      LEFT JOIN ADMIN admn ON d.assigned_admin_id=admn.admin_id
      WHERE d.status=?$dateSql
-     ORDER BY d.opened_at ASC",
+     ORDER BY d.opened_at ASC
+     LIMIT $per OFFSET $offset",
     array_merge([$filter], $dateParams)
 );
+$totalPages = max(1,ceil($total/$per));
 
 // Oldest-first review queue, grouped by the day the dispute was opened.
+// Grouping only ever runs on the current page's 20 rows now, not the
+// whole filtered set — still fine since it's purely a display grouping.
 function groupDisputesByDate(array $rows): array {
     $groups = [];
     foreach ($rows as $row) {
@@ -136,7 +158,7 @@ renderHead('Disputes');
     </div>
     <button type="submit" class="btn btn-primary btn-sm">Filter</button>
     <?php if ($dateFrom || $dateTo): ?><a href="?status=<?= urlencode($filter) ?>" class="btn btn-ghost btn-sm">Clear</a><?php endif; ?>
-    <span style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-left:auto">Oldest disputes shown first</span>
+    <span style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-left:auto">Oldest disputes shown first &bull; <?= number_format($total) ?> total</span>
   </form>
 
   <?php if (empty($disputes)): ?>
@@ -212,6 +234,16 @@ renderHead('Disputes');
     <?php endforeach; ?>
   </div>
   <?php endforeach; endif; ?>
+
+  <?php if ($totalPages>1): ?>
+  <div class="tb-pagination">
+    <p class="tb-pagination-info">Page <?=$page?> of <?=$totalPages?> &bull; <?= number_format($total) ?> total</p>
+    <div class="tb-pagination-btns">
+      <?php if($page>1): ?><a href="?page=<?=$page-1?>&status=<?=urlencode($filter)?>&from=<?=urlencode($dateFrom)?>&to=<?=urlencode($dateTo)?>" class="tb-pagination-btn">Prev</a><?php endif; ?>
+      <?php if($page<$totalPages): ?><a href="?page=<?=$page+1?>&status=<?=urlencode($filter)?>&from=<?=urlencode($dateFrom)?>&to=<?=urlencode($dateTo)?>" class="tb-pagination-btn">Next</a><?php endif; ?>
+    </div>
+  </div>
+  <?php endif; ?>
 
 </div>
 </main>

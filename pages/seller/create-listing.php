@@ -178,6 +178,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 [$sellerId, 'Listing Created!', 'Your item "' . $vals['title'] . '" is now live on ThriftBid.', 'SYSTEM']);
         }
 
+        // Instantly make this listing searchable via BidBot (harmless if
+        // it's a pending-authentication luxury item - the endpoint checks
+        // is_active itself and simply won't index it yet in that case).
+        notifyBidBotReindex($listingId);
+
         header('Location: ' . BASE_URL . '/pages/seller/active-auctions.php?created=1');
         exit;
     }

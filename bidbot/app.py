@@ -2,17 +2,17 @@ import os
 import json
 from datetime import datetime
 from typing import List, Dict, Any
-from dotenv import load_dotenv
 
 from dotenv import load_dotenv
 from mysql.connector import pooling
 import chromadb
 from sentence_transformers import SentenceTransformer
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from groq import Groq
 
+from indexing import SINGLE_LISTING_QUERY, listing_to_document, listing_to_metadata
 
 load_dotenv()
 
@@ -30,21 +30,18 @@ app.add_middleware(
 
 client = Groq(api_key=os.environ["GROQ_API_KEY"])
 
-
 embedder = SentenceTransformer("all-MiniLM-L6-v2")
 chroma_client = chromadb.PersistentClient(path=os.environ.get("CHROMA_PATH", "./chroma_db"))
 collection = chroma_client.get_or_create_collection("thriftbid_listings")
 
-from db_tunnel import get_tunnel
-
-_tunnel = get_tunnel()
+from db_tunnel import get_db_port
 
 db_pool = pooling.MySQLConnectionPool(
     pool_name="thriftbid_pool",
     pool_size=5,
     pool_reset_session=True,
     host="127.0.0.1",
-    port=_tunnel.local_bind_port,
+    port=get_db_port(),
     user=os.environ.get("DB_USER", "root"),
     password=os.environ.get("DB_PASSWORD", ""),
     database=os.environ.get("DB_NAME", "thriftbid_db2"),
@@ -53,6 +50,61 @@ db_pool = pooling.MySQLConnectionPool(
 
 class ChatRequest(BaseModel):
     messages: List[Dict[str, Any]]
+
+
+class ReindexRequest(BaseModel):
+    listing_id: int
+
+
+def _require_internal_key(x_internal_key: str = Header(default="")):
+    """
+    Simple shared-secret check for /api/reindex-listing. This endpoint is
+    meant to be called only by our own PHP app right after a listing is
+    saved - not by the public - so it's gated separately from /api/chat.
+    """
+    expected = os.environ.get("INTERNAL_API_KEY", "")
+    if not expected or x_internal_key != expected:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+
+@app.post("/api/reindex-listing")
+def reindex_listing(req: ReindexRequest, _auth=Depends(_require_internal_key)):
+    """
+    Indexes (or removes) exactly one listing immediately, instead of
+    waiting for the next full build_index.py run. Called by PHP right
+    after a listing is created, edited, (de)activated, or soft-deleted.
+    """
+    conn = None
+    try:
+        conn = db_pool.get_connection()
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute(SINGLE_LISTING_QUERY, (req.listing_id,))
+        row = cursor.fetchone()
+
+        # Not found, deactivated, or soft-deleted - drop it from search
+        # instead of indexing it (harmless if it was never indexed).
+        if not row or row["is_active"] != 1 or row["deleted_at"] is not None:
+            try:
+                collection.delete(ids=[str(req.listing_id)])
+            except Exception:
+                pass
+            return {"status": "removed", "listing_id": req.listing_id}
+
+        doc = listing_to_document(row)
+        metadata = listing_to_metadata(row)
+        embedding = embedder.encode([doc]).tolist()
+        collection.upsert(
+            documents=[doc], embeddings=embedding, ids=[str(req.listing_id)], metadatas=[metadata]
+        )
+        return {"status": "indexed", "listing_id": req.listing_id}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        if conn is not None and conn.is_connected():
+            cursor.close()
+            conn.close()
 
 
 def serialize_message(msg):

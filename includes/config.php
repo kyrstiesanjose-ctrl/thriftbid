@@ -33,6 +33,13 @@ define('APP_URL',        $_ENV['APP_URL']        ?? 'http://localhost');
    (e.g. http://your-host:8000/api/chat) if proxying isn't available. */
 define('BIDBOT_API_URL', $_ENV['BIDBOT_API_URL'] ?? '/bidbot-api/chat');
 
+/* Instant single-listing reindex, called right after a listing is
+   created/edited/(de)activated - see includes/bidbot_client.php.
+   BIDBOT_INTERNAL_KEY must match INTERNAL_API_KEY in bidbot/.env, or
+   BidBot will reject the request (401). */
+define('BIDBOT_REINDEX_URL', $_ENV['BIDBOT_REINDEX_URL'] ?? '/bidbot-api/reindex-listing');
+define('BIDBOT_INTERNAL_KEY', $_ENV['BIDBOT_INTERNAL_KEY'] ?? '');
+
 /* Static fallback only - live rates come from currency.php */
 define('EXCHANGE_RATES', [
     'PHP' => 1.0,

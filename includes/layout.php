@@ -4,6 +4,7 @@
 // ============================================================
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/bidbot_widget.php';
+require_once __DIR__ . '/bidbot_client.php';
 
 // Communication: flush any pending order/shipment emails on every page
 // load (cheap no-op query when the queue's empty — see EMAIL_QUEUE in
