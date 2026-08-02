@@ -113,8 +113,9 @@ function renderNavbar(string $active = 'home', bool $sellerMode = false): void {
   <?php endif; ?>
 
   <!-- Brand -->
-  <a href="<?= $homeHref ?>" class="tb-navbar-brand">ThriftBid</a>
-
+<a href="<?= $homeHref ?>" class="tb-navbar-brand">
+  <img src="<?= BASE_URL ?>/public/images/logo-wordmark.png" alt="ThriftBid" style="height:90px;display:block">
+</a>
   <!-- Left nav links -->
   <nav class="tb-nav-links">
     <?php if ($role === 'admin'): ?>
