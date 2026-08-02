@@ -35,7 +35,7 @@ Open PowerShell and run:
 ssh -p 21003 -L 8000:localhost:8000 kyrstie@ccscloud.dlsu.edu.ph
 ```
 
-Enter the password when prompted (ask Anne for it).
+Enter the password when prompted (@Dlsu1234!t).
 
 > ⚠️ **Keep this window open** the whole time you're using the chatbot. Closing it or pressing `Ctrl+C` disconnects the tunnel and breaks the connection.
 
