@@ -53256,3 +53256,847 @@ Skipped: test/demo address (@example.com), no real send attempted
 
 =====
 
+[2026-08-02 15:32:52] To: daisys.closette@gmail.com | Subject: You have a new order on ThriftBid! | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP 5a478bee46e88-3153e06fe9fsm22381433eec.25 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 5a478bee46e88-3153e06fe9fsm22381433eec.25 - gsmtp
+> RCPT TO:<daisys.closette@gmail.com>
+250 2.1.5 OK 5a478bee46e88-3153e06fe9fsm22381433eec.25 - gsmtp
+> DATA
+354 Go ahead 5a478bee46e88-3153e06fe9fsm22381433eec.25 - gsmtp
+250 2.0.0 OK  1785655972 5a478bee46e88-3153e06fe9fsm22381433eec.25 - gsmtp
+> QUIT
+
+
+--- message body ---
+<p>Your listing "<strong>Vintage Heels</strong>" was just ordered by <strong>Mira</strong> (Order #202).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-08-02 15:32:52] To: mira_santos@example.com | Subject: You Won the Auction! Order #202 — Action Required | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Congratulations, you won!</h3><p>Hi Mira, your bid won the auction below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">202</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Vintage Heels</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱138.42</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Daisy&#039;s Closette</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Won On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px"><strong style="color:#c0392b">Please complete payment within 24 hours</strong> or your win will be forfeited and the item re-listed to other bidders.</p></div>
+
+=====
+
+[2026-08-02 15:32:57] To: daisys.closette@gmail.com | Subject: Your Auction Has Ended — Order #202 | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP 5a478bee46e88-3153e06f88fsm23460999eec.20 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 5a478bee46e88-3153e06f88fsm23460999eec.20 - gsmtp
+> RCPT TO:<daisys.closette@gmail.com>
+250 2.1.5 OK 5a478bee46e88-3153e06f88fsm23460999eec.20 - gsmtp
+> DATA
+354 Go ahead 5a478bee46e88-3153e06f88fsm23460999eec.20 - gsmtp
+250 2.0.0 OK  1785655977 5a478bee46e88-3153e06f88fsm23460999eec.20 - gsmtp
+> QUIT
+
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Your auction ended</h3><p>Hi Daisy&#039;s Closette, here's a summary of your closed auction.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">202</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Vintage Heels</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bidder</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Mira</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱138.42</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ended On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px">The winning bidder has 24 hours to complete payment. You'll get a separate email the moment payment clears, with instructions to ship.</p></div>
+
+=====
+
+[2026-08-02 15:33:14] To: ken@example.com | Subject: You have a new order on ThriftBid! | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<p>Your listing "<strong>Oversized Louis Vuitton Bags & Purses</strong>" was just ordered by <strong>Mira</strong> (Order #203).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-08-02 15:33:14] To: mira_santos@example.com | Subject: You Won the Auction! Order #203 — Action Required | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Congratulations, you won!</h3><p>Hi Mira, your bid won the auction below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">203</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Oversized Louis Vuitton Bags &amp; Purses</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱1,003.47</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Preloved by Ken</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Won On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px"><strong style="color:#c0392b">Please complete payment within 24 hours</strong> or your win will be forfeited and the item re-listed to other bidders.</p></div>
+
+=====
+
+[2026-08-02 15:33:14] To: ken@example.com | Subject: Your Auction Has Ended — Order #203 | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Your auction ended</h3><p>Hi Preloved by Ken, here's a summary of your closed auction.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">203</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Oversized Louis Vuitton Bags &amp; Purses</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bidder</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Mira</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱1,003.47</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ended On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px">The winning bidder has 24 hours to complete payment. You'll get a separate email the moment payment clears, with instructions to ship.</p></div>
+
+=====
+
+[2026-08-02 15:33:16] To: crys@example.com | Subject: You have a new order on ThriftBid! | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<p>Your listing "<strong>Oversized Shein Sleeveless</strong>" was just ordered by <strong>Leila</strong> (Order #204).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-08-02 15:33:22] To: leila_lumbao@dlsu.edu.ph | Subject: You Won the Auction! Order #204 — Action Required | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP 5a478bee46e88-3153dd4e666sm35582807eec.4 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 5a478bee46e88-3153dd4e666sm35582807eec.4 - gsmtp
+> RCPT TO:<leila_lumbao@dlsu.edu.ph>
+250 2.1.5 OK 5a478bee46e88-3153dd4e666sm35582807eec.4 - gsmtp
+> DATA
+354 Go ahead 5a478bee46e88-3153dd4e666sm35582807eec.4 - gsmtp
+250 2.0.0 OK  1785656002 5a478bee46e88-3153dd4e666sm35582807eec.4 - gsmtp
+> QUIT
+
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Congratulations, you won!</h3><p>Hi Leila, your bid won the auction below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">204</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Oversized Shein Sleeveless</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱178.35</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Crys Vintage Rack</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Won On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px"><strong style="color:#c0392b">Please complete payment within 24 hours</strong> or your win will be forfeited and the item re-listed to other bidders.</p></div>
+
+=====
+
+[2026-08-02 15:33:22] To: crys@example.com | Subject: Your Auction Has Ended — Order #204 | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Your auction ended</h3><p>Hi Crys Vintage Rack, here's a summary of your closed auction.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">204</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Oversized Shein Sleeveless</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bidder</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Leila</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱178.35</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ended On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px">The winning bidder has 24 hours to complete payment. You'll get a separate email the moment payment clears, with instructions to ship.</p></div>
+
+=====
+
+[2026-08-02 15:33:29] To: crys@example.com | Subject: You have a new order on ThriftBid! | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<p>Your listing "<strong>Cropped Flats</strong>" was just ordered by <strong>Liza</strong> (Order #205).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-08-02 15:33:30] To: liza_magsaysay@example.com | Subject: You Won the Auction! Order #205 — Action Required | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Congratulations, you won!</h3><p>Hi Liza, your bid won the auction below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">205</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Cropped Flats</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱361.05</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Crys Vintage Rack</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Won On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px"><strong style="color:#c0392b">Please complete payment within 24 hours</strong> or your win will be forfeited and the item re-listed to other bidders.</p></div>
+
+=====
+
+[2026-08-02 15:33:30] To: crys@example.com | Subject: Your Auction Has Ended — Order #205 | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Your auction ended</h3><p>Hi Crys Vintage Rack, here's a summary of your closed auction.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">205</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Cropped Flats</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bidder</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Liza</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱361.05</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ended On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px">The winning bidder has 24 hours to complete payment. You'll get a separate email the moment payment clears, with instructions to ship.</p></div>
+
+=====
+
+[2026-08-02 15:33:43] To: daisys.closette@gmail.com | Subject: You have a new order on ThriftBid! | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP a92af1059eb24-13fab13255esm17516949c88.3 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK a92af1059eb24-13fab13255esm17516949c88.3 - gsmtp
+> RCPT TO:<daisys.closette@gmail.com>
+250 2.1.5 OK a92af1059eb24-13fab13255esm17516949c88.3 - gsmtp
+> DATA
+354 Go ahead a92af1059eb24-13fab13255esm17516949c88.3 - gsmtp
+250 2.0.0 OK  1785656023 a92af1059eb24-13fab13255esm17516949c88.3 - gsmtp
+> QUIT
+
+
+--- message body ---
+<p>Your listing "<strong>Everyday H&M Co-ords</strong>" was just ordered by <strong>Ana</strong> (Order #206).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-08-02 15:33:43] To: ana_delacruz@example.com | Subject: You Won the Auction! Order #206 — Action Required | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Congratulations, you won!</h3><p>Hi Ana, your bid won the auction below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">206</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Everyday H&amp;M Co-ords</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱1,270.35</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Daisy&#039;s Closette</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Won On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px"><strong style="color:#c0392b">Please complete payment within 24 hours</strong> or your win will be forfeited and the item re-listed to other bidders.</p></div>
+
+=====
+
+[2026-08-02 15:33:49] To: daisys.closette@gmail.com | Subject: Your Auction Has Ended — Order #206 | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP a92af1059eb24-13fab4e506csm19278780c88.13 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK a92af1059eb24-13fab4e506csm19278780c88.13 - gsmtp
+> RCPT TO:<daisys.closette@gmail.com>
+250 2.1.5 OK a92af1059eb24-13fab4e506csm19278780c88.13 - gsmtp
+> DATA
+354 Go ahead a92af1059eb24-13fab4e506csm19278780c88.13 - gsmtp
+250 2.0.0 OK  1785656029 a92af1059eb24-13fab4e506csm19278780c88.13 - gsmtp
+> QUIT
+
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Your auction ended</h3><p>Hi Daisy&#039;s Closette, here's a summary of your closed auction.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">206</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Everyday H&amp;M Co-ords</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bidder</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Ana</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱1,270.35</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ended On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px">The winning bidder has 24 hours to complete payment. You'll get a separate email the moment payment clears, with instructions to ship.</p></div>
+
+=====
+
+[2026-08-02 15:33:51] To: jhen@example.com | Subject: You have a new order on ThriftBid! | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<p>Your listing "<strong>Classic Gucci Bags & Purses</strong>" was just ordered by <strong>Riley</strong> (Order #207).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-08-02 15:33:51] To: riley_avery@example.com | Subject: You Won the Auction! Order #207 — Action Required | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Congratulations, you won!</h3><p>Hi Riley, your bid won the auction below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">207</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Classic Gucci Bags &amp; Purses</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱1,187.68</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">closet_jhen</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Won On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px"><strong style="color:#c0392b">Please complete payment within 24 hours</strong> or your win will be forfeited and the item re-listed to other bidders.</p></div>
+
+=====
+
+[2026-08-02 15:33:51] To: jhen@example.com | Subject: Your Auction Has Ended — Order #207 | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Your auction ended</h3><p>Hi closet_jhen, here's a summary of your closed auction.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">207</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Classic Gucci Bags &amp; Purses</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bidder</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Riley</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱1,187.68</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ended On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px">The winning bidder has 24 hours to complete payment. You'll get a separate email the moment payment clears, with instructions to ship.</p></div>
+
+=====
+
+[2026-08-02 15:34:47] To: daisys.closette@gmail.com | Subject: You have a new order on ThriftBid! | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP 5a478bee46e88-3153dd4e5b0sm22974488eec.1 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 5a478bee46e88-3153dd4e5b0sm22974488eec.1 - gsmtp
+> RCPT TO:<daisys.closette@gmail.com>
+250 2.1.5 OK 5a478bee46e88-3153dd4e5b0sm22974488eec.1 - gsmtp
+> DATA
+354 Go ahead 5a478bee46e88-3153dd4e5b0sm22974488eec.1 - gsmtp
+250 2.0.0 OK  1785656088 5a478bee46e88-3153dd4e5b0sm22974488eec.1 - gsmtp
+> QUIT
+
+
+--- message body ---
+<p>Your listing "<strong>Cropped ZARA Long sleeve</strong>" was just ordered by <strong>Dhens</strong> (Order #208).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-08-02 15:34:53] To: dhens_espina@dlsu.edu.ph | Subject: You Won the Auction! Order #208 — Action Required | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP a92af1059eb24-13fab13255esm17524353c88.3 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK a92af1059eb24-13fab13255esm17524353c88.3 - gsmtp
+> RCPT TO:<dhens_espina@dlsu.edu.ph>
+250 2.1.5 OK a92af1059eb24-13fab13255esm17524353c88.3 - gsmtp
+> DATA
+354 Go ahead a92af1059eb24-13fab13255esm17524353c88.3 - gsmtp
+250 2.0.0 OK  1785656093 a92af1059eb24-13fab13255esm17524353c88.3 - gsmtp
+> QUIT
+
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Congratulations, you won!</h3><p>Hi Dhens, your bid won the auction below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">208</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Cropped ZARA Long sleeve</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱932.66</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Daisy&#039;s Closette</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Won On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px"><strong style="color:#c0392b">Please complete payment within 24 hours</strong> or your win will be forfeited and the item re-listed to other bidders.</p></div>
+
+=====
+
+[2026-08-02 15:34:58] To: daisys.closette@gmail.com | Subject: Your Auction Has Ended — Order #208 | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP 5a478bee46e88-3153dd9c96asm25773620eec.7 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 5a478bee46e88-3153dd9c96asm25773620eec.7 - gsmtp
+> RCPT TO:<daisys.closette@gmail.com>
+250 2.1.5 OK 5a478bee46e88-3153dd9c96asm25773620eec.7 - gsmtp
+> DATA
+354 Go ahead 5a478bee46e88-3153dd9c96asm25773620eec.7 - gsmtp
+250 2.0.0 OK  1785656098 5a478bee46e88-3153dd9c96asm25773620eec.7 - gsmtp
+> QUIT
+
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Your auction ended</h3><p>Hi Daisy&#039;s Closette, here's a summary of your closed auction.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">208</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Cropped ZARA Long sleeve</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bidder</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Dhens</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱932.66</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ended On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr></table><p style="color:#777;font-size:13px">The winning bidder has 24 hours to complete payment. You'll get a separate email the moment payment clears, with instructions to ship.</p></div>
+
+=====
+
+[2026-08-02 15:35:26] To: leila_lumbao@dlsu.edu.ph | Subject: Payment Confirmed — Order #198 | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP 5a478bee46e88-3153e18e107sm27829819eec.27 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 5a478bee46e88-3153e18e107sm27829819eec.27 - gsmtp
+> RCPT TO:<leila_lumbao@dlsu.edu.ph>
+250 2.1.5 OK 5a478bee46e88-3153e18e107sm27829819eec.27 - gsmtp
+> DATA
+354 Go ahead 5a478bee46e88-3153e18e107sm27829819eec.27 - gsmtp
+250 2.0.0 OK  1785656126 5a478bee46e88-3153e18e107sm27829819eec.27 - gsmtp
+> QUIT
+
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Payment Confirmed</h3><p>Hi Leila, we've confirmed your payment for the order below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">198</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Limited Edition Louis Vuitton Sneakers</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Amount Paid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱947.56</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Payment Method</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">GCash</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Reference No.</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">SIM-B400DB621B53</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Date &amp; Time</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:59 PM</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Crys Vintage Rack</td></tr></table><p style="color:#777;font-size:13px">Your seller has been notified and will prepare your order for shipping. You'll get another email the moment it ships.</p></div>
+
+=====
+
+[2026-08-02 15:35:26] To: crys@example.com | Subject: Payment Received — Order #198 | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Payment Received</h3><p>Hi Crys Vintage Rack, payment for the order below has cleared.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">198</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Limited Edition Louis Vuitton Sneakers</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ordered On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:54 PM</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Buyer</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Leila</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Buyer Email</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">leila_lumbao@dlsu.edu.ph</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Buyer Phone</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">09201234562</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Delivering To</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">21 Katipunan Ave, Davao City, Davao del Sur, 8000</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Amount Paid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱947.56</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Payment Method</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">GCash</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Payment Reference</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">SIM-B400DB621B53</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Payment Date &amp; Time</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 02:59 PM</td></tr></table><p style="color:#777;font-size:13px"><strong>Please ship this order within 48 hours.</strong> Once you have a tracking number, mark it shipped from your Seller Center so the buyer gets notified automatically.</p></div>
+
+=====
+
+[2026-08-02 17:22:49] To: crys@example.com | Subject: You have a new order on ThriftBid! | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<p>Your listing "<strong>Retro Dress</strong>" was just ordered by <strong>Dhens</strong> (Order #209).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-08-02 17:22:54] To: dhens_espina@dlsu.edu.ph | Subject: You Won the Auction! Order #209 — Action Required | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP d2e1a72fcca58-84edc2d4473sm2359053b3a.40 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d2e1a72fcca58-84edc2d4473sm2359053b3a.40 - gsmtp
+> RCPT TO:<dhens_espina@dlsu.edu.ph>
+250 2.1.5 OK d2e1a72fcca58-84edc2d4473sm2359053b3a.40 - gsmtp
+> DATA
+354 Go ahead d2e1a72fcca58-84edc2d4473sm2359053b3a.40 - gsmtp
+250 2.0.0 OK  1785662574 d2e1a72fcca58-84edc2d4473sm2359053b3a.40 - gsmtp
+> QUIT
+
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Congratulations, you won!</h3><p>Hi Dhens, your bid won the auction below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">209</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Retro Dress</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱123.08</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Crys Vintage Rack</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Won On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 05:22 PM</td></tr></table><p style="color:#777;font-size:13px"><strong style="color:#c0392b">Please complete payment within 24 hours</strong> or your win will be forfeited and the item re-listed to other bidders.</p></div>
+
+=====
+
+[2026-08-02 17:22:54] To: crys@example.com | Subject: Your Auction Has Ended — Order #209 | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Your auction ended</h3><p>Hi Crys Vintage Rack, here's a summary of your closed auction.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">209</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Retro Dress</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bidder</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Dhens</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱123.08</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ended On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 05:22 PM</td></tr></table><p style="color:#777;font-size:13px">The winning bidder has 24 hours to complete payment. You'll get a separate email the moment payment clears, with instructions to ship.</p></div>
+
+=====
+
+[2026-08-02 17:23:13] To: mintea.peaz@gmail.com | Subject: You have a new order on ThriftBid! | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP 98e67ed59e1d1-38fb2b98de2sm1752336a91.3 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 98e67ed59e1d1-38fb2b98de2sm1752336a91.3 - gsmtp
+> RCPT TO:<mintea.peaz@gmail.com>
+250 2.1.5 OK 98e67ed59e1d1-38fb2b98de2sm1752336a91.3 - gsmtp
+> DATA
+354 Go ahead 98e67ed59e1d1-38fb2b98de2sm1752336a91.3 - gsmtp
+250 2.0.0 OK  1785662594 98e67ed59e1d1-38fb2b98de2sm1752336a91.3 - gsmtp
+> QUIT
+
+
+--- message body ---
+<p>Your listing "<strong>Retro Aesthetic Bundles</strong>" was just ordered by <strong>Liza</strong> (Order #210).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-08-02 17:23:13] To: liza_magsaysay@example.com | Subject: You Won the Auction! Order #210 — Action Required | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Congratulations, you won!</h3><p>Hi Liza, your bid won the auction below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">210</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Retro Aesthetic Bundles</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱164.85</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Mintea Thrifty</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Won On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 05:22 PM</td></tr></table><p style="color:#777;font-size:13px"><strong style="color:#c0392b">Please complete payment within 24 hours</strong> or your win will be forfeited and the item re-listed to other bidders.</p></div>
+
+=====
+
+[2026-08-02 17:23:18] To: mintea.peaz@gmail.com | Subject: Your Auction Has Ended — Order #210 | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP 98e67ed59e1d1-38fb2962928sm2619120a91.3 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK 98e67ed59e1d1-38fb2962928sm2619120a91.3 - gsmtp
+> RCPT TO:<mintea.peaz@gmail.com>
+250 2.1.5 OK 98e67ed59e1d1-38fb2962928sm2619120a91.3 - gsmtp
+> DATA
+354 Go ahead 98e67ed59e1d1-38fb2962928sm2619120a91.3 - gsmtp
+250 2.0.0 OK  1785662598 98e67ed59e1d1-38fb2962928sm2619120a91.3 - gsmtp
+> QUIT
+
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Your auction ended</h3><p>Hi Mintea Thrifty, here's a summary of your closed auction.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">210</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Retro Aesthetic Bundles</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bidder</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Liza</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱164.85</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ended On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 05:22 PM</td></tr></table><p style="color:#777;font-size:13px">The winning bidder has 24 hours to complete payment. You'll get a separate email the moment payment clears, with instructions to ship.</p></div>
+
+=====
+
+[2026-08-02 18:03:36] To: crys@example.com | Subject: You have a new order on ThriftBid! | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<p>Your listing "<strong>Retro Shein Blouse</strong>" was just ordered by <strong>Dhens</strong> (Order #211).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-08-02 18:03:41] To: dhens_espina@dlsu.edu.ph | Subject: You Won the Auction! Order #211 — Action Required | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP d2e1a72fcca58-84edc51cc95sm2430492b3a.60 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d2e1a72fcca58-84edc51cc95sm2430492b3a.60 - gsmtp
+> RCPT TO:<dhens_espina@dlsu.edu.ph>
+250 2.1.5 OK d2e1a72fcca58-84edc51cc95sm2430492b3a.60 - gsmtp
+> DATA
+354 Go ahead d2e1a72fcca58-84edc51cc95sm2430492b3a.60 - gsmtp
+250 2.0.0 OK  1785665022 d2e1a72fcca58-84edc51cc95sm2430492b3a.60 - gsmtp
+> QUIT
+
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Congratulations, you won!</h3><p>Hi Dhens, your bid won the auction below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">211</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Retro Shein Blouse</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱485.87</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Crys Vintage Rack</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Won On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 06:03 PM</td></tr></table><p style="color:#777;font-size:13px"><strong style="color:#c0392b">Please complete payment within 24 hours</strong> or your win will be forfeited and the item re-listed to other bidders.</p></div>
+
+=====
+
+[2026-08-02 18:03:41] To: crys@example.com | Subject: Your Auction Has Ended — Order #211 | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Your auction ended</h3><p>Hi Crys Vintage Rack, here's a summary of your closed auction.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">211</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Retro Shein Blouse</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bidder</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Dhens</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱485.87</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ended On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 06:03 PM</td></tr></table><p style="color:#777;font-size:13px">The winning bidder has 24 hours to complete payment. You'll get a separate email the moment payment clears, with instructions to ship.</p></div>
+
+=====
+
+[2026-08-02 20:20:33] To: daisys.closette@gmail.com | Subject: You have a new order on ThriftBid! | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP d2e1a72fcca58-84edbe7a243sm2474679b3a.24 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d2e1a72fcca58-84edbe7a243sm2474679b3a.24 - gsmtp
+> RCPT TO:<daisys.closette@gmail.com>
+250 2.1.5 OK d2e1a72fcca58-84edbe7a243sm2474679b3a.24 - gsmtp
+> DATA
+354 Go ahead d2e1a72fcca58-84edbe7a243sm2474679b3a.24 - gsmtp
+250 2.0.0 OK  1785673234 d2e1a72fcca58-84edbe7a243sm2474679b3a.24 - gsmtp
+> QUIT
+
+
+--- message body ---
+<p>Your listing "<strong>Timeless Dr. Martens Boots</strong>" was just ordered by <strong>Saige</strong> (Order #212).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-08-02 20:20:33] To: saige_fuentes@example.com | Subject: You Won the Auction! Order #212 — Action Required | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Congratulations, you won!</h3><p>Hi Saige, your bid won the auction below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">212</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Timeless Dr. Martens Boots</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱1,422.79</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Daisy&#039;s Closette</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Won On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 08:20 PM</td></tr></table><p style="color:#777;font-size:13px"><strong style="color:#c0392b">Please complete payment within 24 hours</strong> or your win will be forfeited and the item re-listed to other bidders.</p></div>
+
+=====
+
+[2026-08-02 20:20:38] To: daisys.closette@gmail.com | Subject: Your Auction Has Ended — Order #212 | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP d9443c01a7336-2d04b15c176sm26028695ad.77 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d04b15c176sm26028695ad.77 - gsmtp
+> RCPT TO:<daisys.closette@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d04b15c176sm26028695ad.77 - gsmtp
+> DATA
+354 Go ahead d9443c01a7336-2d04b15c176sm26028695ad.77 - gsmtp
+250 2.0.0 OK  1785673239 d9443c01a7336-2d04b15c176sm26028695ad.77 - gsmtp
+> QUIT
+
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Your auction ended</h3><p>Hi Daisy&#039;s Closette, here's a summary of your closed auction.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">212</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Timeless Dr. Martens Boots</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bidder</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Saige</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱1,422.79</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ended On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 08:20 PM</td></tr></table><p style="color:#777;font-size:13px">The winning bidder has 24 hours to complete payment. You'll get a separate email the moment payment clears, with instructions to ship.</p></div>
+
+=====
+
+[2026-08-02 20:20:41] To: crys@example.com | Subject: You have a new order on ThriftBid! | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<p>Your listing "<strong>Preloved Shorts</strong>" was just ordered by <strong>Saige</strong> (Order #213).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-08-02 20:20:41] To: saige_fuentes@example.com | Subject: You Won the Auction! Order #213 — Action Required | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Congratulations, you won!</h3><p>Hi Saige, your bid won the auction below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">213</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Preloved Shorts</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱311.32</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Crys Vintage Rack</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Won On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 08:20 PM</td></tr></table><p style="color:#777;font-size:13px"><strong style="color:#c0392b">Please complete payment within 24 hours</strong> or your win will be forfeited and the item re-listed to other bidders.</p></div>
+
+=====
+
+[2026-08-02 20:20:41] To: crys@example.com | Subject: Your Auction Has Ended — Order #213 | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Your auction ended</h3><p>Hi Crys Vintage Rack, here's a summary of your closed auction.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">213</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Preloved Shorts</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bidder</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Saige</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Winning Bid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱311.32</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ended On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 02, 2026 at 08:20 PM</td></tr></table><p style="color:#777;font-size:13px">The winning bidder has 24 hours to complete payment. You'll get a separate email the moment payment clears, with instructions to ship.</p></div>
+
+=====
+

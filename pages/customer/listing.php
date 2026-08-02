@@ -36,7 +36,7 @@ $images = DB::fetchAll('SELECT * FROM LISTING_IMAGES WHERE listing_id=? ORDER BY
 
 /* If this listing is actually an active auction (not a buy-now item),
    send the visitor to the bidding room instead */
-$auction = DB::fetch('SELECT auction_id FROM AUCTIONS WHERE listing_id=? AND status="Active"', [$id]);
+$auction = DB::fetch('SELECT auction_id FROM AUCTIONS WHERE listing_id=? AND status="Active" AND end_time>NOW()', [$id]);
 if ($auction) { header('Location: auction_room.php?id='.$auction['auction_id']); exit; }
 
 $buyerId = $buyerIdForAccess; /* session row IS the buyer row */

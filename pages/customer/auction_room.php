@@ -297,11 +297,21 @@ renderHead($auction['title'] . ' - Auction Room');
 const cdEl = document.getElementById('countdown');
 if (cdEl) {
   const endTs = parseInt(cdEl.dataset.end);
+  const bidForm = document.querySelector('form[method="POST"]');
+  const bidBtn  = bidForm ? bidForm.querySelector('button[type="submit"]') : null;
+  const bidInput = bidForm ? bidForm.querySelector('[name="bid_amount"]') : null;
+
   function tick() {
     const d = endTs - Math.floor(Date.now()/1000);
-    if (d <= 0) { cdEl.textContent='Ended'; return; }
+    if (d <= 0) {
+      cdEl.textContent = 'Ended';
+      cdEl.style.color = 'var(--clr-error)';
+      if (bidBtn) { bidBtn.disabled = true; bidBtn.textContent = 'Auction Ended'; }
+      if (bidInput) { bidInput.disabled = true; }
+      return;
+    }
     const h=Math.floor(d/3600),m=Math.floor((d%3600)/60),s=d%60;
-    const hh=Math.floor((d%86400)/3600); /* remainder hours within the current day, for the "Xd Yh" format below */
+    const hh=Math.floor((d%86400)/3600);
     cdEl.textContent = d>=86400 ? Math.floor(d/86400)+'d '+hh+'h '+m+'m' : String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
     if (d < 3600) cdEl.style.color='var(--clr-error)';
   }
