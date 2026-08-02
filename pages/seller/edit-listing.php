@@ -66,8 +66,7 @@ $hoursToEnd = ($hasAuction && $listing['end_time']) ? (strtotime($listing['end_t
 $within12h  = $hasAuction && $hoursToEnd !== null && $hoursToEnd < 12;
 
 const UPLOAD_DIR_EDIT = __DIR__ . '/../../uploads/listings/';
-const UPLOAD_URL_EDIT = '/uploads/listings/';
-
+define('UPLOAD_URL_EDIT', BASE_URL . '/uploads/listings/');
 function saveEditPhoto(array $file): ?string {
     if (($file['error'] ?? UPLOAD_ERR_NO_FILE) === UPLOAD_ERR_NO_FILE) return null;
     if ($file['error'] !== UPLOAD_ERR_OK) return null;

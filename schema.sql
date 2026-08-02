@@ -1299,13 +1299,16 @@ END$$
 DELIMITER ;
 
 -- Runs right after the guard above allows a bid-having deletion through
--- (i.e. @tb_deletion_reason was actually set) — closes out the auction and
--- notifies the top bidder, so there's a transparent record of why a live
--- auction with bids got pulled.
+-- (i.e. @tb_deletion_reason was actually set) — closes out the auction,
+-- notifies the top bidder, and penalizes the seller (feeds into the same
+-- offense-count escalation as late shipping — see trigger #9). DISPUTES
+-- stays reserved for genuine buyer-vs-seller disagreements needing
+-- adjudication; this is a seller account-standing penalty instead.
 DELIMITER $$
 
 DROP TRIGGER IF EXISTS after_listing_delete_file_dispute$$
-CREATE TRIGGER after_listing_delete_file_dispute
+DROP TRIGGER IF EXISTS after_listing_delete_notify_and_penalize$$
+CREATE TRIGGER after_listing_delete_notify_and_penalize
 AFTER UPDATE ON LISTINGS
 FOR EACH ROW
 BEGIN
@@ -1327,11 +1330,19 @@ BEGIN
                 VALUES (v_top_buyer_id, 'Auction Cancelled by Seller',
                         CONCAT('The auction for "', NEW.title, '" was cancelled by the seller. Reason: ', @tb_deletion_reason), 'AUCTION');
             END IF;
+
+            -- Rule 5/6: cancelling with active bids counts as a seller offense,
+            -- same escalation ladder as late shipping (Flagged -> Suspended -> Banned).
+            INSERT INTO PENALTIES (seller_id, reason, penalty_type)
+            VALUES (NEW.seller_id,
+                    CONCAT('Cancelled a listing with active bids. Reason given: ', @tb_deletion_reason),
+                    'Selling Suspension');
         END IF;
     END IF;
 END$$
 
 DELIMITER ;
+
 
 -- ------------------------------------------------------------
 -- 18. AFTER UPDATE ON LISTINGS, archive a frozen snapshot the moment

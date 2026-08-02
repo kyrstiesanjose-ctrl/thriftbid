@@ -22,7 +22,7 @@ $linesByBrand = [];
 foreach ($productLines as $pl) $linesByBrand[$pl['brand_id']][] = $pl;
 
 const UPLOAD_DIR = __DIR__ . '/../../uploads/listings/';
-const UPLOAD_URL_BASE = '/uploads/listings/';
+define('UPLOAD_URL_BASE', BASE_URL . '/uploads/listings/');
 
 $errors = [];
 $vals   = [];
