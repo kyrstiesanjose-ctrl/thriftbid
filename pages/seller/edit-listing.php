@@ -172,11 +172,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_active'])) {
 }
 
 /* Soft-delete, routed through sp_seller_delete_listing so the 3-tier
-   auction-deletion rule (no bids: free / has bids: reason required +
-   auto dispute filed / within 12h of ending: fully locked) is enforced
-   by the trigger, not re-implemented here. Separate rule from the
-   fields-editability rule above - a listing with bids can still be
-   cancelled (with a reason) even though its fields are now locked. */
+   auction-deletion rule (no bids: free / has bids: reason required,
+   incurs a seller offense via PENALTIES / within 12h of ending: fully
+   locked) is enforced by the trigger, not re-implemented here. Separate
+   rule from the fields-editability rule above - a listing with bids can
+   still be cancelled (with a reason) even though its fields are now locked. */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_listing'])) {
     if ($hasSold) {
         $errors[] = 'Cannot delete a listing that has already been purchased.';
