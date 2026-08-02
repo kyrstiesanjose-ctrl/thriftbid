@@ -7,6 +7,9 @@ require_once __DIR__ . '/../../includes/layout.php';
 requireLogin();
 requireRole('admin');
 
+$admin   = currentUser();
+$adminId = $admin['admin_id'] ?? $admin['id'];
+
 $q      = trim($_GET['q'] ?? '');
 $page   = max(1,(int)($_GET['page'] ?? 1));
 $per    = 20; $offset = ($page-1)*$per;
@@ -15,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['toggle_listing']) && ve
     $lid = (int)$_POST['listing_id'];
     $cur = (int)$_POST['current'];
     DB::query('UPDATE LISTINGS SET is_active=? WHERE listing_id=?', [$cur?0:1, $lid]);
+    logAdminAction($adminId, $cur ? 'Deactivated listing' : 'Reactivated listing', 'LISTINGS', $lid, $cur ? '1' : '0', $cur ? '0' : '1');
     header('Location: ' . BASE_URL . '/pages/admin/listings.php' . ($q?"?q=$q":'')); exit;
 }
 

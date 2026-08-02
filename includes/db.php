@@ -75,6 +75,25 @@ class DB {
         self::query("CALL $proc($placeholders)", $params)->closeCursor();
         return (int) self::get()->lastInsertId();
     }
+
+    // Runs $fn inside a transaction: commits if it completes normally,
+    // rolls back and rethrows if it throws. Use this for any action
+    // that writes to more than one table (e.g. resolving a dispute:
+    // update DISPUTES + insert NOTIFICATIONS + maybe insert PENALTIES +
+    // insert AUDIT_LOGS) so a failure partway through can't leave the
+    // database in a half-updated state.
+    public static function transaction(callable $fn): mixed {
+        $pdo = self::get();
+        $pdo->beginTransaction();
+        try {
+            $result = $fn();
+            $pdo->commit();
+            return $result;
+        } catch (\Throwable $e) {
+            $pdo->rollBack();
+            throw $e;
+        }
+    }
 }
 
 /*
@@ -83,11 +102,11 @@ class DB {
 // ============================================================
 try {
     $result = DB::fetch("SELECT DATABASE() as active_db, NOW() as db_time");
-    echo "<h2>✅ Connected Successfully!</h2>";
+    echo "<h2> Connected Successfully!</h2>";
     echo "Connected Database: <strong>" . $result['active_db'] . "</strong><br>";
     echo "Cloud Server Time: <strong>" . $result['db_time'] . "</strong>";
 } catch (Exception $e) {
-    echo "<h2>❌ Connection Failed</h2>";
+    echo "<h2> Connection Failed</h2>";
     echo "Error Details: " . $e->getMessage();
 }
 

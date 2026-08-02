@@ -35,8 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf($_POST['csrf'] ?? '')) {
              WHERE authentication_id=?',
             [$adminId, $remarks ?: $row['remarks'], $authId]
         );
-        DB::query('INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value) VALUES (?,?,?,?,?,?)',
-            [$adminId, 'Approved authenticity request', 'AUTHENTICATION', $authId, 'Pending', 'Verified']);
+        logAdminAction($adminId, 'Approved authenticity request', 'AUTHENTICATION', $authId, 'Pending', 'Verified');
         $successMsg = 'Authenticity request #' . $authId . ' approved - listing is now live.';
     } elseif ($action === 'reject') {
         if (!$remarks) {
@@ -50,8 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf($_POST['csrf'] ?? '')) {
                  WHERE authentication_id=?',
                 [$adminId, $remarks, $authId]
             );
-            DB::query('INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value) VALUES (?,?,?,?,?,?)',
-                [$adminId, 'Rejected authenticity request: ' . $remarks, 'AUTHENTICATION', $authId, 'Pending', 'Rejected']);
+            logAdminAction($adminId, 'Rejected authenticity request: ' . $remarks, 'AUTHENTICATION', $authId, 'Pending', 'Rejected');
             $successMsg = 'Authenticity request #' . $authId . ' rejected. The seller has been notified.';
         }
     }

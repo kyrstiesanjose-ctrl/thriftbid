@@ -7,11 +7,15 @@ require_once __DIR__ . '/../../includes/layout.php';
 requireLogin();
 requireRole('admin');
 
+$admin   = currentUser();
+$adminId = $admin['admin_id'] ?? $admin['id'];
+
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['force_close']) && verifyCsrf($_POST['csrf'] ?? '')) {
     $aid = (int)$_POST['auction_id'];
     // Runs sp_close_auction to process the highest bidder, create the order, and notify both parties.
     // A simple status update here would drop the winning bid without creating an order.
     DB::callProc('sp_close_auction', [$aid]);
+    logAdminAction($adminId, 'Force-closed auction', 'AUCTIONS', $aid, 'Active', 'Closed');
     header('Location: ' . BASE_URL . '/pages/admin/auctions.php?tab=closed'); exit;
 }
 

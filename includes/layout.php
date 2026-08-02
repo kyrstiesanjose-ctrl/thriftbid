@@ -3,6 +3,7 @@
 // ThriftBid  layout.php  
 // ============================================================
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/audit.php';
 require_once __DIR__ . '/bidbot_widget.php';
 require_once __DIR__ . '/bidbot_client.php';
 

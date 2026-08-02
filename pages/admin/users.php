@@ -32,22 +32,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf($_POST['csrf'] ?? '')) {
 
     if ($id && $action === 'verify') {
         DB::query("UPDATE $actTable SET is_verified=1 WHERE $actIdCol=?", [$id]);
-        DB::query('INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value) VALUES (?,?,?,?,?,?)',
-            [$adminId, 'Verified account', $actTable, $id, '0', '1']);
+        logAdminAction($adminId, 'Verified account', $actTable, $id, '0', '1');
     } elseif ($id && $action === 'unverify') {
         DB::query("UPDATE $actTable SET is_verified=0 WHERE $actIdCol=?", [$id]);
+        logAdminAction($adminId, 'Unverified account', $actTable, $id, '1', '0');
     } elseif ($id && $action === 'suspend') {
         DB::query("UPDATE $actTable SET $actStatusCol='Suspended' WHERE $actIdCol=?", [$id]);
-        DB::query('INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value) VALUES (?,?,?,?,?,?)',
-            [$adminId, 'Suspended account', $actTable, $id, 'Active', 'Suspended']);
+        logAdminAction($adminId, 'Suspended account', $actTable, $id, 'Active', 'Suspended');
     } elseif ($id && $action === 'ban') {
         DB::query("UPDATE $actTable SET $actStatusCol='Banned' WHERE $actIdCol=?", [$id]);
-        DB::query('INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value) VALUES (?,?,?,?,?,?)',
-            [$adminId, 'Banned account', $actTable, $id, null, 'Banned']);
+        logAdminAction($adminId, 'Banned account', $actTable, $id, null, 'Banned');
     } elseif ($id && $action === 'reactivate') {
         DB::query("UPDATE $actTable SET $actStatusCol='Active' WHERE $actIdCol=?", [$id]);
-        DB::query('INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value) VALUES (?,?,?,?,?,?)',
-            [$adminId, 'Reactivated account', $actTable, $id, null, 'Active']);
+        logAdminAction($adminId, 'Reactivated account', $actTable, $id, null, 'Active');
     }
     header('Location: ' . BASE_URL . '/pages/admin/users.php?tab=' . $tab . ($search ? '&search=' . urlencode($search) : ''));
     exit;

@@ -18,13 +18,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf($_POST['csrf'] ?? '')) {
 
     if ($action === 'expire' && $pid) {
         DB::query('UPDATE PENALTIES SET status="Expired" WHERE penalty_id=?', [$pid]);
+        logAdminAction($adminId, 'Marked penalty as expired', 'PENALTIES', $pid, 'Active', 'Expired');
         $successMsg = 'Penalty #'.$pid.' marked as expired.';
 
     } elseif ($action === 'expire_award' && (int)($_POST['award_id'] ?? 0)) {
         $aid = (int)$_POST['award_id'];
         DB::query('UPDATE SELLER_AWARDS SET status="Expired" WHERE award_id=?', [$aid]);
-        DB::query('INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value) VALUES (?,?,?,?,?,?)',
-            [$adminId, 'Marked award as expired', 'SELLER_AWARDS', $aid, 'Active', 'Expired']);
+        logAdminAction($adminId, 'Marked award as expired', 'SELLER_AWARDS', $aid, 'Active', 'Expired');
         $successMsg = 'Award #'.$aid.' marked as expired.';
 
     } elseif ($action === 'award' && $sid) {
@@ -34,8 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf($_POST['csrf'] ?? '')) {
         // after_seller_award_notify trigger sends the notification 
         DB::query('INSERT INTO SELLER_AWARDS (seller_id, reason, award_type, status) VALUES (?,?,?,"Active")',
             [$sid, $reason, $awardType]);
-        DB::query('INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value) VALUES (?,?,?,?,?,?)',
-            [$adminId, 'Issued award: ' . $reason, 'SELLER_AWARDS', $sid, null, $awardType]);
+        logAdminAction($adminId, 'Issued award: ' . $reason, 'SELLER_AWARDS', $sid, null, $awardType);
         $successMsg = 'Award issued.';
 
     } elseif ($action === 'issue_penalty' && $sid) {
@@ -46,8 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf($_POST['csrf'] ?? '')) {
     
         DB::query('INSERT INTO PENALTIES (seller_id, reason, penalty_type) VALUES (?,?,?)',
             [$sid, $reason, $penaltyType]);
-        DB::query('INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value) VALUES (?,?,?,?,?,?)',
-            [$adminId, 'Issued penalty: ' . $reason, 'PENALTIES', $sid, null, $penaltyType]);
+        logAdminAction($adminId, 'Issued penalty: ' . $reason, 'PENALTIES', $sid, null, $penaltyType);
         $successMsg = 'Penalty issued.';
     }
     header('Location: ' . BASE_URL . '/pages/admin/penalties.php?tab=' . (in_array($_POST['action'], ['award','expire_award'], true)?'rewards':'penalties') . ($successMsg?'&ok=1':''));

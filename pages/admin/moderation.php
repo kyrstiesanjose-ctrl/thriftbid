@@ -36,27 +36,37 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && verifyCsrf($_POST['csrf'] ?? '') && i
     } elseif ($d['status'] !== 'Open' && $d['status'] !== 'Under Review') {
         $errorMsg = 'This dispute has already been closed.';
     } elseif ($action === 'resolve') {
-        DB::query(
-            'UPDATE DISPUTES SET status="Resolved", resolution_type=?, assigned_admin_id=?, resolved_at=NOW() WHERE dispute_id=?',
-            [$resolutionType, $adminId, $did]
-        );
-        DB::query('INSERT INTO NOTIFICATIONS (buyer_id,title,message,notification_type) VALUES (?,?,?,?)',
-            [$d['buyer_id'], 'Dispute Resolved - ' . $resolutionType,
-             'Your dispute #' . $did . ' has been resolved (' . strtolower($resolutionType) . '). Your refund will be processed within 24 hours.', 'ORDER']);
-        if ($penalizeSeller) {
-            DB::query('INSERT INTO PENALTIES (seller_id, reason, penalty_type) VALUES (?,?,?)',
-                [$d['seller_id'], 'Dispute #' . $did . ' resolved against seller: ' . $d['reason'], 'Selling Suspension']);
+        try {
+            DB::transaction(function () use ($resolutionType, $adminId, $did, $d, $penalizeSeller) {
+                DB::query(
+                    'UPDATE DISPUTES SET status="Resolved", resolution_type=?, assigned_admin_id=?, resolved_at=NOW() WHERE dispute_id=?',
+                    [$resolutionType, $adminId, $did]
+                );
+                DB::query('INSERT INTO NOTIFICATIONS (buyer_id,title,message,notification_type) VALUES (?,?,?,?)',
+                    [$d['buyer_id'], 'Dispute Resolved - ' . $resolutionType,
+                     'Your dispute #' . $did . ' has been resolved (' . strtolower($resolutionType) . '). Your refund will be processed within 24 hours.', 'ORDER']);
+                if ($penalizeSeller) {
+                    DB::query('INSERT INTO PENALTIES (seller_id, reason, penalty_type) VALUES (?,?,?)',
+                        [$d['seller_id'], 'Dispute #' . $did . ' resolved against seller: ' . $d['reason'], 'Selling Suspension']);
+                }
+                logAdminAction($adminId, 'Resolved dispute (' . $resolutionType . ($penalizeSeller?', seller penalized':'') . ')', 'DISPUTES', $did, $d['status'], 'Resolved');
+            });
+            $successMsg = 'Dispute #' . $did . ' resolved (' . $resolutionType . ').';
+        } catch (\Throwable $e) {
+            $errorMsg = 'Could not resolve dispute #' . $did . ' - nothing was changed. Please try again.';
         }
-        DB::query('INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value) VALUES (?,?,?,?,?,?)',
-            [$adminId, 'Resolved dispute (' . $resolutionType . ($penalizeSeller?', seller penalized':'') . ')', 'DISPUTES', $did, $d['status'], 'Resolved']);
-        $successMsg = 'Dispute #' . $did . ' resolved (' . $resolutionType . ').';
     } elseif ($action === 'reject') {
-        DB::query('UPDATE DISPUTES SET status="Rejected", assigned_admin_id=?, resolved_at=NOW() WHERE dispute_id=?', [$adminId, $did]);
-        DB::query('INSERT INTO NOTIFICATIONS (buyer_id,title,message,notification_type) VALUES (?,?,?,?)',
-            [$d['buyer_id'], 'Dispute Rejected', 'Your dispute #' . $did . ' was reviewed and rejected - no policy violation was found.', 'ORDER']);
-        DB::query('INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value) VALUES (?,?,?,?,?,?)',
-            [$adminId, 'Rejected dispute', 'DISPUTES', $did, $d['status'], 'Rejected']);
-        $successMsg = 'Dispute #' . $did . ' rejected.';
+        try {
+            DB::transaction(function () use ($adminId, $did, $d) {
+                DB::query('UPDATE DISPUTES SET status="Rejected", assigned_admin_id=?, resolved_at=NOW() WHERE dispute_id=?', [$adminId, $did]);
+                DB::query('INSERT INTO NOTIFICATIONS (buyer_id,title,message,notification_type) VALUES (?,?,?,?)',
+                    [$d['buyer_id'], 'Dispute Rejected', 'Your dispute #' . $did . ' was reviewed and rejected - no policy violation was found.', 'ORDER']);
+                logAdminAction($adminId, 'Rejected dispute', 'DISPUTES', $did, $d['status'], 'Rejected');
+            });
+            $successMsg = 'Dispute #' . $did . ' rejected.';
+        } catch (\Throwable $e) {
+            $errorMsg = 'Could not reject dispute #' . $did . ' - nothing was changed. Please try again.';
+        }
     }
 }
 
@@ -73,20 +83,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && verifyCsrf($_POST['csrf'] ?? '') &&
     } elseif ($flag['status'] !== 'Pending') {
         $errorMsg = 'This report has already been reviewed.';
     } elseif ($action === 'takedown') {
-        if ($flag['listing_id']) DB::query('UPDATE LISTINGS SET is_active=0 WHERE listing_id=?', [$flag['listing_id']]);
-        if ($flag['seller_id']) {
-            DB::query('INSERT INTO PENALTIES (seller_id, reason, penalty_type) VALUES (?,?,?)',
-                [$flag['seller_id'], 'Reported listing upheld: ' . $flag['signals_detected'], 'Selling Suspension']);
+        try {
+            DB::transaction(function () use ($flag, $adminId, $flagId) {
+                if ($flag['listing_id']) DB::query('UPDATE LISTINGS SET is_active=0 WHERE listing_id=?', [$flag['listing_id']]);
+                if ($flag['seller_id']) {
+                    DB::query('INSERT INTO PENALTIES (seller_id, reason, penalty_type) VALUES (?,?,?)',
+                        [$flag['seller_id'], 'Reported listing upheld: ' . $flag['signals_detected'], 'Selling Suspension']);
+                }
+                DB::query('UPDATE FRAUD_FLAGS SET status="Resolved", reviewed_by_admin_id=? WHERE fraud_flag_id=?', [$adminId, $flagId]);
+                logAdminAction($adminId, 'Upheld listing report - listing taken down, seller penalized', 'FRAUD_FLAGS', $flagId, 'Pending', 'Resolved');
+            });
+            $successMsg = 'Report #' . $flagId . ' upheld - listing taken down and seller penalized.';
+        } catch (\Throwable $e) {
+            $errorMsg = 'Could not process report #' . $flagId . ' - nothing was changed. Please try again.';
         }
-        DB::query('UPDATE FRAUD_FLAGS SET status="Resolved", reviewed_by_admin_id=? WHERE fraud_flag_id=?', [$adminId, $flagId]);
-        DB::query('INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value) VALUES (?,?,?,?,?,?)',
-            [$adminId, 'Upheld listing report - listing taken down, seller penalized', 'FRAUD_FLAGS', $flagId, 'Pending', 'Resolved']);
-        $successMsg = 'Report #' . $flagId . ' upheld - listing taken down and seller penalized.';
     } elseif ($action === 'dismiss') {
-        DB::query('UPDATE FRAUD_FLAGS SET status="Reviewed", reviewed_by_admin_id=? WHERE fraud_flag_id=?', [$adminId, $flagId]);
-        DB::query('INSERT INTO AUDIT_LOGS (admin_id, action_taken, table_affected, record_id, old_value, new_value) VALUES (?,?,?,?,?,?)',
-            [$adminId, 'Dismissed listing report - no violation found', 'FRAUD_FLAGS', $flagId, 'Pending', 'Reviewed']);
-        $successMsg = 'Report #' . $flagId . ' dismissed - no action taken.';
+        try {
+            DB::transaction(function () use ($adminId, $flagId) {
+                DB::query('UPDATE FRAUD_FLAGS SET status="Reviewed", reviewed_by_admin_id=? WHERE fraud_flag_id=?', [$adminId, $flagId]);
+                logAdminAction($adminId, 'Dismissed listing report - no violation found', 'FRAUD_FLAGS', $flagId, 'Pending', 'Reviewed');
+            });
+            $successMsg = 'Report #' . $flagId . ' dismissed - no action taken.';
+        } catch (\Throwable $e) {
+            $errorMsg = 'Could not process report #' . $flagId . ' - nothing was changed. Please try again.';
+        }
     }
 }
 
