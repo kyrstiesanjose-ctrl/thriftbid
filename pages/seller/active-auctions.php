@@ -395,7 +395,8 @@ renderHead('My Listings &amp; Auctions');
     <?php foreach ($rows as $l):
       if ($l['authentication_status'] === 'Verified') { $badge = '<span class="tb-badge" style="background:#1a1a1a;color:#fff">Approved'.($l['active_auction_id']?' &bull; Auction':'').'</span>'; }
       elseif ($l['authentication_status'] === 'Rejected') { $badge = '<span class="tb-badge tb-badge-red">Rejected</span>'; }
-      else { $badge = '<span class="tb-badge tb-badge-coral">Pending Review</span>'; }
+      elseif ($l['authentication_status'] === 'Pending') { $badge = '<span class="tb-badge tb-badge-coral">Pending Review</span>'; }
+      else { $badge = '<span class="tb-badge tb-badge-gray">Not Submitted</span>'; }
       $badges = $badge.'<span class="tb-badge tb-badge-gray">'.htmlspecialchars($l['cat_name']).'</span>';
       $details = itemDetailsLine($l);
       $stats = [

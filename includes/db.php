@@ -16,6 +16,20 @@ class DB {
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ]);
             self::$instance->exec("SET time_zone = '+08:00'");
+
+            /* Lazy auto-close: there's no cron/event scheduler in this
+               environment, so nothing flips AUCTIONS.status to 'Closed'
+               once end_time passes. Catch up here, once per request,
+               right when the connection opens - closes anything that's
+               overdue before the page reads auction data. */
+            $expired = self::$instance
+                ->query("SELECT auction_id FROM AUCTIONS WHERE status='Active' AND end_time <= NOW()")
+                ->fetchAll(PDO::FETCH_COLUMN);
+            foreach ($expired as $auctionId) {
+                $stmt = self::$instance->prepare('CALL sp_close_auction(?)');
+                $stmt->execute([$auctionId]);
+                $stmt->closeCursor();
+            }
         }
         return self::$instance;
     }
