@@ -79,6 +79,15 @@ $minNextBidPref = $minNextBid * getConversionRate($baseCur, $prefCur, $liveRates
 
 $bidError = $bidSuccess = '';
 
+/* Flash message left by the redirect at the bottom of the POST handler
+   below - shown once, then cleared, so a page refresh here just re-GETs
+   the page instead of resubmitting the bid that was already processed. */
+if (!empty($_SESSION['bid_flash'])) {
+    $bidError   = $_SESSION['bid_flash']['error']   ?? '';
+    $bidSuccess = $_SESSION['bid_flash']['success'] ?? '';
+    unset($_SESSION['bid_flash']);
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bid_amount'])) {
     $bidAmountPref = (float)$_POST['bid_amount'];
     
@@ -136,6 +145,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bid_amount'])) {
                 : 'Could not place bid. Please try again.';
         }
     }
+
+    /* Post/Redirect/Get: without this, refreshing this page re-sends the
+       exact same POST, resubmitting the same bid_amount again - which
+       usually now fails the increment check against the bid that
+       submission JUST placed, showing the bidder their own error on top
+       of their own successful win. Redirecting to a plain GET means a
+       refresh only re-fetches the page, it can never resubmit a bid. */
+    $_SESSION['bid_flash'] = ['error' => $bidError, 'success' => $bidSuccess];
+    header('Location: auction_room.php?id=' . $auctionId);
+    exit;
 }
 
 renderHead($auction['title'] . ' - Auction Room');
@@ -341,6 +360,17 @@ if (cdEl) {
   const bidForm = document.querySelector('form[method="POST"]');
   const bidBtn  = bidForm ? bidForm.querySelector('button[type="submit"]') : null;
   const bidInput = bidForm ? bidForm.querySelector('[name="bid_amount"]') : null;
+
+  /* Without this, a double-click (or a slow response the person clicks
+     again on) can fire two identical POST requests. The first commits
+     and becomes the new highest bid; the second, now stale, fails the
+     increment check against the bid the person JUST placed themselves -
+     showing them their own error, layered on top of their own win. */
+  if (bidForm) {
+    bidForm.addEventListener('submit', function () {
+      if (bidBtn) { bidBtn.disabled = true; bidBtn.textContent = 'Placing Bid...'; }
+    });
+  }
 
   function tick() {
     const d = endTs - Math.floor(Date.now()/1000);
