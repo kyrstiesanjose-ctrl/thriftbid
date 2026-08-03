@@ -11,10 +11,12 @@ class DB {
         if (self::$instance === null) {
             
             // ========================================================
-            // DYNAMIC RBAC CREDENTIAL MAPPING (Added for your project)
+            // DYNAMIC RBAC CREDENTIAL MAPPING 
             // ========================================================
-            $dbUser = 'tb_buyer'; // Default fallback for guests/buyers
-            $dbPass = 'BuyerSecure2026!';
+            // Default to your master/default config credentials for guests, 
+            // registration, and the login page (where no session role exists yet)
+            $dbUser = DB_USER;
+            $dbPass = DB_PASSWORD;
 
             if (isset($_SESSION['user_role'])) {
                 $role = $_SESSION['user_role'];
@@ -24,6 +26,9 @@ class DB {
                 } elseif ($role === 'seller') {
                     $dbUser = 'tb_seller';
                     $dbPass = 'SellerSecure2026!';
+                } elseif ($role === 'buyer') {
+                    $dbUser = 'tb_buyer';
+                    $dbPass = 'BuyerSecure2026!';
                 }
             }
             // ========================================================
