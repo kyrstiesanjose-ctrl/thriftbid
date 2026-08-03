@@ -55020,3 +55020,131 @@ Skipped: test/demo address (@example.com), no real send attempted
 
 =====
 
+[2026-08-03 22:37:04] To: liza_magsaysay@example.com | Subject: Your ThriftBid order has shipped! | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<p>Good news — your order for "<strong>Vintage Shein Co-ords</strong>" (Order #99) is on its way.</p><p>Shipped by <strong>Mintea Thrifty</strong> via <strong>Grab Express</strong>.</p><p>Tracking number: <strong>2937362</strong></p>
+
+=====
+
+[2026-08-03 22:37:19] To: mira_santos@example.com | Subject: Your ThriftBid order has shipped! | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<p>Good news — your order for "<strong>Minimalist Dress</strong>" (Order #102) is on its way.</p><p>Shipped by <strong>Mintea Thrifty</strong> via <strong>LBC</strong>.</p><p>Tracking number: <strong>827</strong></p>
+
+=====
+
+[2026-08-03 22:50:35] To: mintea.peaz@gmail.com | Subject: You have a new order on ThriftBid! | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP d9443c01a7336-2d04b120fe0sm39107775ad.67 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d04b120fe0sm39107775ad.67 - gsmtp
+> RCPT TO:<mintea.peaz@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d04b120fe0sm39107775ad.67 - gsmtp
+> DATA
+354 Go ahead d9443c01a7336-2d04b120fe0sm39107775ad.67 - gsmtp
+250 2.0.0 OK  1785768635 d9443c01a7336-2d04b120fe0sm39107775ad.67 - gsmtp
+> QUIT
+
+
+--- message body ---
+<p>Your listing "<strong>off shoulder top</strong>" was just ordered by <strong>Ana</strong> (Order #227).</p><p>Please prepare to ship within 48 hours once payment is confirmed.</p>
+
+=====
+
+[2026-08-03 22:50:46] To: ana_delacruz@example.com | Subject: Your ThriftBid Payment Confirmation Code | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:480px;margin:0 auto"><h2 style="color:#ff6b6b">ThriftBid</h2><p>Hi Ana,</p><p>Use the code below to confirm your payment. This authorizes the charge on your order.</p><p style="font-size:32px;font-weight:800;letter-spacing:6px;color:#1a1a1a">592413</p><p style="color:#777;font-size:13px">This code expires in 5 minutes. If you didn't request this, you can ignore this email.</p></div>
+
+=====
+
+[2026-08-03 22:50:55] To: ana_delacruz@example.com | Subject: Payment Confirmed — Order #227 | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Payment Confirmed</h3><p>Hi Ana, we've confirmed your payment for the order below.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">227</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">off shoulder top</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Amount Paid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱431.28</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Payment Method</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Bank</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Reference No.</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">SIM-7A22612356</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Date &amp; Time</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Nov 19, 2025 at 11:50 PM</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Sold By</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Mintea Thrifty</td></tr></table><p style="color:#777;font-size:13px">Your seller has been notified and will prepare your order for shipping. You'll get another email the moment it ships.</p></div>
+
+=====
+
+[2026-08-03 22:51:00] To: mintea.peaz@gmail.com | Subject: Payment Received — Order #227 | SENT
+SMTP: sent
+220 smtp.gmail.com ESMTP d9443c01a7336-2d04ae18934sm39384395ad.11 - gsmtp
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-STARTTLS
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+> STARTTLS
+220 2.0.0 Ready to start TLS
+> EHLO thriftbid.local
+250-smtp.gmail.com at your service, [103.231.240.86]
+250-SIZE 35882577
+250-8BITMIME
+250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH
+250-ENHANCEDSTATUSCODES
+250-PIPELINING
+250-CHUNKING
+250 SMTPUTF8
+[credential omitted]
+334 VXNlcm5hbWU6
+> dGhyaWZ0YmlkMDVAZ21haWwuY29t
+334 UGFzc3dvcmQ6
+> Y3B2a3hmbHRraHRwamR2cA==
+235 2.7.0 Accepted
+> MAIL FROM:<thriftbid05@gmail.com>
+250 2.1.0 OK d9443c01a7336-2d04ae18934sm39384395ad.11 - gsmtp
+> RCPT TO:<mintea.peaz@gmail.com>
+250 2.1.5 OK d9443c01a7336-2d04ae18934sm39384395ad.11 - gsmtp
+> DATA
+354 Go ahead d9443c01a7336-2d04ae18934sm39384395ad.11 - gsmtp
+250 2.0.0 OK  1785768660 d9443c01a7336-2d04ae18934sm39384395ad.11 - gsmtp
+> QUIT
+
+
+--- message body ---
+<div style="font-family:sans-serif;max-width:520px;margin:0 auto;color:#1a1a1a"><h2 style="color:#ff6b6b;margin-bottom:4px">ThriftBid</h2><h3 style="margin:0 0 12px">Payment Received</h3><p>Hi Mintea Thrifty, payment for the order below has cleared.</p><table style="border-collapse:collapse;width:100%;margin:14px 0;border-top:1px solid #eee;border-bottom:1px solid #eee"><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Order #</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">227</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Item</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">off shoulder top</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Ordered On</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Aug 03, 2026 at 10:50 PM</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Buyer</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Ana</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Buyer Email</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">ana_delacruz@example.com</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Buyer Phone</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">09201234561</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Delivering To</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">20 Katipunan Ave, Cebu City, Cebu, 6000</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Amount Paid</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">₱431.28</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Payment Method</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Bank</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Payment Reference</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">SIM-7A22612356</td></tr><tr><td style="padding:4px 12px 4px 0;color:#777;white-space:nowrap">Payment Date &amp; Time</td><td style="padding:4px 0;font-weight:600;color:#1a1a1a">Nov 19, 2025 at 11:50 PM</td></tr></table><p style="color:#777;font-size:13px"><strong>Please ship this order within 48 hours.</strong> Once you have a tracking number, mark it shipped from your Seller Center so the buyer gets notified automatically.</p></div>
+
+=====
+
+[2026-08-03 22:51:44] To: ana_delacruz@example.com | Subject: Your ThriftBid order has shipped! | SENT
+Skipped: test/demo address (@example.com), no real send attempted
+
+--- message body ---
+<p>Good news — your order for "<strong>off shoulder top</strong>" (Order #227) is on its way.</p><p>Shipped by <strong>Mintea Thrifty</strong> via <strong>LBC</strong>.</p><p>Tracking number: <strong>1028635</strong></p>
+
+=====
+

@@ -43,6 +43,10 @@ $categories = DB::fetchAll('SELECT * FROM CATEGORIES ORDER BY name');
 $sizes      = DB::fetchAll('SELECT * FROM CATEGORY_SIZES WHERE category_id=? ORDER BY size_id', [$listing['category_id']]);
 $images     = DB::fetchAll('SELECT * FROM LISTING_IMAGES WHERE listing_id=? ORDER BY is_primary DESC, image_id ASC', [$listingId]);
 
+$predefinedColors = ['Black','Blue','Brown','Gold','Green','Grey','Multi-color','Orange','Pink','Purple','Red','Silver','White','Yellow','Other'];
+$predefinedCountries = ['Argentina','Australia','Brazil','Canada','China','France','Germany','India','Indonesia','Italy','Japan','Malaysia','Mexico','New Zealand','Philippines','Singapore','South Africa','South Korea','Spain','Taiwan','Thailand','United Kingdom','United States','Vietnam','Other'];
+$predefinedMaterials = ['Ceramic','Cotton','Glass','Leather','Metal','Nylon','Plastic','Polyester','Rubber','Silk','Synthetic Leather (PU)','Wood','Wool','Other'];
+
 $hasAuction = !empty($listing['auction_id']);
 $hasBids    = $hasAuction && (DB::fetch('SELECT COUNT(*) c FROM BIDDINGS WHERE auction_id=? AND is_deleted=0', [$listing['auction_id']])['c'] ?? 0) > 0;
 $hasSold    = (bool) DB::fetch('SELECT order_id FROM ORDERS WHERE listing_id=? LIMIT 1', [$listingId]);
@@ -50,15 +54,7 @@ $hasSold    = (bool) DB::fetch('SELECT order_id FROM ORDERS WHERE listing_id=? L
 /* Item Listing rule: title/category/size/condition/color/material/
    gender/made-in/price/original price stay editable until someone is
    actually relying on the listing - the first bid (auction) or the
-   first completed sale. Before that, editing breaks nothing since no
-   buyer has acted on it yet. After that:
-     - a bidder placed a bid based on the stated condition/price, or
-     - an ORDER now references this listing's data, and other pages
-       (receipts, order history, disputes) read that data live, not a
-       frozen snapshot - editing after a sale would silently rewrite
-       what a completed order refers to.
-   Description, photos, and the active/inactive toggle stay editable
-   unconditionally either way, since those never affect a bidder/buyer. */
+   first completed sale. */
 $fieldsLocked = $hasBids || $hasSold;
 
 /* How close the auction is to ending, for the "locked within 12h" banner */
@@ -87,15 +83,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     $isActive    = isset($_POST['is_active']) ? 1 : 0;
 
     if (!$fieldsLocked) {
-        /* Still pre-bid / pre-sale: every field is editable */
         $title         = trim($_POST['title'] ?? '');
         $catId         = (int)($_POST['category_id'] ?? 0);
         $sizeId        = (int)($_POST['size_id'] ?? 0);
         $condition     = $_POST['condition_grade'] ?? '';
-        $color         = trim($_POST['color'] ?? '');
-        $material      = trim($_POST['material'] ?? '');
+        $color         = isset($_POST['color']) ? implode(',', array_intersect((array)$_POST['color'], $predefinedColors)) : null;
+        $material      = isset($_POST['material']) ? implode(',', array_intersect((array)$_POST['material'], $predefinedMaterials)) : null;
         $targetGender  = $_POST['target_gender'] ?? '';
-        $madeIn        = trim($_POST['made_in'] ?? '');
+        $madeIn        = isset($_POST['made_in']) ? implode(',', array_intersect((array)$_POST['made_in'], $predefinedCountries)) : null;
         $baseCurrency  = $_POST['base_currency'] ?? 'PHP';
         $price         = (float)($_POST['price'] ?? 0);
         $originalPrice = (float)($_POST['original_price'] ?? 0);
@@ -120,8 +115,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
             }
         }
     } else {
-        /* Locked: only description/active status can change, regardless
-           of whatever was posted for the other fields */
         DB::query(
             'UPDATE LISTINGS SET description=?, is_active=? WHERE listing_id=? AND seller_id=?',
             [$description ?: null, $isActive, $listingId, $sellerId]
@@ -129,7 +122,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
     }
 
     if (empty($errors)) {
-        /* New photos are appended, not replacing existing ones - always allowed */
         if (!empty($_FILES['new_photos']['tmp_name'][0] ?? '')) {
             foreach ($_FILES['new_photos']['tmp_name'] as $i => $tmp) {
                 if ($tmp === '') continue;
@@ -142,13 +134,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         $images  = DB::fetchAll('SELECT * FROM LISTING_IMAGES WHERE listing_id=? ORDER BY is_primary DESC, image_id ASC', [$listingId]);
         $successMsg = 'Listing updated successfully.';
 
-        // Instantly reflect the change (price/description/active status/etc.)
-        // in BidBot's search index instead of waiting for the next full rebuild.
         notifyBidBotReindex($listingId);
     }
 }
 
-/* Delete a single photo (must always keep at least 1) */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_photo'])) {
     $imgId = (int)$_POST['image_id'];
     if (count($images) > 1) {
@@ -162,7 +151,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_photo'])) {
     }
 }
 
-/* Make a photo the primary/cover photo */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['make_primary'])) {
     $imgId = (int)$_POST['image_id'];
     DB::query('UPDATE LISTING_IMAGES SET is_primary=0 WHERE listing_id=?', [$listingId]);
@@ -170,19 +158,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['make_primary'])) {
     $images = DB::fetchAll('SELECT * FROM LISTING_IMAGES WHERE listing_id=? ORDER BY is_primary DESC, image_id ASC', [$listingId]);
 }
 
-/* Deactivate / reactivate */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['toggle_active'])) {
     $newActive = $listing['is_active'] ? 0 : 1;
     DB::query('UPDATE LISTINGS SET is_active=? WHERE listing_id=? AND seller_id=?', [$newActive, $listingId, $sellerId]);
     header('Location: edit-listing.php?id='.$listingId.'&updated=1' . ($returnUrl ? '&return='.urlencode($returnUrl) : '')); exit;
 }
 
-/* Soft-delete, routed through sp_seller_delete_listing so the 3-tier
-   auction-deletion rule (no bids: free / has bids: reason required,
-   incurs a seller offense via PENALTIES / within 12h of ending: fully
-   locked) is enforced by the trigger, not re-implemented here. Separate
-   rule from the fields-editability rule above - a listing with bids can
-   still be cancelled (with a reason) even though its fields are now locked. */
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_listing'])) {
     if ($hasSold) {
         $errors[] = 'Cannot delete a listing that has already been purchased.';
@@ -341,7 +322,7 @@ renderHead('Edit Listing - ' . htmlspecialchars($listing['title']));
           </section>
 
           <section class="bg-white border border-outline-variant rounded-xl p-6 space-y-4">
-            <h2 class="font-bold text-sm mb-1 text-tertiary uppercase tracking-wide">Category &amp; Condition</h2>
+            <h2 class="font-bold text-sm mb-1 text-tertiary uppercase tracking-wide">Category &amp; Attributes</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
 
               <?php if ($fieldsLocked): ?>
@@ -357,23 +338,6 @@ renderHead('Edit Listing - ' . htmlspecialchars($listing['title']));
                 <label class="block text-sm font-medium text-on-surface">Condition</label>
                 <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container text-tertiary" type="text" value="<?= htmlspecialchars($listing['condition_grade']) ?>" disabled>
               </div>
-              <div class="space-y-1">
-                <label class="block text-sm font-medium text-on-surface">Color</label>
-                <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container text-tertiary" type="text" value="<?= htmlspecialchars($listing['color'] ?? '—') ?>" disabled>
-              </div>
-              <div class="space-y-1">
-                <label class="block text-sm font-medium text-on-surface">Material</label>
-                <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container text-tertiary" type="text" value="<?= htmlspecialchars($listing['material'] ?? '—') ?>" disabled>
-              </div>
-              <div class="space-y-1">
-                <label class="block text-sm font-medium text-on-surface">Target Gender</label>
-                <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container text-tertiary" type="text" value="<?= htmlspecialchars($listing['target_gender'] ?? '—') ?>" disabled>
-              </div>
-              <div class="space-y-1">
-                <label class="block text-sm font-medium text-on-surface">Made In</label>
-                <input class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm bg-surface-container text-tertiary" type="text" value="<?= htmlspecialchars($listing['made_in'] ?? '—') ?>" disabled>
-              </div>
-
               <?php else: ?>
               <?php
               function tb_dropdown_edit(string $name, string $id, string $placeholder, array $options, $selected, bool $required = false): void {
@@ -416,29 +380,35 @@ renderHead('Edit Listing - ' . htmlspecialchars($listing['title']));
                   array_map(fn($c)=>['value'=>$c,'label'=>$c], ['Brand New','Like New','Lightly Used','Well Used','Heavily Used']),
                   $listing['condition_grade'], true); ?>
               </div>
-
-              <div class="space-y-1">
-                <label class="block text-sm font-medium text-on-surface">Color <span class="text-tertiary font-normal">(optional)</span></label>
-                <input type="text" name="color" value="<?= htmlspecialchars($listing['color'] ?? '') ?>" placeholder="e.g. Black, Multicolor" class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm">
-              </div>
-
-              <div class="space-y-1">
-                <label class="block text-sm font-medium text-on-surface">Material <span class="text-tertiary font-normal">(optional)</span></label>
-                <input type="text" name="material" value="<?= htmlspecialchars($listing['material'] ?? '') ?>" placeholder="e.g. Cotton, Leather" class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm">
-              </div>
-
-              <div class="space-y-1">
-                <label class="block text-sm font-medium text-on-surface">Target Gender <span class="text-tertiary font-normal">(optional)</span></label>
-                <?php tb_dropdown_edit('target_gender', 'genderSelect', 'Not specified',
-                  array_map(fn($g)=>['value'=>$g,'label'=>$g], ['Women','Men','Unisex','Kids']),
-                  $listing['target_gender'] ?? ''); ?>
-              </div>
-
-              <div class="space-y-1">
-                <label class="block text-sm font-medium text-on-surface">Made In <span class="text-tertiary font-normal">(optional)</span></label>
-                <input type="text" name="made_in" value="<?= htmlspecialchars($listing['made_in'] ?? '') ?>" placeholder="e.g. Philippines, Italy" class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm">
-              </div>
               <?php endif; ?>
+
+              <!-- Multi-select attributes for edit view -->
+              <?php
+              function tb_multi_checkbox_edit(string $title, string $fieldName, array $options, $selectedString, bool $disabled): void {
+                  $selectedArr = $selectedString ? explode(',', $selectedString) : [];
+                  ?>
+                  <div class="space-y-1">
+                    <label class="block text-sm font-medium text-on-surface" style="display:block"><?= $title ?></label>
+                    <div class="border border-outline-variant rounded-lg p-3 bg-white max-h-40 overflow-y-auto space-y-2">
+                      <?php foreach ($options as $opt): ?>
+                      <label class="flex items-center gap-2 text-sm cursor-pointer">
+                        <input type="checkbox" name="<?= $fieldName ?>[]" value="<?= htmlspecialchars($opt) ?>" <?= in_array($opt, $selectedArr) ? 'checked' : '' ?> <?= $disabled ? 'disabled' : '' ?> style="accent-color:var(--clr-coral)">
+                        <?= htmlspecialchars($opt) ?>
+                      </label>
+                      <?php endforeach; ?>
+                    </div>
+                  </div>
+                  <?php
+              }
+              ?>
+
+              <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4">
+                <?php 
+                tb_multi_checkbox_edit('Colors', 'color', $predefinedColors, $listing['color'] ?? '', $fieldsLocked);
+                tb_multi_checkbox_edit('Materials', 'material', $predefinedMaterials, $listing['material'] ?? '', $fieldsLocked);
+                tb_multi_checkbox_edit('Countries of Origin', 'made_in', $predefinedCountries, $listing['made_in'] ?? '', $fieldsLocked);
+                ?>
+              </div>
 
             </div>
           </section>
@@ -587,7 +557,6 @@ document.querySelectorAll('.tb-dd').forEach(dd => {
 });
 document.addEventListener('click', () => document.querySelectorAll('.tb-dd-menu.open').forEach(m => m.classList.remove('open')));
 
-/* Category -> Size dependency: rebuilds the size dropdown when category changes */
 const SIZES_BY_CATEGORY = <?= json_encode((function() {
     $all = DB::fetchAll('SELECT * FROM CATEGORY_SIZES ORDER BY size_id');
     $out = [];

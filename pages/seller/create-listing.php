@@ -21,6 +21,11 @@ foreach ($allSizes as $sz) $sizesByCategory[$sz['category_id']][] = $sz;
 $linesByBrand = [];
 foreach ($productLines as $pl) $linesByBrand[$pl['brand_id']][] = $pl;
 
+// Predefined Arrays for Multi-Select Attributes
+$predefinedColors = ['Black','Blue','Brown','Gold','Green','Grey','Multi-color','Orange','Pink','Purple','Red','Silver','White','Yellow','Other'];
+$predefinedCountries = ['Argentina','Australia','Brazil','Canada','China','France','Germany','India','Indonesia','Italy','Japan','Malaysia','Mexico','New Zealand','Philippines','Singapore','South Africa','South Korea','Spain','Taiwan','Thailand','United Kingdom','United States','Vietnam','Other'];
+$predefinedMaterials = ['Ceramic','Cotton','Glass','Leather','Metal','Nylon','Plastic','Polyester','Rubber','Silk','Synthetic Leather (PU)','Wood','Wool','Other'];
+
 const UPLOAD_DIR = __DIR__ . '/../../uploads/listings/';
 define('UPLOAD_URL_BASE', BASE_URL . '/uploads/listings/');
 
@@ -71,10 +76,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'product_line_id'=> (int)($_POST['product_line_id'] ?? 0),
         'size_id'       => (int)($_POST['size_id'] ?? 0),
         'condition_grade'=> $_POST['condition_grade'] ?? '',
-        'color'         => trim($_POST['color'] ?? ''),
-        'material'      => trim($_POST['material'] ?? ''),
+        'color'         => isset($_POST['color']) ? implode(',', array_intersect((array)$_POST['color'], $predefinedColors)) : null,
+        'material'      => isset($_POST['material']) ? implode(',', array_intersect((array)$_POST['material'], $predefinedMaterials)) : null,
         'target_gender' => $_POST['target_gender'] ?? '',
-        'made_in'       => trim($_POST['made_in'] ?? ''),
+        'made_in'       => in_array($_POST['made_in'] ?? '', $predefinedCountries, true) ? $_POST['made_in'] : null, 
         'listing_type'  => $_POST['listing_type'] ?? 'fixed',
         'base_currency' => $_POST['base_currency'] ?? 'PHP',
         'price'         => (float)($_POST['price'] ?? 0),
@@ -188,9 +193,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 [$sellerId, 'Listing Created!', 'Your item "' . $vals['title'] . '" is now live on ThriftBid.', 'SYSTEM']);
         }
 
-        // Instantly make this listing searchable via BidBot (harmless if
-        // it's a pending-authentication luxury item - the endpoint checks
-        // is_active itself and simply won't index it yet in that case).
         notifyBidBotReindex($listingId);
 
         header('Location: ' . BASE_URL . '/pages/seller/active-auctions.php?created=1');
@@ -223,10 +225,9 @@ renderHead('Create Listing');
     <?php endif; ?>
 
     <form method="POST" enctype="multipart/form-data" id="createForm">
-      <!-- Listing-view style layout: photo panel on the left (sticky), details on the right -->
       <div class="grid grid-cols-1 lg:grid-cols-[420px_1fr] gap-12">
 
-        <!-- LEFT: Photos, listing page's image panel -->
+        <!-- LEFT: Photos -->
         <div class="lg:sticky lg:top-6 self-start space-y-3">
           <label id="dropZone" for="photosInput" class="block cursor-pointer bg-surface-container border border-outline-variant rounded-xl overflow-hidden" style="aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;position:relative">
             <div id="dropZoneEmpty" class="text-center text-tertiary px-6">
@@ -235,14 +236,13 @@ renderHead('Create Listing');
               <p class="text-xs mt-1">Click to upload from your device &bull; up to 6 photos &bull; first photo becomes the cover</p>
             </div>
             <img id="mainPreview" class="hidden w-full h-full object-cover" alt="Cover preview">
-            <?php if ($errors && !empty($vals['is_luxury'])): ?><span class="absolute top-3 right-3 text-xs font-bold px-2 py-1 rounded bg-black text-white">Luxury</span><?php endif; ?>
           </label>
           <input type="file" name="photos[]" id="photosInput" accept="image/png,image/jpeg,image/webp" multiple class="hidden">
           <div id="thumbRow" class="flex gap-2 flex-wrap"></div>
           <p class="text-xs text-tertiary">3+ clear photos improve your listing's completeness score in Analytics.</p>
         </div>
 
-        <!-- RIGHT: listing page's info panel -->
+        <!-- RIGHT: Details -->
         <div class="space-y-6">
 
           <!-- Listing type -->
@@ -290,7 +290,6 @@ renderHead('Create Listing');
             <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
 
               <?php
-              
               function tb_dropdown(string $name, string $id, string $placeholder, array $options, $selected, bool $required = false): void {
                   $selectedLabel = $placeholder;
                   foreach ($options as $opt) { if ((string)$opt['value'] === (string)$selected) { $selectedLabel = $opt['label']; break; } }
@@ -306,7 +305,6 @@ renderHead('Create Listing');
                       <div class="tb-dd-option" data-value="<?= htmlspecialchars($opt['value']) ?>"><?= htmlspecialchars($opt['label']) ?></div>
                       <?php endforeach; ?>
                     </div>
-                    
                     <input type="hidden" name="<?= $name ?>" id="<?= $id ?>" value="<?= htmlspecialchars($selected ?? '') ?>">
                   </div>
                   <?php
@@ -344,14 +342,38 @@ renderHead('Create Listing');
                   $vals['condition_grade'] ?? '', true); ?>
               </div>
 
-              <div class="space-y-1">
-                <label class="block text-sm font-medium text-on-surface" style="display:block">Color <span class="text-tertiary font-normal">(optional)</span></label>
-                <input type="text" name="color" value="<?= htmlspecialchars($vals['color'] ?? '') ?>" placeholder="e.g. Black, Multicolor" class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm">
+              <!-- Multi-Select Checkbox Dropdowns for Color, Material, and Made In -->
+              <?php
+              function tb_multi_checkbox(string $title, string $fieldName, array $options, $selectedString): void {
+                  $selectedArr = $selectedString ? explode(',', $selectedString) : [];
+                  ?>
+                  <div class="space-y-1">
+                    <label class="block text-sm font-medium text-on-surface" style="display:block"><?= $title ?> <span class="text-tertiary font-normal">(multi-select)</span></label>
+                    <div class="border border-outline-variant rounded-lg p-3 bg-white max-h-40 overflow-y-auto space-y-2">
+                      <?php foreach ($options as $opt): ?>
+                      <label class="flex items-center gap-2 text-sm cursor-pointer">
+                        <input type="checkbox" name="<?= $fieldName ?>[]" value="<?= htmlspecialchars($opt) ?>" <?= in_array($opt, $selectedArr) ? 'checked' : '' ?> style="accent-color:var(--clr-coral)">
+                        <?= htmlspecialchars($opt) ?>
+                      </label>
+                      <?php endforeach; ?>
+                    </div>
+                  </div>
+                  <?php
+              }
+              ?>
+
+              <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <?php 
+                tb_multi_checkbox('Colors (Multi-select)', 'color', $predefinedColors, $vals['color'] ?? '');
+                tb_multi_checkbox('Materials (Multi-select)', 'material', $predefinedMaterials, $vals['material'] ?? '');
+                ?>
               </div>
 
               <div class="space-y-1">
-                <label class="block text-sm font-medium text-on-surface" style="display:block">Material <span class="text-tertiary font-normal">(optional)</span></label>
-                <input type="text" name="material" value="<?= htmlspecialchars($vals['material'] ?? '') ?>" placeholder="e.g. Cotton, Leather" class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm">
+                <label class="block text-sm font-medium text-on-surface" style="display:block">Country of Origin <span class="text-tertiary font-normal">(optional)</span></label>
+                <?php tb_dropdown('made_in', 'madeInSelect', 'Select country of origin',
+                  array_map(fn($c)=>['value'=>$c,'label'=>$c], $predefinedCountries),
+                  $vals['made_in'] ?? ''); ?>
               </div>
 
               <div class="space-y-1">
@@ -361,10 +383,6 @@ renderHead('Create Listing');
                   $vals['target_gender'] ?? ''); ?>
               </div>
 
-              <div class="space-y-1">
-                <label class="block text-sm font-medium text-on-surface" style="display:block">Made In <span class="text-tertiary font-normal">(optional)</span></label>
-                <input type="text" name="made_in" value="<?= htmlspecialchars($vals['made_in'] ?? '') ?>" placeholder="e.g. Philippines, Italy" class="w-full border border-outline-variant rounded-lg px-4 py-3 text-sm">
-              </div>
             </div>
           </section>
 
@@ -372,7 +390,6 @@ renderHead('Create Listing');
           <section class="bg-white border border-outline-variant rounded-xl p-6 space-y-4" id="pricingSection">
             <h2 class="font-bold text-sm mb-1 text-tertiary uppercase tracking-wide">Pricing</h2>
 
-            <!-- Currency Selection -->
             <div class="space-y-1 mb-4">
               <label class="block text-sm font-medium text-on-surface">Base Currency <span class="text-thrift-coral">*</span></label>
               <?php tb_dropdown('base_currency', 'currencySelect', 'Select Currency', [
@@ -386,7 +403,7 @@ renderHead('Create Listing');
               <div id="fixedPriceField">
                 <label class="text-sm font-medium text-on-surface block mb-1">Selling Price <span class="text-thrift-coral">*</span></label>
                 <div class="relative">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">💰</span>
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary"></span>
                   <input class="w-full pl-10 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="price" type="number" min="1" step="0.01" placeholder="0.00" value="<?= $vals['price'] ?? '' ?>">
                 </div>
               </div>
@@ -394,7 +411,7 @@ renderHead('Create Listing');
               <div>
                 <label class="text-sm font-medium text-on-surface block mb-1">Original Retail Price <span class="text-tertiary font-normal">(optional)</span></label>
                 <div class="relative">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">💰</span>
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary"></span>
                   <input class="w-full pl-10 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="original_price" type="number" min="0" step="0.01" placeholder="0.00" value="<?= $vals['original_price'] ?? '' ?>">
                 </div>
               </div>
@@ -494,12 +511,9 @@ renderHead('Create Listing');
 </style>
 
 <script>
-/* PHP-computed lookup tables, passed to JS so category->size and
-   brand->product line dropdowns can filter without another request */
 const SIZES_BY_CATEGORY = <?= json_encode($sizesByCategory) ?>;
 const LINES_BY_BRAND     = <?= json_encode($linesByBrand) ?>;
 
-/* Custom dropdown widget: builds/rebuilds the option list for one dropdown */
 function buildDropdownOptions(dd, options, placeholder, keepValue) {
   const menu = dd.querySelector('.tb-dd-menu');
   const hidden = dd.querySelector('input[type=hidden]');
@@ -555,8 +569,6 @@ brandHidden.addEventListener('change', () => refreshLines(false));
 if (categoryHidden.value) refreshSizes(true);
 if (brandHidden.value) refreshLines(true);
 
-/* Switches the form between Fixed Price and Auction fields depending on
-   which listing-type card is selected */
 const typeCards = document.querySelectorAll('.listing-type-card');
 const fixedField    = document.getElementById('fixedPriceField');
 const auctionFields = document.getElementById('auctionFields');
@@ -580,8 +592,6 @@ typeCards.forEach(card => {
 const checkedType = document.querySelector('input[name=listing_type]:checked');
 if (checkedType) applyType(checkedType.value);
 
-/* Shows the luxury authentication fields, and within those, either the
-   certificate upload or the no-certificate box-match upload */
 const luxuryToggle  = document.getElementById('luxuryToggle');
 const luxurySection = document.getElementById('luxurySection');
 const certField     = document.getElementById('certUploadField');
@@ -596,13 +606,9 @@ function applyLuxury() { luxurySection.classList.toggle('hidden', !luxuryToggle.
 luxuryToggle.addEventListener('change', applyLuxury);
 document.querySelectorAll('input[name=has_certificate]').forEach(r => r.addEventListener('change', applyCertChoice));
 
-
 applyLuxury();
 applyCertChoice();
-applyLuxury(); applyCertChoice();
 
-/* Cover photo shown large (matches how it'll look on the listing page),
-   remaining photos as thumbnails below it */
 const photosInput = document.getElementById('photosInput');
 let selectedFiles = [];
 
@@ -656,16 +662,12 @@ function syncFileInput() {
 }
 
 photosInput.addEventListener('change', function () {
-  /* Appends newly picked files to whatever's already selected, capped at 6 */
   const incoming = [...this.files];
   selectedFiles = [...selectedFiles, ...incoming].slice(0, 6);
   syncFileInput();
   renderPhotoPreview();
 });
 
-/* The custom dropdowns store their value in a hidden input, which the
-   browser's native "required" validation doesn't see - so required
-   dropdowns are checked manually here before letting the form submit */
 document.getElementById('createForm').addEventListener('submit', function (e) {
   const missing = [];
   document.querySelectorAll('.tb-dd[data-required="1"]').forEach(dd => {
@@ -676,7 +678,6 @@ document.getElementById('createForm').addEventListener('submit', function (e) {
     }
   });
 
-  /* Whichever upload is currently visible (certificate or box-match) is required */
   if (luxuryToggle.checked) {
     const visibleSection = certField.classList.contains('hidden') ? noCertSection : certField;
     const fileInput = visibleSection.querySelector('input[type="file"]');
@@ -690,10 +691,6 @@ document.getElementById('createForm').addEventListener('submit', function (e) {
     return;
   }
 
-  /* Guards against duplicate listings from a double-click or an
-     accidental double-submit (e.g. pressing Enter then also clicking
-     Publish) - disables the button right as the form actually submits,
-     so exactly one POST goes through. */
   const submitBtn = this.querySelector('button[type="submit"]');
   submitBtn.disabled = true;
   submitBtn.textContent = 'Publishing...';
