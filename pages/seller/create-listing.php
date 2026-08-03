@@ -141,15 +141,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         /* Only auction-type listings get an AUCTIONS row; fixed-price
            listings sell directly off LISTINGS.price */
-        if ($vals['listing_type'] === 'auction') {
-            $endTime = date('Y-m-d H:i:s', time() + ($vals['end_hours'] * 3600));
-            DB::query(
-                'INSERT INTO AUCTIONS (start_bid, min_increment, current_highest_bid, start_time, end_time, status, listing_id)
-                 VALUES (?,?,?,NOW(),?,"Active",?)',
-                [$vals['start_bid'], $vals['min_increment'], $vals['start_bid'], $endTime, $listingId]
-            );
-        }
-
+          if ($vals['listing_type'] === 'auction') {
+              if ($vals['is_luxury']) {
+                  DB::query(
+                      'INSERT INTO AUCTIONS (start_bid, min_increment, current_highest_bid, status, planned_duration_hours, listing_id)
+                      VALUES (?,?,?,"Pending",?,?)',
+                      [$vals['start_bid'], $vals['min_increment'], $vals['start_bid'], $vals['end_hours'], $listingId]
+                  );
+              } else {
+                  $endTime = date('Y-m-d H:i:s', time() + ($vals['end_hours'] * 3600));
+                  DB::query(
+                      'INSERT INTO AUCTIONS (start_bid, min_increment, current_highest_bid, start_time, end_time, status, listing_id)
+                      VALUES (?,?,?,NOW(),?,"Active",?)',
+                      [$vals['start_bid'], $vals['min_increment'], $vals['start_bid'], $endTime, $listingId]
+                  );
+              }
+          }
         /* Rule 15: luxury listings need an AUTHENTICATION row (status
            'Pending') before an admin can verify them - certificate photo
            if the seller has one, otherwise a box/serial match photo */
@@ -667,7 +674,16 @@ document.getElementById('createForm').addEventListener('submit', function (e) {
     e.preventDefault();
     missing[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
     alert('Please fill out all required fields (marked with *) before publishing.');
+    return;
   }
+
+  /* Guards against duplicate listings from a double-click or an
+     accidental double-submit (e.g. pressing Enter then also clicking
+     Publish) - disables the button right as the form actually submits,
+     so exactly one POST goes through. */
+  const submitBtn = this.querySelector('button[type="submit"]');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Publishing...';
 });
 </script>
-</body></html>
+</body></html>  

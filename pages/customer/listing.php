@@ -29,7 +29,17 @@ $listing = DB::fetch(
     [$id]
 );
 if (!$listing) { header('Location: categories.php'); exit; }
-$isSold = !$listing['is_active'];
+
+/* is_active=0 has two unrelated causes: (1) genuinely sold - an ORDERS
+   row exists and after_order_insert_deactivate_listing turned it off,
+   or (2) a luxury listing still awaiting admin authentication (Rule 15)
+   that was never active in the first place. These need different
+   messaging - "Sold Out" vs. "Pending Authentication" - so check which
+   one actually applies instead of collapsing both into $isSold. */
+$hasOrder = DB::fetch('SELECT order_id FROM ORDERS WHERE listing_id=? LIMIT 1', [$id]);
+$isSold = !empty($hasOrder);
+$isPendingAuth = !$listing['is_active'] && !$isSold;
+
 $isOwnListing = ($user['role']==='seller' && (int)($user['seller_id'] ?? 0) === (int)$listing['seller_id']);
 
 $images = DB::fetchAll('SELECT * FROM LISTING_IMAGES WHERE listing_id=? ORDER BY is_primary DESC, image_id ASC', [$id]);
@@ -136,13 +146,17 @@ renderHead($listing['title']);
       <div>
         <div style="background:var(--clr-surface-mid);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative">
           <?php if (!empty($images)): ?>
-          <img src="<?= htmlspecialchars($images[0]['image_url']) ?>" alt="<?= htmlspecialchars($listing['title']) ?>" style="width:100%;height:100%;object-fit:cover;<?= $isSold ? 'filter:grayscale(40%);opacity:0.75' : '' ?>" id="mainPhoto">
+          <img src="<?= htmlspecialchars($images[0]['image_url']) ?>" alt="<?= htmlspecialchars($listing['title']) ?>" style="width:100%;height:100%;object-fit:cover;<?= ($isSold || $isPendingAuth) ? 'filter:grayscale(40%);opacity:0.75' : '' ?>" id="mainPhoto">
           <?php else: ?>
           <span class="material-symbols-outlined" style="font-size:80px;color:var(--clr-outline)">checkroom</span>
           <?php endif; ?>
           <?php if ($isSold): ?>
           <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
             <span style="background:#1a1a1a;color:#fff;font-size:20px;font-weight:800;letter-spacing:0.12em;padding:10px 32px;border-radius:6px;transform:rotate(-8deg);box-shadow:0 4px 16px rgba(0,0,0,0.3)">SOLD</span>
+          </div>
+          <?php elseif ($isPendingAuth): ?>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">
+            <span style="background:var(--clr-coral);color:#fff;font-size:16px;font-weight:800;letter-spacing:0.08em;padding:10px 28px;border-radius:6px;transform:rotate(-8deg);box-shadow:0 4px 16px rgba(0,0,0,0.3)">PENDING AUTHENTICATION</span>
           </div>
           <?php endif; ?>
           <?php if ($listing['tier'] === 'High'): ?>
@@ -232,6 +246,10 @@ renderHead($listing['title']);
         <?php if ($isSold): ?>
         <div style="background:var(--clr-surface-low);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);padding:16px;text-align:center;color:var(--clr-tertiary);font-weight:600">
           <span class="material-symbols-outlined icon-sm" style="vertical-align:middle;margin-right:6px">block</span>This item has already been sold.
+        </div>
+        <?php elseif ($isPendingAuth): ?>
+        <div style="background:var(--clr-info-bg);border:1px solid #b8d4e8;border-radius:var(--radius-sm);padding:16px;text-align:center;color:var(--clr-info);font-weight:600">
+          <span class="material-symbols-outlined icon-sm" style="vertical-align:middle;margin-right:6px">hourglass_top</span>This luxury item is awaiting admin authentication and isn't visible to buyers yet.
         </div>
         <?php elseif ($isPrivilegedViewer): ?>
         <div style="background:var(--clr-info-bg);border:1px solid #b8d4e8;border-radius:var(--radius-sm);padding:16px;text-align:center;color:var(--clr-info);font-weight:600">
