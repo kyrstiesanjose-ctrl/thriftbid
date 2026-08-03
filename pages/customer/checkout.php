@@ -9,17 +9,13 @@ requireLogin('../login.php');
 $user    = currentUser();
 $buyerId = $user['buyer_id'] ?? $user['id']; /* session row IS the buyer row */
 
-/* Delivery address is required before payment - not at registration,
-   since forcing an address on someone who's just browsing/bidding is bad
-   UX, but by the time real money is about to move there has to be
-   somewhere to ship to. Snapshotted onto the order at payment time (see
-   after_payment_insert_create_transaction, schema.sql), not re-read live
-   from ADDRESSES later - a buyer editing their address afterward must
-   not retroactively change what a past order says it shipped to. */
+/* Delivery address is required at payment too
+ The address is snapshotted into the order during payment (see after_payment_insert_create_transaction, schema.sql) 
+ and not updated from ADDRESSES later, preventing past orders from changing*/
 $defaultAddress = DB::fetch('SELECT * FROM ADDRESSES WHERE user_id=? AND user_type="Buyer" AND is_default=1', [$buyerId]);
 $addressErrors = [];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_address'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_address']) && verifyCsrf($_POST['csrf'] ?? '')) {
     $street   = trim($_POST['street'] ?? '');
     $city     = trim($_POST['city'] ?? '');
     $province = trim($_POST['province'] ?? '');
@@ -114,7 +110,7 @@ $otpCtx    = $_SESSION['checkout_otp'] ?? null;
 $sameCtx   = $otpCtx && $otpCtx['buyer_id'] === $buyerId && $otpCtx['mode'] === $mode
              && $otpCtx['order_id'] === $orderId && $otpCtx['items'] === $itemsParam;
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_otp'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_otp']) && verifyCsrf($_POST['csrf'] ?? '')) {
     $method   = $_POST['payment_method'] ?? 'GCash';
     $gcashNum = trim($_POST['gcash_number'] ?? '');
     $errors   = [];
@@ -138,10 +134,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_otp'])) {
     } else {
         $errorMsg = implode(' ', $errors);
     }
-} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_otp']) && $sameCtx) {
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['resend_otp']) && verifyCsrf($_POST['csrf'] ?? '') && $sameCtx) {
     generateAndSendOtp('Buyer', $buyerId, $user['email'], $user['first_name'] ?? $user['username'], 'Payment', $mode === 'single' ? $orderId : null);
     $otpStage = true;
-} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_otp'])) {
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_otp']) && verifyCsrf($_POST['csrf'] ?? '')) {
     if (!$sameCtx) {
         $errorMsg = 'Your checkout session expired. Please choose your payment method again.';
     } else {
@@ -176,9 +172,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_otp'])) {
                 $pdo->commit();
                 unset($_SESSION['checkout_otp']);
 
-                /* Send the payment-confirmation emails right now, instead of
-                   waiting on layout.php's opportunistic flush on some later
-                   page load - that dependency turned out to be unreliable. */
+                /* Send the payment-confirmation emails right now */
                 flushEmailQueue(3);
             } catch (\Throwable $e) {
                 $pdo->rollBack();
@@ -264,6 +258,7 @@ renderHead($mode === 'single' ? 'Checkout - Order #' . $orderId : 'Checkout - ' 
           </p>
           <form method="POST" style="display:flex;flex-direction:column;gap:10px">
             <input type="hidden" name="save_address" value="1">
+            <input type="hidden" name="csrf" value="<?= csrfToken() ?>">
             <input class="tb-input" name="street" type="text" placeholder="Street address" value="<?= htmlspecialchars($defaultAddress['street_address'] ?? '') ?>" required>
             <div style="display:flex;gap:10px">
               <input class="tb-input" name="city" type="text" placeholder="City" value="<?= htmlspecialchars($defaultAddress['city'] ?? '') ?>" required>
@@ -329,6 +324,7 @@ renderHead($mode === 'single' ? 'Checkout - Order #' . $orderId : 'Checkout - ' 
 
         <form method="POST" style="display:flex;flex-direction:column;gap:16px">
           <input type="hidden" name="confirm_otp" value="1">
+          <input type="hidden" name="csrf" value="<?= csrfToken() ?>">
           <div class="tb-form-group">
             <label class="tb-label">Verification Code</label>
             <input class="tb-input" name="otp" type="text" inputmode="numeric" pattern="\d{6}" maxlength="6" placeholder="000000" style="letter-spacing:8px;font-size:22px;text-align:center;font-weight:700" required autofocus>
@@ -340,6 +336,7 @@ renderHead($mode === 'single' ? 'Checkout - Order #' . $orderId : 'Checkout - ' 
         </form>
         <form method="POST" style="margin-top:10px">
           <input type="hidden" name="resend_otp" value="1">
+          <input type="hidden" name="csrf" value="<?= csrfToken() ?>">
           <button type="submit" class="btn btn-ghost btn-full btn-sm">Resend Code</button>
         </form>
         <p style="font-size:11px;color:var(--clr-tertiary);text-align:center;margin-top:12px">Simulation Mode: no real money moves. This OTP step stands in for the bank/GCash authorization step.</p>
@@ -350,6 +347,7 @@ renderHead($mode === 'single' ? 'Checkout - Order #' . $orderId : 'Checkout - ' 
 
         <form method="POST" style="display:flex;flex-direction:column;gap:16px">
           <input type="hidden" name="request_otp" value="1">
+          <input type="hidden" name="csrf" value="<?= csrfToken() ?>">
           <div>
             <label class="tb-label">Choose Method</label>
             <div class="grid grid-cols-2 gap-3">
