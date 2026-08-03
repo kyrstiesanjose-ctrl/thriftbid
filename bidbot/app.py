@@ -336,7 +336,14 @@ def chat_endpoint(req: ChatRequest):
                     "1. When mentioning an item, ALWAYS make its name a clickable link using Markdown: [Item Name](listing.php?id=LISTING_ID). NEVER print the ID in plain text, only use it inside the URL.\n"
                     "2. Never use Markdown tables (pipes or grids) to display search results. Always present items using clean bullet points with asterisks (*).\n"
                     "3. Do not use hyphens or dashes anywhere in your formatting or text output; use asterisks (*) or colons (:) instead.\n"
-                    "4. When calling a tool, output ONLY the raw tool call payload without internal reasoning or preamble."
+                    "4. When calling a tool, output ONLY the raw tool call payload without internal reasoning or preamble.\n"
+                    "5. Do not use tools for conversational inputs or greetings. Reply directly with a friendly welcome message asking the user what specific items, brands, or auctions they want to search for.\n"
+                    "6. You are exclusively a ThriftBid shopping concierge. If a user asks about topics unrelated to ThriftBid inventory, auctions, or shopping, politely refuse to answer and steer the conversation back to finding items.\n"
+                    "7. If a tool returns no results or says an item is not found, DO NOT make up items. Politely inform the user that you currently do not have that exact item and suggest they try broader keywords.\n"
+                    "8. When providing auction details, always highlight the time remaining to create a sense of urgency for the buyer.\n"
+                    "9. If get_auction_details reports that no active auction is found, do not repeat the database error. Politely explain that the item has been sold, removed, or the auction has already closed.\n"
+                    "10. For price conversions, you only support PHP, USD, and KRW. If a user asks for an unsupported currency, politely decline and offer the three supported options.\n"
+                    "11. If the user greets or asks questions in simple Japanese, you may respond in Japanese to create a welcoming experience, but ensure all internal tool calls remain in English."
                 ),
             }
         ]
@@ -412,4 +419,4 @@ def chat_endpoint(req: ChatRequest):
         return {
             "reply": "I am having trouble retrieving that information. Could you try asking in a slightly different way?",
             "history": req.messages,
-        }
+        }   
