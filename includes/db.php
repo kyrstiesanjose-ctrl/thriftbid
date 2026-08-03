@@ -9,19 +9,35 @@ class DB {
 
     public static function get(): PDO {
         if (self::$instance === null) {
+            
+            // ========================================================
+            // DYNAMIC RBAC CREDENTIAL MAPPING (Added for your project)
+            // ========================================================
+            $dbUser = 'tb_buyer'; // Default fallback for guests/buyers
+            $dbPass = 'BuyerSecure2026!';
+
+            if (isset($_SESSION['user_role'])) {
+                $role = $_SESSION['user_role'];
+                if ($role === 'admin') {
+                    $dbUser = 'tb_admin';
+                    $dbPass = 'AdminSecure2026!';
+                } elseif ($role === 'seller') {
+                    $dbUser = 'tb_seller';
+                    $dbPass = 'SellerSecure2026!';
+                }
+            }
+            // ========================================================
+
+            // Uses your config host/port/name, but swaps out the user/pass dynamically
             $dsn = 'mysql:host=' . DB_HOST . ';port=' . DB_PORT . ';dbname=' . DB_NAME . ';charset=utf8mb4';
-            self::$instance = new PDO($dsn, DB_USER, DB_PASSWORD, [
+            self::$instance = new PDO($dsn, $dbUser, $dbPass, [
                 PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES   => false,
             ]);
             self::$instance->exec("SET time_zone = '+08:00'");
 
-            /* Lazy auto-close: there's no cron/event scheduler in this
-               environment, so nothing flips AUCTIONS.status to 'Closed'
-               once end_time passes. Catch up here, once per request,
-               right when the connection opens - closes anything that's
-               overdue before the page reads auction data. */
+            /* Lazy auto-close: preserves your existing auction logic */
             $expired = self::$instance
                 ->query("SELECT auction_id FROM AUCTIONS WHERE status='Active' AND end_time <= NOW()")
                 ->fetchAll(PDO::FETCH_COLUMN);
@@ -54,12 +70,7 @@ class DB {
         return (int) self::get()->lastInsertId();
     }
 
-  
     // Stored procedure helpers.
-
-
-
-    // For procedures that return exactly one row (like a stats summary).
     public static function callOne(string $proc, array $params = []): array|false {
         $placeholders = implode(',', array_fill(0, count($params), '?'));
         $stmt = self::query("CALL $proc($placeholders)", $params);
@@ -68,7 +79,6 @@ class DB {
         return $row;
     }
 
-    // For procedures that return multiple rows (like  a top 10 list).
     public static function callAll(string $proc, array $params = []): array {
         $placeholders = implode(',', array_fill(0, count($params), '?'));
         $stmt = self::query("CALL $proc($placeholders)", $params);
@@ -77,26 +87,17 @@ class DB {
         return $rows;
     }
 
-    // For procedures that don't return a result set at all (they just
-    // INSERT/UPDATE). Still calls closeCursor() to be safe.
     public static function callProc(string $proc, array $params = []): void {
         $placeholders = implode(',', array_fill(0, count($params), '?'));
         self::query("CALL $proc($placeholders)", $params)->closeCursor();
     }
 
-   // For procedures that just insert a row and return the new ID.
     public static function callProcGetLastId(string $proc, array $params = []): int {
         $placeholders = implode(',', array_fill(0, count($params), '?'));
         self::query("CALL $proc($placeholders)", $params)->closeCursor();
         return (int) self::get()->lastInsertId();
     }
 
-    // Runs $fn inside a transaction: commits if it completes normally,
-    // rolls back and rethrows if it throws. Use this for any action
-    // that writes to more than one table (e.g. resolving a dispute:
-    // update DISPUTES + insert NOTIFICATIONS + maybe insert PENALTIES +
-    // insert AUDIT_LOGS) so a failure partway through can't leave the
-    // database in a half-updated state.
     public static function transaction(callable $fn): mixed {
         $pdo = self::get();
         $pdo->beginTransaction();
@@ -110,20 +111,4 @@ class DB {
         }
     }
 }
-
-/*
-// ============================================================
-//  STEP 3: PASTE THE DIAGNOSTIC BLOCK HERE (AT THE BOTTOM)
-// ============================================================
-try {
-    $result = DB::fetch("SELECT DATABASE() as active_db, NOW() as db_time");
-    echo "<h2> Connected Successfully!</h2>";
-    echo "Connected Database: <strong>" . $result['active_db'] . "</strong><br>";
-    echo "Cloud Server Time: <strong>" . $result['db_time'] . "</strong>";
-} catch (Exception $e) {
-    echo "<h2> Connection Failed</h2>";
-    echo "Error Details: " . $e->getMessage();
-}
-
-*/
 ?>
