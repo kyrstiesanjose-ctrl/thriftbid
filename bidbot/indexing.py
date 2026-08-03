@@ -5,33 +5,46 @@ metadata. Used by both build_index.py (full rebuild) and app.py's
 two never drift out of sync with each other.
 """
 
-# Used for the full rebuild (build_index.py) - only currently-visible listings.
+# Updated to use LEFT JOIN and GROUP_CONCAT for the new normalized Color and Material tables
 BULK_LISTING_QUERY = """
     SELECT
         l.listing_id, l.title, l.description, l.price,
-        l.color, l.material, l.made_in,
+        l.made_in,
         c.name AS category_name,
-        b.brand_name
+        b.brand_name,
+        GROUP_CONCAT(DISTINCT co.color_name SEPARATOR ', ') AS color,
+        GROUP_CONCAT(DISTINCT m.material_name SEPARATOR ', ') AS material
     FROM LISTINGS l
     JOIN CATEGORIES c ON l.category_id = c.category_id
     JOIN PRODUCT_LINES pl ON l.product_line_id = pl.product_line_id
     JOIN BRANDS b ON pl.brand_id = b.brand_id
+    LEFT JOIN LISTING_COLORS lc ON l.listing_id = lc.listing_id
+    LEFT JOIN COLORS co ON lc.color_id = co.color_id
+    LEFT JOIN LISTING_MATERIALS lm ON l.listing_id = lm.listing_id
+    LEFT JOIN MATERIALS m ON lm.material_id = m.material_id
     WHERE l.deleted_at IS NULL AND l.is_active = 1
+    GROUP BY l.listing_id
 """
 
-# Used for a single-listing lookup (app.py's /api/reindex-listing) - includes
-# is_active/deleted_at so the endpoint can decide to index vs. remove.
+# Same logic, but filtered for a single listing_id
 SINGLE_LISTING_QUERY = """
     SELECT
         l.listing_id, l.title, l.description, l.price,
-        l.color, l.material, l.made_in, l.is_active, l.deleted_at,
+        l.made_in, l.is_active, l.deleted_at,
         c.name AS category_name,
-        b.brand_name
+        b.brand_name,
+        GROUP_CONCAT(DISTINCT co.color_name SEPARATOR ', ') AS color,
+        GROUP_CONCAT(DISTINCT m.material_name SEPARATOR ', ') AS material
     FROM LISTINGS l
     JOIN CATEGORIES c ON l.category_id = c.category_id
     JOIN PRODUCT_LINES pl ON l.product_line_id = pl.product_line_id
     JOIN BRANDS b ON pl.brand_id = b.brand_id
+    LEFT JOIN COLORS lc ON l.listing_id = lc.listing_id
+    LEFT JOIN COLORS co ON lc.color_id = co.color_id
+    LEFT JOIN LISTING_MATERIALS lm ON l.listing_id = lm.listing_id
+    LEFT JOIN MATERIALS m ON lm.material_id = m.material_id
     WHERE l.listing_id = %s
+    GROUP BY l.listing_id
 """
 
 
