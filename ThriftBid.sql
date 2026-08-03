@@ -1,3 +1,7 @@
+-- =========
+-- SCHEMA & SEED 
+-- ========
+
 CREATE DATABASE  IF NOT EXISTS `thriftbid_db2` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `thriftbid_db2`;
 -- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
