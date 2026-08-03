@@ -52,8 +52,23 @@ $conditions = ['Brand New','Like New','Lightly Used','Well Used','Heavily Used']
 
 /* Only distinct values actually present in active listings, so the
    filter dropdowns never show an option with zero matching results */
-$colorOptions    = DB::fetchAll('SELECT DISTINCT color FROM LISTINGS WHERE color IS NOT NULL AND is_active=1 ORDER BY color');
-$materialOptions = DB::fetchAll('SELECT DISTINCT material FROM LISTINGS WHERE material IS NOT NULL AND is_active=1 ORDER BY material');
+$colorOptions    = DB::fetchAll('
+    SELECT DISTINCT c.color_name AS color 
+    FROM COLORS c 
+    JOIN LISTING_COLORS lc ON c.color_id = lc.color_id 
+    JOIN LISTINGS l ON lc.listing_id = l.listing_id 
+    WHERE l.is_active = 1 
+    ORDER BY c.color_name
+');
+
+$materialOptions = DB::fetchAll('
+    SELECT DISTINCT m.material_name AS material 
+    FROM MATERIALS m 
+    JOIN LISTING_MATERIALS lm ON m.material_id = lm.material_id 
+    JOIN LISTINGS l ON lm.listing_id = l.listing_id 
+    WHERE l.is_active = 1 
+    ORDER BY m.material_name
+');
 $madeInOptions   = DB::fetchAll('SELECT DISTINCT made_in FROM LISTINGS WHERE made_in IS NOT NULL AND is_active=1 ORDER BY made_in');
 $genderOptions   = ['Women','Men','Unisex','Kids'];
 
@@ -71,8 +86,14 @@ if ($type === 'auction') $where .= ' AND l.listing_id IN (SELECT listing_id FROM
 if ($luxuryOnly) $where .= ' AND pl.tier="High"';
 if ($sizeVal)   { $where .= ' AND l.size_id IN (SELECT size_id FROM CATEGORY_SIZES WHERE size_value=?)'; $params[] = $sizeVal; }
 if ($cond)      { $where .= ' AND l.condition_grade=?'; $params[] = $cond; }
-if ($colorFilter)    { $where .= ' AND l.color=?'; $params[] = $colorFilter; }
-if ($materialFilter) { $where .= ' AND l.material=?'; $params[] = $materialFilter; }
+if ($colorFilter) { 
+    $where .= ' AND l.listing_id IN (SELECT lc.listing_id FROM LISTING_COLORS lc JOIN COLORS c ON lc.color_id = c.color_id WHERE c.color_name=?)'; 
+    $params[] = $colorFilter; 
+}
+if ($materialFilter) { 
+    $where .= ' AND l.listing_id IN (SELECT lm.listing_id FROM LISTING_MATERIALS lm JOIN MATERIALS m ON lm.material_id = m.material_id WHERE m.material_name=?)'; 
+    $params[] = $materialFilter; 
+}
 if ($genderFilter)   { $where .= ' AND l.target_gender=?'; $params[] = $genderFilter; }
 if ($madeInFilter)   { $where .= ' AND l.made_in=?'; $params[] = $madeInFilter; }
 
