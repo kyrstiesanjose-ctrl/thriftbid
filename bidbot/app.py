@@ -278,8 +278,8 @@ TOOLS = [
                         "description": "What the user is looking for, in natural language.",
                     },
                     "max_price": {
-                        "type": "number",
-                        "description": "The maximum price in PHP the user is willing to pay. Omit if no budget is specified.",
+                        "type": ["number", "null"],
+                        "description": "The maximum price in PHP the user is willing to pay. Use null if no budget is specified.",
                     },
                 },
                 "required": ["query"],
@@ -344,14 +344,32 @@ def chat_endpoint(req: ChatRequest):
         messages.extend(recent_history)
 
         for _ in range(3):
-            response = client.chat.completions.create(
-                model="openai/gpt-oss-20b",
-                messages=messages,
-                tools=TOOLS,
-                tool_choice="auto",
-                temperature=0.0,
-                max_tokens=1024,
-            )
+            # gpt-oss-20b occasionally leaks its internal reasoning into the
+            # slot Groq expects a clean tool call in, which fails to parse
+            # (a known issue - reasoning_format isn't even supported on this
+            # model). reasoning_effort="low" reduces how often this happens;
+            # since it's intermittent rather than 100% reproducible, retry
+            # once before giving up, instead of showing the raw error to
+            # the buyer.
+            response = None
+            for attempt in range(2):
+                try:
+                    response = client.chat.completions.create(
+                        model="llama-3.3-70b-versatile",
+                        messages=messages,
+                        tools=TOOLS,
+                        tool_choice="auto",
+                        temperature=0.0,
+                        max_tokens=1024,
+                    )
+                    break
+                except Exception as groq_err:
+                    print(f"BidBot Groq call failed (attempt {attempt + 1}): {groq_err}")
+                    if attempt == 1:
+                        return {
+                            "reply": "I am having trouble retrieving that information. Could you try asking in a slightly different way?",
+                            "history": req.messages,
+                        }
 
             response_message = response.choices[0].message
             tool_calls = response_message.tool_calls
@@ -373,6 +391,8 @@ def chat_endpoint(req: ChatRequest):
                     args = json.loads(tool_call.function.arguments)
                     result = fn(args)
 
+                print(f"BidBot DEBUG: called {fn_name}({args if fn else ''}) -> {str(result)[:300]}")
+
                 messages.append(
                     {
                         "tool_call_id": tool_call.id,
@@ -388,4 +408,8 @@ def chat_endpoint(req: ChatRequest):
         }
 
     except Exception as e:
-        return {"reply": f"Groq API Error: {str(e)}", "history": req.messages}
+        print(f"BidBot error: {e}")  # server-side log - not shown to the buyer
+        return {
+            "reply": "I am having trouble retrieving that information. Could you try asking in a slightly different way?",
+            "history": req.messages,
+        }
