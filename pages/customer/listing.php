@@ -6,6 +6,27 @@ require_once __DIR__ . '/../../includes/mailer.php';
 require_once __DIR__ . '/../../includes/layout.php';
 requireLogin('../login.php');
 
+// --- MULTI-CURRENCY SUPPORT ---
+if (isset($_GET['set_currency']) && in_array($_GET['set_currency'], ['PHP','USD','KRW'])) {
+    $_SESSION['pref_currency'] = $_GET['set_currency'];
+    $qs = $_GET; unset($qs['set_currency']);
+    header('Location: ?' . http_build_query($qs)); exit;
+}
+$prefCur = $_SESSION['pref_currency'] ?? 'PHP';
+$liveRates = getLiveCurrencyRates();
+
+function getConversionRate(string $baseCur, string $prefCur, array $rates): float {
+    $inPhp = $baseCur === 'PHP' ? 1.0 : 1.0 / ($rates[$baseCur] ?? 1.0);
+    return $prefCur === 'PHP' ? $inPhp : $inPhp * ($rates[$prefCur] ?? 1.0);
+}
+function formatPriceMulti(float $amount, string $baseCur, string $prefCur, array $rates): string {
+    $rate = getConversionRate($baseCur, $prefCur, $rates);
+    $converted = $amount * $rate;
+    $syms = ['PHP'=>'₱', 'USD'=>'$', 'KRW'=>'₩'];
+    return $syms[$prefCur] . number_format($converted, $prefCur === 'KRW' ? 0 : 2);
+}
+// ------------------------------
+
 $id = (int)($_GET['id'] ?? 0);
 if (!$id) { header('Location: categories.php'); exit; }
 
@@ -29,6 +50,8 @@ $listing = DB::fetch(
     [$id]
 );
 if (!$listing) { header('Location: categories.php'); exit; }
+
+$baseCur = $listing['base_currency'] ?? 'PHP';
 
 /* is_active=0 has two unrelated causes: (1) genuinely sold - an ORDERS
    row exists and after_order_insert_deactivate_listing turned it off,
@@ -54,7 +77,7 @@ $buyerId = $buyerIdForAccess; /* session row IS the buyer row */
 $inCart = $buyerId ? DB::fetch('SELECT cart_item_id FROM CART_ITEMS WHERE buyer_id=? AND listing_id=?', [$buyerId, $id]) : null;
 
 $related = DB::fetchAll(
-    "SELECT l.listing_id, l.title, l.price, l.condition_grade,
+    "SELECT l.listing_id, l.title, l.price, l.base_currency, l.condition_grade,
             (SELECT image_url FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id ORDER BY is_primary DESC, image_id ASC LIMIT 1) AS cover_image
      FROM LISTINGS l
      WHERE l.category_id=? AND l.listing_id!=? AND l.is_active=1 AND l.deleted_at IS NULL
@@ -115,6 +138,23 @@ renderHead($listing['title']);
 ?>
 <body class="flex flex-col min-h-screen" style="background:var(--clr-bg)">
 <?php renderNavbar('categories'); ?>
+
+<!-- Currency Selection Strip -->
+<div style="background:var(--clr-surface-mid); border-bottom:1px solid var(--clr-outline);">
+  <div style="display:flex; justify-content: flex-end; padding: 10px var(--sp-margin-desktop); max-width: var(--sp-container); margin: 0 auto;">
+    <form method="GET" style="display:inline-flex; align-items:center; gap:8px;">
+      <?php foreach($_GET as $k=>$v): if($k!=='set_currency'): ?>
+      <input type="hidden" name="<?=htmlspecialchars($k)?>" value="<?=htmlspecialchars($v)?>">
+      <?php endif; endforeach; ?>
+      <label style="font-size:var(--fs-label-sm); color:var(--clr-tertiary); font-weight:600;">Preferred Currency:</label>
+      <select name="set_currency" onchange="this.form.submit()" class="tb-input" style="width:auto; padding:4px 8px; font-size:var(--fs-label-sm);">
+        <option value="PHP" <?=$prefCur==='PHP'?'selected':''?>>PHP (₱)</option>
+        <option value="USD" <?=$prefCur==='USD'?'selected':''?>>USD ($)</option>
+        <option value="KRW" <?=$prefCur==='KRW'?'selected':''?>>KRW (₩)</option>
+      </select>
+    </form>
+  </div>
+</div>
 
 <main style="flex:1">
   <div style="max-width:var(--sp-container);margin:0 auto;padding:28px var(--sp-margin-desktop) 80px">
@@ -197,9 +237,13 @@ renderHead($listing['title']);
             <div>
               <p class="tb-section-label">Price</p>
               <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
-                <p style="font-family:'Hanken Grotesk',sans-serif;font-size:38px;font-weight:800;color:var(--clr-text);line-height:1"><?= convertCurrency((float)$listing['price']) ?></p>
+                <p style="font-family:'Hanken Grotesk',sans-serif;font-size:38px;font-weight:800;color:var(--clr-text);line-height:1">
+                  <?= formatPriceMulti((float)$listing['price'], $baseCur, $prefCur, $liveRates) ?>
+                </p>
                 <?php if (!empty($listing['original_price']) && $listing['original_price'] > $listing['price']): ?>
-                <p style="font-size:var(--fs-label-md);color:var(--clr-tertiary);text-decoration:line-through"><?= convertCurrency((float)$listing['original_price']) ?></p>
+                <p style="font-size:var(--fs-label-md);color:var(--clr-tertiary);text-decoration:line-through">
+                  <?= formatPriceMulti((float)$listing['original_price'], $baseCur, $prefCur, $liveRates) ?>
+                </p>
                 <?php
                   $offPct = round((1 - ($listing['price'] / $listing['original_price'])) * 100);
                 ?>
@@ -207,15 +251,6 @@ renderHead($listing['title']);
                 <?php endif; ?>
               </div>
               <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary);margin-top:4px">Fixed Price &bull; Free Platform Fee</p>
-            </div>
-            <div>
-              <p class="tb-section-label">View in currency</p>
-              <div style="display:flex;gap:6px">
-                <?php foreach (['PHP','USD','KRW'] as $cur): ?>
-                <button type="button" onclick="showCur('<?=$cur?>')" class="btn btn-ghost btn-sm"><?=$cur?></button>
-                <?php endforeach; ?>
-              </div>
-              <p id="converted" style="font-size:var(--fs-label-md);color:var(--clr-coral);font-weight:700;margin-top:6px;min-height:20px"></p>
             </div>
           </div>
         </div>
@@ -307,7 +342,7 @@ renderHead($listing['title']);
           </div>
           <div class="tb-listing-body">
             <div class="tb-listing-title"><?= htmlspecialchars($r['title']) ?></div>
-            <div class="tb-listing-price"><?= convertCurrency((float)$r['price']) ?></div>
+            <div class="tb-listing-price"><?= formatPriceMulti((float)$r['price'], $r['base_currency'] ?? 'PHP', $prefCur, $liveRates) ?></div>
             <div class="tb-listing-meta"><?= htmlspecialchars($r['condition_grade']) ?></div>
           </div>
         </a>
@@ -319,13 +354,4 @@ renderHead($listing['title']);
   </div>
 </main>
 <?php renderFooter(); ?>
-<script>
-const LIVE_RATES = <?= json_encode(getLiveCurrencyRates()) ?>;
-const SYMS = {PHP:'₱',USD:'$',KRW:'₩'};
-const PRICE = <?= (float)$listing['price'] ?>;
-function showCur(c){
-  const r = PRICE * (LIVE_RATES[c] || 1);
-  document.getElementById('converted').textContent = SYMS[c] + (c==='KRW' ? Math.round(r).toLocaleString() : r.toFixed(2)) + ' ' + c;
-}
-</script>
 </body></html>

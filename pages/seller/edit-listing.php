@@ -96,22 +96,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         $material      = trim($_POST['material'] ?? '');
         $targetGender  = $_POST['target_gender'] ?? '';
         $madeIn        = trim($_POST['made_in'] ?? '');
+        $baseCurrency  = $_POST['base_currency'] ?? 'PHP';
         $price         = (float)($_POST['price'] ?? 0);
         $originalPrice = (float)($_POST['original_price'] ?? 0);
         $conditions    = ['Brand New','Like New','Lightly Used','Well Used','Heavily Used'];
+        $currencies    = ['PHP', 'USD', 'KRW'];
 
         if (!$title) $errors[] = 'Item title is required.';
         if (!$catId) $errors[] = 'Please select a category.';
         if (!$sizeId) $errors[] = 'Please select a size.';
         if (!in_array($condition, $conditions, true)) $errors[] = 'Please select a valid condition.';
+        if (!in_array($baseCurrency, $currencies, true)) $errors[] = 'Please select a valid base currency.';
         if (!$hasAuction && $price <= 0) $errors[] = 'Enter a valid price.';
 
         if (empty($errors)) {
             DB::query(
-                'UPDATE LISTINGS SET title=?, description=?, category_id=?, size_id=?, condition_grade=?, color=?, material=?, target_gender=?, made_in=?, price=?, original_price=?, is_active=? WHERE listing_id=? AND seller_id=?',
+                'UPDATE LISTINGS SET title=?, description=?, category_id=?, size_id=?, condition_grade=?, color=?, material=?, target_gender=?, made_in=?, price=?, original_price=?, base_currency=?, is_active=? WHERE listing_id=? AND seller_id=?',
                 [$title, $description ?: null, $catId, $sizeId, $condition, $color ?: null, $material ?: null, $targetGender ?: null, $madeIn ?: null,
-                 $hasAuction ? $listing['price'] : $price, $originalPrice > 0 ? $originalPrice : null, $isActive, $listingId, $sellerId]
+                 $hasAuction ? $listing['price'] : $price, $originalPrice > 0 ? $originalPrice : null, $hasAuction ? $listing['base_currency'] : $baseCurrency, $isActive, $listingId, $sellerId]
             );
+            if ($hasAuction) {
+                DB::query('UPDATE AUCTIONS SET base_currency=? WHERE listing_id=?', [$baseCurrency, $listingId]);
+            }
         }
     } else {
         /* Locked: only description/active status can change, regardless
@@ -249,7 +255,7 @@ renderHead('Edit Listing - ' . htmlspecialchars($listing['title']));
       <div class="flex items-center gap-2 flex-wrap">
         <span class="px-3 py-1 rounded-full text-xs font-bold <?= $listing['auction_status']==='Active' ? 'bg-yellow-400 text-black' : 'bg-surface-container text-tertiary' ?>">AUCTION - <?= strtoupper($listing['auction_status']) ?></span>
         <span class="text-sm text-tertiary">
-          Highest Bid: <strong class="text-on-surface"><?= convertCurrency((float)$listing['current_highest_bid']) ?></strong>
+          Highest Bid: <strong class="text-on-surface"><?= convertCurrency((float)$listing['current_highest_bid']) ?> <?= $listing['base_currency'] ?? 'PHP' ?></strong>
           &bull; Ends: <strong><?= $listing['end_time'] ? date('M d, Y h:i A', strtotime($listing['end_time'])) : 'N/A' ?></strong>
         </span>
       </div>
@@ -443,40 +449,60 @@ renderHead('Edit Listing - ' . htmlspecialchars($listing['title']));
 
               <?php if ($fieldsLocked): ?>
               <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface">Base Currency</label>
+                <div class="max-w-xs px-4 py-3 bg-surface-container border border-outline-variant rounded-lg text-sm font-bold text-tertiary">
+                  <?= htmlspecialchars($listing['base_currency'] ?? 'PHP') ?>
+                </div>
+              </div>
+              <div class="space-y-1">
                 <label class="block text-sm font-medium text-on-surface">Selling Price</label>
                 <div class="max-w-xs px-4 py-3 bg-surface-container border border-outline-variant rounded-lg text-sm font-bold text-tertiary">
-                  <?= convertCurrency((float)$listing['price']) ?>
+                  <?= number_format((float)$listing['price'], 2) ?>
                 </div>
               </div>
               <?php if ($listing['original_price']): ?>
               <div class="space-y-1">
                 <label class="block text-sm font-medium text-on-surface">Original Retail Price</label>
                 <div class="max-w-xs px-4 py-3 bg-surface-container border border-outline-variant rounded-lg text-sm font-bold text-tertiary">
-                  <?= convertCurrency((float)$listing['original_price']) ?>
+                  <?= number_format((float)$listing['original_price'], 2) ?>
                 </div>
               </div>
               <?php endif; ?>
 
               <?php else: ?>
+              
+              <div class="space-y-1 md:col-span-2">
+                <label class="block text-sm font-medium text-on-surface">Base Currency <span class="text-thrift-coral">*</span></label>
+                <?php tb_dropdown_edit('base_currency', 'currencySelect', 'Select Currency', [
+                  ['value'=>'PHP','label'=>'Philippine Peso (PHP)'],
+                  ['value'=>'USD','label'=>'US Dollar (USD)'],
+                  ['value'=>'KRW','label'=>'South Korean Won (KRW)']
+                ], $listing['base_currency'] ?? 'PHP', true); ?>
+              </div>
+
               <?php if (!$hasAuction): ?>
               <div class="space-y-1">
-                <label class="block text-sm font-medium text-on-surface">Selling Price (₱) <span class="text-thrift-coral">*</span></label>
+                <label class="block text-sm font-medium text-on-surface">Selling Price <span class="text-thrift-coral">*</span></label>
                 <div class="relative">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">₱</span>
-                  <input class="w-full pl-8 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="price" type="number" min="1" step="0.01" value="<?= $listing['price'] ?>" required>
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">💰</span>
+                  <input class="w-full pl-10 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="price" type="number" min="1" step="0.01" value="<?= $listing['price'] ?>" required>
                 </div>
               </div>
               <?php else: ?>
-              <div class="max-w-xs px-4 py-3 bg-surface-container border border-outline-variant rounded-lg text-sm font-bold text-tertiary">
-                <?= convertCurrency((float)$listing['price']) ?> <span class="font-normal text-xs">(auction start price)</span>
+              <div class="space-y-1">
+                <label class="block text-sm font-medium text-on-surface">Starting Bid <span class="text-thrift-coral">*</span></label>
+                <div class="relative">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">💰</span>
+                  <input class="w-full pl-10 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="start_bid" type="number" min="1" step="0.01" value="<?= $listing['start_bid'] ?>" required>
+                </div>
               </div>
               <?php endif; ?>
 
               <div class="space-y-1">
-                <label class="block text-sm font-medium text-on-surface">Original Retail Price (₱) <span class="text-tertiary font-normal">(optional)</span></label>
+                <label class="block text-sm font-medium text-on-surface">Original Retail Price <span class="text-tertiary font-normal">(optional)</span></label>
                 <div class="relative">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">₱</span>
-                  <input class="w-full pl-8 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="original_price" type="number" min="0" step="0.01" value="<?= $listing['original_price'] ?? '' ?>">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">💰</span>
+                  <input class="w-full pl-10 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="original_price" type="number" min="0" step="0.01" value="<?= $listing['original_price'] ?? '' ?>">
                 </div>
               </div>
               <?php endif; ?>

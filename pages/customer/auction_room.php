@@ -5,12 +5,33 @@ require_once __DIR__ . '/../../includes/currency.php';
 require_once __DIR__ . '/../../includes/layout.php';
 requireLogin('../login.php');
 
+// --- MULTI-CURRENCY SUPPORT ---
+if (isset($_GET['set_currency']) && in_array($_GET['set_currency'], ['PHP','USD','KRW'])) {
+    $_SESSION['pref_currency'] = $_GET['set_currency'];
+    $qs = $_GET; unset($qs['set_currency']);
+    header('Location: ?' . http_build_query($qs)); exit;
+}
+$prefCur = $_SESSION['pref_currency'] ?? 'PHP';
+$liveRates = getLiveCurrencyRates();
+
+function getConversionRate(string $baseCur, string $prefCur, array $rates): float {
+    $inPhp = $baseCur === 'PHP' ? 1.0 : 1.0 / ($rates[$baseCur] ?? 1.0);
+    return $prefCur === 'PHP' ? $inPhp : $inPhp * ($rates[$prefCur] ?? 1.0);
+}
+function formatPriceMulti(float $amount, string $baseCur, string $prefCur, array $rates): string {
+    $rate = getConversionRate($baseCur, $prefCur, $rates);
+    $converted = $amount * $rate;
+    $syms = ['PHP'=>'₱', 'USD'=>'$', 'KRW'=>'₩'];
+    return $syms[$prefCur] . number_format($converted, $prefCur === 'KRW' ? 0 : 2);
+}
+// ------------------------------
+
 $auctionId = (int)($_GET['id'] ?? 0);
 if (!$auctionId) { header('Location: live-bids.php'); exit; }
 
 function loadAuction(int $auctionId): array|false {
     return DB::fetch(
-        "SELECT a.*, l.title, l.description, l.condition_grade, l.seller_id, l.listing_id, l.original_price,
+        "SELECT a.*, l.title, l.description, l.condition_grade, l.seller_id, l.listing_id, l.original_price, l.base_currency,
                 c.name AS cat_name, COALESCE(se.shop_name, se.username) AS seller_name, se.seller_id AS sid,
                 (SELECT image_url FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id ORDER BY is_primary DESC, image_id ASC LIMIT 1) AS cover_image
          FROM AUCTIONS a
@@ -23,7 +44,7 @@ function loadAuction(int $auctionId): array|false {
 }
 function loadBids(int $auctionId, int $limit = 20): array {
     return DB::fetchAll(
-        "SELECT b.bid_amount, b.bid_time, bu.username
+        "SELECT b.bid_amount, b.bid_currency, b.exchange_rate_used, b.bid_time, bu.username
          FROM BIDDINGS b
          JOIN BUYER bu ON b.buyer_id=bu.buyer_id
          WHERE b.auction_id=? AND b.is_deleted=0
@@ -34,6 +55,7 @@ function loadBids(int $auctionId, int $limit = 20): array {
 
 $auction = loadAuction($auctionId);
 if (!$auction) { header('Location: live-bids.php'); exit; }
+$baseCur = $auction['base_currency'] ?? 'PHP';
 
 $user    = currentUser();
 $buyerId = $user['buyer_id'] ?? 0; /* session row IS the buyer row (0 if an admin/seller is just viewing) */
@@ -53,11 +75,17 @@ $isActualOwnerSeller = $user['role'] === 'seller' && (int)($user['seller_id'] ??
 $bids       = loadBids($auctionId, $isOwnerSeller ? 1000 : 20);
 $bidCount   = DB::fetch('SELECT COUNT(*) c FROM BIDDINGS WHERE auction_id=? AND is_deleted=0', [$auctionId])['c'] ?? 0;
 $minNextBid = max((float)$auction['current_highest_bid'] + (float)$auction['min_increment'], (float)$auction['start_bid']);
+$minNextBidPref = $minNextBid * getConversionRate($baseCur, $prefCur, $liveRates);
 
 $bidError = $bidSuccess = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bid_amount'])) {
-    $bidAmount = (float)$_POST['bid_amount'];
+    $bidAmountPref = (float)$_POST['bid_amount'];
+    
+    // We must gracefully convert the buyer's bid back to the seller's base_currency before
+    // sending it to the database so the strict auction triggers pass without crashing.
+    $rateToPref = getConversionRate($baseCur, $prefCur, $liveRates);
+    $bidAmountBase = round($bidAmountPref / $rateToPref, 2);
 
     if ($isOwnerSeller) {
         $bidError = 'Sellers cannot bid on their own listing.';
@@ -73,8 +101,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bid_amount'])) {
            statement this page runs; everything else is the trigger's
            job. This just catches the SIGNAL it raises on failure. */
         try {
-            DB::query('INSERT INTO BIDDINGS (bid_amount, bid_time, auction_id, buyer_id) VALUES (?, NOW(), ?, ?)',
-                [$bidAmount, $auctionId, $buyerId]);
+            DB::query('INSERT INTO BIDDINGS (bid_amount, bid_currency, exchange_rate_used, bid_time, auction_id, buyer_id) VALUES (?, ?, ?, NOW(), ?, ?)',
+                [$bidAmountBase, $prefCur, $rateToPref, $auctionId, $buyerId]);
 
             /* Outbid notice to the previous top bidder - a courtesy
                notification, not something the DB trigger handles */
@@ -88,9 +116,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bid_amount'])) {
                     [$prev['buyer_id'], 'You have been outbid!', 'Someone placed a higher bid on "' . $auction['title'] . '".', 'BID']);
             }
             DB::query('INSERT INTO NOTIFICATIONS (seller_id, title, message, notification_type) VALUES (?,?,?,?)',
-                [$auction['sid'], 'New bid on your listing!', 'A bid of ' . convertCurrency($bidAmount) . ' was placed on "' . $auction['title'] . '".', 'BID']);
+                [$auction['sid'], 'New bid on your listing!', 'A bid of ' . $baseCur . ' ' . $bidAmountBase . ' was placed on "' . $auction['title'] . '".', 'BID']);
 
-            $bidSuccess = 'Bid of ' . convertCurrency($bidAmount) . ' placed successfully!';
+            $bidSuccess = 'Bid of ' . formatPriceMulti($bidAmountBase, $baseCur, $prefCur, $liveRates) . ' placed successfully!';
 
             /* Re-pull fresh state - current_highest_bid/end_time/
                extension_count were just mutated by the trigger above,
@@ -99,6 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['bid_amount'])) {
             $bids       = loadBids($auctionId, $isOwnerSeller ? 1000 : 20);
             $bidCount   = DB::fetch('SELECT COUNT(*) c FROM BIDDINGS WHERE auction_id=? AND is_deleted=0', [$auctionId])['c'] ?? 0;
             $minNextBid = max((float)$auction['current_highest_bid'] + (float)$auction['min_increment'], (float)$auction['start_bid']);
+            $minNextBidPref = $minNextBid * getConversionRate($baseCur, $prefCur, $liveRates);
         } catch (\PDOException $e) {
             /* SQLSTATE 45000 = the SIGNAL raised by before_bid_validate_amount
                ("auction closed" or "bid too low") - surfaced plainly here */
@@ -113,6 +142,23 @@ renderHead($auction['title'] . ' - Auction Room');
 ?>
 <body class="flex flex-col min-h-screen" style="background:var(--clr-bg)">
 <?php renderNavbar('livebids'); ?>
+
+<!-- Currency Selection Strip -->
+<div style="background:var(--clr-surface-mid); border-bottom:1px solid var(--clr-outline);">
+  <div style="display:flex; justify-content: flex-end; padding: 10px var(--sp-margin-desktop); max-width: var(--sp-container); margin: 0 auto;">
+    <form method="GET" style="display:inline-flex; align-items:center; gap:8px;">
+      <?php foreach($_GET as $k=>$v): if($k!=='set_currency'): ?>
+      <input type="hidden" name="<?=htmlspecialchars($k)?>" value="<?=htmlspecialchars($v)?>">
+      <?php endif; endforeach; ?>
+      <label style="font-size:var(--fs-label-sm); color:var(--clr-tertiary); font-weight:600;">Preferred Currency:</label>
+      <select name="set_currency" onchange="this.form.submit()" class="tb-input" style="width:auto; padding:4px 8px; font-size:var(--fs-label-sm);">
+        <option value="PHP" <?=$prefCur==='PHP'?'selected':''?>>PHP (₱)</option>
+        <option value="USD" <?=$prefCur==='USD'?'selected':''?>>USD ($)</option>
+        <option value="KRW" <?=$prefCur==='KRW'?'selected':''?>>KRW (₩)</option>
+      </select>
+    </form>
+  </div>
+</div>
 
 <main style="flex:1;max-width:var(--sp-container);margin:0 auto;padding:28px var(--sp-margin-desktop) 80px;width:100%">
 
@@ -171,10 +217,10 @@ renderHead($auction['title'] . ' - Auction Room');
           <div>
             <p class="tb-section-label">Current Highest Bid</p>
             <p style="font-family:'Hanken Grotesk',sans-serif;font-size:36px;font-weight:800;color:var(--clr-text)">
-              <?= convertCurrency((float)$auction['current_highest_bid']) ?>
+              <?= formatPriceMulti((float)$auction['current_highest_bid'], $baseCur, $prefCur, $liveRates) ?>
             </p>
             <?php if (!empty($auction['original_price'])): ?>
-            <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">Retails new for <?= convertCurrency((float)$auction['original_price']) ?></p>
+            <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">Retails new for <?= formatPriceMulti((float)$auction['original_price'], $baseCur, $prefCur, $liveRates) ?></p>
             <?php endif; ?>
           </div>
           <div>
@@ -187,9 +233,9 @@ renderHead($auction['title'] . ' - Auction Room');
         <div style="display:flex;gap:16px;font-size:var(--fs-label-sm);color:var(--clr-text);padding-top:10px;border-top:1px solid var(--clr-outline);font-weight:700">
           <span><?= $bidCount ?> bid<?= $bidCount!==1?'s':'' ?></span>
           <span>&bull;</span>
-          <span>Min increment: <?= convertCurrency((float)$auction['min_increment']) ?></span>
+          <span>Min increment: <?= formatPriceMulti((float)$auction['min_increment'], $baseCur, $prefCur, $liveRates) ?></span>
           <span>&bull;</span>
-          <span>Start bid: <?= convertCurrency((float)$auction['start_bid']) ?></span>
+          <span>Start bid: <?= formatPriceMulti((float)$auction['start_bid'], $baseCur, $prefCur, $liveRates) ?></span>
           <?php if ((int)$auction['extension_count'] > 0): ?>
           <span>&bull;</span>
           <span title="Anti-snipe rule extended this auction">Extended <?= $auction['extension_count'] ?>&times;</span>
@@ -229,32 +275,27 @@ renderHead($auction['title'] . ' - Auction Room');
         <h3 style="font-family:'Hanken Grotesk',sans-serif;font-size:var(--fs-headline-sm);font-weight:700;margin-bottom:16px">Place Your Bid</h3>
         <form method="POST" style="display:flex;flex-direction:column;gap:12px">
           <div>
-            <label class="tb-label">Bid Amount (minimum <?= convertCurrency($minNextBid) ?>)</label>
+            <label class="tb-label">Bid Amount (minimum <?= formatPriceMulti($minNextBid, $baseCur, $prefCur, $liveRates) ?>)</label>
             <div style="display:flex;gap:8px">
               <div style="position:relative;flex:1">
-                <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--clr-tertiary)">₱</span>
-                <input class="tb-input" type="number" name="bid_amount" min="<?= $minNextBid ?>" step="0.01" value="<?= $minNextBid ?>" style="padding-left:28px;font-size:18px;font-weight:700" required>
+                <input class="tb-input" type="number" name="bid_amount" min="<?= round($minNextBidPref, 2) ?>" step="0.01" value="<?= round($minNextBidPref, 2) ?>" style="padding-left:14px;font-size:18px;font-weight:700" required>
               </div>
               <button type="submit" class="btn btn-primary btn-lg" style="white-space:nowrap">Place Bid</button>
             </div>
             <p style="font-size:11px;color:var(--clr-tertiary);margin-top:4px">The server has the final say on whether a bid is accepted, this is just a starting suggestion.</p>
           </div>
           <div style="display:flex;gap:6px">
-            <?php for ($i = 0; $i <= 2; $i++): $suggested = $minNextBid + ($i * (float)$auction['min_increment']); ?>
-            <button type="button" class="btn btn-ghost btn-sm" onclick="document.querySelector('[name=bid_amount]').value='<?= $suggested ?>'" style="flex:1">
-              <?= convertCurrency($suggested) ?>
+            <?php for ($i = 0; $i <= 2; $i++): 
+                $suggestedBase = $minNextBid + ($i * (float)$auction['min_increment']); 
+                $suggestedPref = round($suggestedBase * getConversionRate($baseCur, $prefCur, $liveRates), 2);
+            ?>
+            <button type="button" class="btn btn-ghost btn-sm" onclick="document.querySelector('[name=bid_amount]').value='<?= $suggestedPref ?>'" style="flex:1">
+              <?= formatPriceMulti($suggestedBase, $baseCur, $prefCur, $liveRates) ?>
             </button>
             <?php endfor; ?>
           </div>
         </form>
         <?php endif; ?>
-        <div style="display:flex;align-items:center;gap:8px;margin-top:14px;padding-top:14px;border-top:1px solid var(--clr-outline)">
-          <span style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)">View in:</span>
-          <?php foreach (['PHP','USD','KRW'] as $cur): ?>
-          <button type="button" onclick="showCur('<?= $cur ?>')" class="btn btn-ghost btn-sm"><?= $cur ?></button>
-          <?php endforeach; ?>
-          <span id="convertedPrice" style="font-size:var(--fs-label-md);font-weight:700;color:var(--clr-coral)"></span>
-        </div>
       </div>
       <?php else: ?>
       <div class="tb-card tb-card-body" style="text-align:center;color:var(--clr-tertiary)">
@@ -279,7 +320,7 @@ renderHead($auction['title'] . ' - Auction Room');
               <?php if ($i === 0): ?><span class="tb-badge tb-badge-live" style="margin-left:6px;font-size:9px">Leading</span><?php endif; ?>
             </div>
             <div style="display:flex;align-items:center;gap:10px">
-              <span class="tb-bid-feed-amount"><?= convertCurrency((float)$b['bid_amount']) ?></span>
+              <span class="tb-bid-feed-amount"><?= formatPriceMulti((float)$b['bid_amount'], $baseCur, $prefCur, $liveRates) ?></span>
               <span class="tb-bid-feed-time"><?= date('H:i', strtotime($b['bid_time'])) ?></span>
             </div>
           </div>
@@ -316,14 +357,6 @@ if (cdEl) {
     if (d < 3600) cdEl.style.color='var(--clr-error)';
   }
   setInterval(tick, 1000); tick();
-}
-/* Live exchange rates fetched server-side via includes/currency.php (open.er-api.com) */
-const LIVE_RATES = <?= json_encode(getLiveCurrencyRates()) ?>;
-const SYMS = {PHP:'₱',USD:'$',KRW:'₩'};
-const CURRENT_BID = <?= (float)$auction['current_highest_bid'] ?>;
-function showCur(c){
-  const r = CURRENT_BID * (LIVE_RATES[c] || 1);
-  document.getElementById('convertedPrice').textContent = SYMS[c] + (c==='KRW' ? Math.round(r).toLocaleString() : r.toFixed(2)) + ' ' + c;
 }
 </script>
 </body></html>

@@ -13,7 +13,7 @@ require_once __DIR__ . '/bidbot_client.php';
 // a mail hiccup never breaks page rendering.
 try {
     require_once __DIR__ . '/mailer.php';
-    flushEmailQueue(3); // small batch - a page load shouldn't risk a 120s timeout over background email
+    //flushEmailQueue(3); // small batch - a page load shouldn't risk a 120s timeout over background email
 } catch (\Throwable $e) { /* best-effort background flush, never fatal */ }
 
 //  Head 

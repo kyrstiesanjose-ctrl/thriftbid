@@ -291,14 +291,14 @@ function fetchOrderEmailContext(int $orderId): ?array {
                 l.listing_id, l.title,
                 bu.buyer_id, COALESCE(bu.first_name, bu.username) AS buyer_name, bu.email AS buyer_email, bu.cellphone_number AS buyer_phone,
                 se.seller_id, COALESCE(se.shop_name, se.username) AS seller_name, se.email AS seller_email, se.cellphone_number AS seller_phone,
-                p.payment_method, p.amount_paid, p.gateway_reference_token, p.payment_date,
+                p.payment_method, p.amount_paid, p.currency, p.gateway_reference_token, p.payment_date,
                 o.shipping_street AS street_address, o.shipping_city AS city, o.shipping_province AS province, o.shipping_zip AS zip_code,
                 sh.tracking_number, co.courier_name
          FROM ORDERS o
          JOIN LISTINGS l ON o.listing_id = l.listing_id
          JOIN BUYER bu   ON o.buyer_id = bu.buyer_id
          JOIN SELLER se  ON o.seller_id = se.seller_id
-         LEFT JOIN PAYMENTS p ON p.order_id = o.order_id AND p.payment_status = 'Completed'
+         LEFT JOIN PAYMENTS p ON o.order_id = o.order_id AND p.payment_status = 'Completed'
          LEFT JOIN SHIPMENTS sh ON sh.order_id = o.order_id
          LEFT JOIN COURIERS co ON co.courier_id = sh.courier_id
          WHERE o.order_id = ?
@@ -336,14 +336,24 @@ function buildTemplatedEmail(string $template, int $orderId): array {
     $orderedAt = date('M d, Y \a\t h:i A', strtotime($ctx['order_date']));
     $address = trim(implode(', ', array_filter([$ctx['street_address'], $ctx['city'], $ctx['province'], $ctx['zip_code']])));
 
+    // Dynamic Currency Formatting
+    $cur = $ctx['currency'] ?? 'PHP';
+    $sym = match($cur) {
+        'USD' => '$',
+        'KRW' => '₩',
+        default => '₱'
+    };
+    $decimals = $cur === 'KRW' ? 0 : 2;
+    $formattedAmount = $sym . number_format((float)($ctx['amount_paid'] ?? 0), $decimals);
+
     switch ($template) {
 
         case 'payment_confirmed_buyer':
             $rows = _emailRow('Order #', (string)$ctx['order_id'])
                   . _emailRow('Item', htmlspecialchars($ctx['title']))
-                  . _emailRow('Amount Paid', '₱' . number_format((float)$ctx['amount_paid'], 2))
-                  . _emailRow('Payment Method', htmlspecialchars($ctx['payment_method'] ?? '-'))
-                  . _emailRow('Reference No.', htmlspecialchars($ctx['gateway_reference_token'] ?? '-'))
+                  . _emailRow('Amount Paid', $formattedAmount)
+                  . _emailRow('Payment Method', htmlspecialchars($ctx['payment_method'] ?? 'N/A'))
+                  . _emailRow('Reference No.', htmlspecialchars($ctx['gateway_reference_token'] ?? 'N/A'))
                   . _emailRow('Date & Time', $ctx['payment_date'] ? date('M d, Y \a\t h:i A', strtotime($ctx['payment_date'])) : $orderedAt)
                   . _emailRow('Sold By', htmlspecialchars($ctx['seller_name']));
             return [
@@ -358,11 +368,11 @@ function buildTemplatedEmail(string $template, int $orderId): array {
                   . _emailRow('Ordered On', $orderedAt)
                   . _emailRow('Buyer', htmlspecialchars($ctx['buyer_name']))
                   . _emailRow('Buyer Email', htmlspecialchars($ctx['buyer_email']))
-                  . _emailRow('Buyer Phone', htmlspecialchars($ctx['buyer_phone'] ?? '-'))
+                  . _emailRow('Buyer Phone', htmlspecialchars($ctx['buyer_phone'] ?? 'N/A'))
                   . _emailRow('Delivering To', htmlspecialchars($address ?: 'No address on file'))
-                  . _emailRow('Amount Paid', '₱' . number_format((float)$ctx['amount_paid'], 2))
-                  . _emailRow('Payment Method', htmlspecialchars($ctx['payment_method'] ?? '-'))
-                  . _emailRow('Payment Reference', htmlspecialchars($ctx['gateway_reference_token'] ?? '-'))
+                  . _emailRow('Amount Paid', $formattedAmount)
+                  . _emailRow('Payment Method', htmlspecialchars($ctx['payment_method'] ?? 'N/A'))
+                  . _emailRow('Payment Reference', htmlspecialchars($ctx['gateway_reference_token'] ?? 'N/A'))
                   . _emailRow('Payment Date & Time', $ctx['payment_date'] ? date('M d, Y \a\t h:i A', strtotime($ctx['payment_date'])) : $orderedAt);
             return [
                 'Payment Received — Order #' . $ctx['order_id'],
@@ -372,13 +382,22 @@ function buildTemplatedEmail(string $template, int $orderId): array {
 
         case 'auction_won_buyer':
             $bid = DB::fetch(
-                'SELECT MAX(b.bid_amount) amt FROM BIDDINGS b JOIN AUCTIONS a ON b.auction_id=a.auction_id
-                 WHERE a.listing_id=? AND b.buyer_id=? AND b.is_deleted=0',
+                'SELECT MAX(b.bid_amount) amt, b.bid_currency FROM BIDDINGS b JOIN AUCTIONS a ON b.auction_id=a.auction_id
+                 WHERE a.listing_id=? AND b.buyer_id=? AND b.is_deleted=0 GROUP BY b.bid_currency',
                 [$ctx['listing_id'], $ctx['buyer_id']]
-            )['amt'] ?? null;
+            );
+            
+            $bidFormatted = '-';
+            if ($bid) {
+                $bidCur = $bid['bid_currency'] ?? 'PHP';
+                $bidSym = match($bidCur) { 'USD' => '$', 'KRW' => '₩', default => '₱' };
+                $bidDec = $bidCur === 'KRW' ? 0 : 2;
+                $bidFormatted = $bidSym . number_format((float)$bid['amt'], $bidDec);
+            }
+
             $rows = _emailRow('Order #', (string)$ctx['order_id'])
                   . _emailRow('Item', htmlspecialchars($ctx['title']))
-                  . _emailRow('Winning Bid', $bid !== null ? '₱' . number_format((float)$bid, 2) : '-')
+                  . _emailRow('Winning Bid', $bidFormatted)
                   . _emailRow('Sold By', htmlspecialchars($ctx['seller_name']))
                   . _emailRow('Won On', $orderedAt);
             return [
@@ -389,14 +408,23 @@ function buildTemplatedEmail(string $template, int $orderId): array {
 
         case 'auction_won_seller':
             $bid = DB::fetch(
-                'SELECT MAX(b.bid_amount) amt FROM BIDDINGS b JOIN AUCTIONS a ON b.auction_id=a.auction_id
-                 WHERE a.listing_id=? AND b.buyer_id=? AND b.is_deleted=0',
+                'SELECT MAX(b.bid_amount) amt, b.bid_currency FROM BIDDINGS b JOIN AUCTIONS a ON b.auction_id=a.auction_id
+                 WHERE a.listing_id=? AND b.buyer_id=? AND b.is_deleted=0 GROUP BY b.bid_currency',
                 [$ctx['listing_id'], $ctx['buyer_id']]
-            )['amt'] ?? null;
+            );
+            
+            $bidFormatted = '-';
+            if ($bid) {
+                $bidCur = $bid['bid_currency'] ?? 'PHP';
+                $bidSym = match($bidCur) { 'USD' => '$', 'KRW' => '₩', default => '₱' };
+                $bidDec = $bidCur === 'KRW' ? 0 : 2;
+                $bidFormatted = $bidSym . number_format((float)$bid['amt'], $bidDec);
+            }
+
             $rows = _emailRow('Order #', (string)$ctx['order_id'])
                   . _emailRow('Item', htmlspecialchars($ctx['title']))
                   . _emailRow('Winning Bidder', htmlspecialchars($ctx['buyer_name']))
-                  . _emailRow('Winning Bid', $bid !== null ? '₱' . number_format((float)$bid, 2) : '-')
+                  . _emailRow('Winning Bid', $bidFormatted)
                   . _emailRow('Ended On', $orderedAt);
             return [
                 'Your Auction Has Ended — Order #' . $ctx['order_id'],

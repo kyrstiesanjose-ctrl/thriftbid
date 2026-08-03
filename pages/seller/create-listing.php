@@ -76,6 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'target_gender' => $_POST['target_gender'] ?? '',
         'made_in'       => trim($_POST['made_in'] ?? ''),
         'listing_type'  => $_POST['listing_type'] ?? 'fixed',
+        'base_currency' => $_POST['base_currency'] ?? 'PHP',
         'price'         => (float)($_POST['price'] ?? 0),
         'original_price'=> (float)($_POST['original_price'] ?? 0),
         'start_bid'     => (float)($_POST['start_bid'] ?? 0),
@@ -86,12 +87,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
 
     $conditions = ['Brand New','Like New','Lightly Used','Well Used','Heavily Used'];
+    $currencies = ['PHP', 'USD', 'KRW'];
 
     if (!$vals['title'])                                    $errors[] = 'Item title is required.';
     if (!$vals['category_id'])                               $errors[] = 'Please select a category.';
     if (!$vals['brand_id'])                                  $errors[] = 'Please select a brand (choose "Unbranded" if none).';
     if (!$vals['size_id'])                                   $errors[] = 'Please select a size.';
     if (!in_array($vals['condition_grade'], $conditions, true)) $errors[] = 'Please select a valid item condition.';
+    if (!in_array($vals['base_currency'], $currencies, true)) $errors[] = 'Please select a valid base currency.';
     if ($vals['listing_type'] === 'fixed' && $vals['price'] <= 0)     $errors[] = 'Enter a valid fixed price.';
     if ($vals['listing_type'] === 'auction' && $vals['start_bid'] <= 0) $errors[] = 'Enter a valid starting bid.';
     if ($vals['listing_type'] === 'auction' && $vals['min_increment'] <= 0) $errors[] = 'Minimum increment must be greater than 0.';
@@ -116,9 +119,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $isActive = $vals['is_luxury'] ? 0 : 1;
 
         $listingId = DB::insert(
-            'INSERT INTO LISTINGS (title, description, price, original_price, condition_grade, color, material, target_gender, made_in, is_active, category_id, seller_id, product_line_id, size_id)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
-            [$vals['title'], $vals['description'] ?: null, $price, $vals['original_price'] > 0 ? $vals['original_price'] : null,
+            'INSERT INTO LISTINGS (title, description, price, original_price, base_currency, condition_grade, color, material, target_gender, made_in, is_active, category_id, seller_id, product_line_id, size_id)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            [$vals['title'], $vals['description'] ?: null, $price, $vals['original_price'] > 0 ? $vals['original_price'] : null, $vals['base_currency'],
              $vals['condition_grade'], $vals['color'] ?: null, $vals['material'] ?: null, $vals['target_gender'] ?: null, $vals['made_in'] ?: null,
              $isActive, $vals['category_id'], $sellerId, $productLineId, $vals['size_id']]
         );
@@ -144,16 +147,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
           if ($vals['listing_type'] === 'auction') {
               if ($vals['is_luxury']) {
                   DB::query(
-                      'INSERT INTO AUCTIONS (start_bid, min_increment, current_highest_bid, status, planned_duration_hours, listing_id)
-                      VALUES (?,?,?,"Pending",?,?)',
-                      [$vals['start_bid'], $vals['min_increment'], $vals['start_bid'], $vals['end_hours'], $listingId]
+                      'INSERT INTO AUCTIONS (start_bid, min_increment, current_highest_bid, base_currency, status, planned_duration_hours, listing_id)
+                      VALUES (?,?,?,?,"Pending",?,?)',
+                      [$vals['start_bid'], $vals['min_increment'], $vals['start_bid'], $vals['base_currency'], $vals['end_hours'], $listingId]
                   );
               } else {
                   $endTime = date('Y-m-d H:i:s', time() + ($vals['end_hours'] * 3600));
                   DB::query(
-                      'INSERT INTO AUCTIONS (start_bid, min_increment, current_highest_bid, start_time, end_time, status, listing_id)
-                      VALUES (?,?,?,NOW(),?,"Active",?)',
-                      [$vals['start_bid'], $vals['min_increment'], $vals['start_bid'], $endTime, $listingId]
+                      'INSERT INTO AUCTIONS (start_bid, min_increment, current_highest_bid, base_currency, start_time, end_time, status, listing_id)
+                      VALUES (?,?,?,?,NOW(),?,"Active",?)',
+                      [$vals['start_bid'], $vals['min_increment'], $vals['start_bid'], $vals['base_currency'], $endTime, $listingId]
                   );
               }
           }
@@ -369,20 +372,30 @@ renderHead('Create Listing');
           <section class="bg-white border border-outline-variant rounded-xl p-6 space-y-4" id="pricingSection">
             <h2 class="font-bold text-sm mb-1 text-tertiary uppercase tracking-wide">Pricing</h2>
 
+            <!-- Currency Selection -->
+            <div class="space-y-1 mb-4">
+              <label class="block text-sm font-medium text-on-surface">Base Currency <span class="text-thrift-coral">*</span></label>
+              <?php tb_dropdown('base_currency', 'currencySelect', 'Select Currency', [
+                  ['value'=>'PHP','label'=>'Philippine Peso (PHP)'],
+                  ['value'=>'USD','label'=>'US Dollar (USD)'],
+                  ['value'=>'KRW','label'=>'South Korean Won (KRW)']
+              ], $vals['base_currency'] ?? 'PHP', true); ?>
+            </div>
+
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div id="fixedPriceField">
-                <label class="text-sm font-medium text-on-surface block mb-1">Selling Price (₱) <span class="text-thrift-coral">*</span></label>
+                <label class="text-sm font-medium text-on-surface block mb-1">Selling Price <span class="text-thrift-coral">*</span></label>
                 <div class="relative">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">₱</span>
-                  <input class="w-full pl-8 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="price" type="number" min="1" step="0.01" placeholder="0.00" value="<?= $vals['price'] ?? '' ?>">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">💰</span>
+                  <input class="w-full pl-10 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="price" type="number" min="1" step="0.01" placeholder="0.00" value="<?= $vals['price'] ?? '' ?>">
                 </div>
               </div>
 
               <div>
-                <label class="text-sm font-medium text-on-surface block mb-1">Original Retail Price (₱) <span class="text-tertiary font-normal">(optional)</span></label>
+                <label class="text-sm font-medium text-on-surface block mb-1">Original Retail Price <span class="text-tertiary font-normal">(optional)</span></label>
                 <div class="relative">
-                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">₱</span>
-                  <input class="w-full pl-8 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="original_price" type="number" min="0" step="0.01" placeholder="0.00" value="<?= $vals['original_price'] ?? '' ?>">
+                  <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">💰</span>
+                  <input class="w-full pl-10 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="original_price" type="number" min="0" step="0.01" placeholder="0.00" value="<?= $vals['original_price'] ?? '' ?>">
                 </div>
               </div>
             </div>
@@ -390,17 +403,17 @@ renderHead('Create Listing');
             <div id="auctionFields" class="hidden space-y-4">
               <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="space-y-1">
-                  <label class="block text-sm font-medium text-on-surface" style="display:block">Starting Bid (₱) <span class="text-thrift-coral">*</span></label>
+                  <label class="block text-sm font-medium text-on-surface" style="display:block">Starting Bid <span class="text-thrift-coral">*</span></label>
                   <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">₱</span>
-                    <input class="w-full pl-8 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="start_bid" type="number" min="1" step="0.01" placeholder="0.00" value="<?= $vals['start_bid'] ?? '' ?>">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">💰</span>
+                    <input class="w-full pl-10 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="start_bid" type="number" min="1" step="0.01" placeholder="0.00" value="<?= $vals['start_bid'] ?? '' ?>">
                   </div>
                 </div>
                 <div class="space-y-1">
-                  <label class="block text-sm font-medium text-on-surface" style="display:block">Min. Increment (₱)</label>
+                  <label class="block text-sm font-medium text-on-surface" style="display:block">Min. Increment</label>
                   <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">₱</span>
-                    <input class="w-full pl-8 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="min_increment" type="number" min="1" step="0.01" value="<?= $vals['min_increment'] ?? '10' ?>">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">💰</span>
+                    <input class="w-full pl-10 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="min_increment" type="number" min="1" step="0.01" value="<?= $vals['min_increment'] ?? '10' ?>">
                   </div>
                 </div>
                 <div class="space-y-1">
@@ -686,4 +699,4 @@ document.getElementById('createForm').addEventListener('submit', function (e) {
   submitBtn.textContent = 'Publishing...';
 });
 </script>
-</body></html>  
+</body></html>

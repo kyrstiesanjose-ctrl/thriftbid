@@ -5,6 +5,27 @@ require_once __DIR__ . '/../../includes/currency.php';
 require_once __DIR__ . '/../../includes/layout.php';
 requireLogin('../login.php');
 
+// --- MULTI-CURRENCY SUPPORT ---
+if (isset($_GET['set_currency']) && in_array($_GET['set_currency'], ['PHP','USD','KRW'])) {
+    $_SESSION['pref_currency'] = $_GET['set_currency'];
+    $qs = $_GET; unset($qs['set_currency']);
+    header('Location: ?' . http_build_query($qs)); exit;
+}
+$prefCur = $_SESSION['pref_currency'] ?? 'PHP';
+$liveRates = getLiveCurrencyRates();
+
+function getConversionRate(string $baseCur, string $prefCur, array $rates): float {
+    $inPhp = $baseCur === 'PHP' ? 1.0 : 1.0 / ($rates[$baseCur] ?? 1.0);
+    return $prefCur === 'PHP' ? $inPhp : $inPhp * ($rates[$prefCur] ?? 1.0);
+}
+function formatPriceMulti(float $amount, string $baseCur, string $prefCur, array $rates): string {
+    $rate = getConversionRate($baseCur, $prefCur, $rates);
+    $converted = $amount * $rate;
+    $syms = ['PHP'=>'₱', 'USD'=>'$', 'KRW'=>'₩'];
+    return $syms[$prefCur] . number_format($converted, $prefCur === 'KRW' ? 0 : 2);
+}
+// ------------------------------
+
 $q         = trim($_GET['q']        ?? '');
 $catId     = (int)($_GET['cat']     ?? 0);
 $brandId   = (int)($_GET['brand']   ?? 0);
@@ -50,7 +71,7 @@ $orderBy = match ($sort) {
 };
 
 $auctions = DB::fetchAll(
-    "SELECT a.*, l.title, l.description, l.condition_grade, l.listing_id,
+    "SELECT a.*, l.title, l.description, l.condition_grade, l.listing_id, l.base_currency,
             c.name AS cat_name, COALESCE(s.shop_name, s.username) AS seller_name, s.seller_id,
             (SELECT image_url FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id ORDER BY is_primary DESC, image_id ASC LIMIT 1) AS cover_image,
             (SELECT COUNT(*) FROM BIDDINGS WHERE auction_id=a.auction_id AND is_deleted=0) AS bid_count
@@ -70,6 +91,23 @@ renderHead('Live Auctions');
 ?>
 <body class="flex flex-col min-h-screen" style="background:var(--clr-bg)">
 <?php renderNavbar('livebids'); ?>
+
+<!-- Currency Selection Strip -->
+<div style="background:var(--clr-surface-mid); border-bottom:1px solid var(--clr-outline);">
+  <div style="display:flex; justify-content: flex-end; padding: 10px var(--sp-margin-desktop); max-width: var(--sp-container); margin: 0 auto;">
+    <form method="GET" style="display:inline-flex; align-items:center; gap:8px;">
+      <?php foreach($_GET as $k=>$v): if($k!=='set_currency'): ?>
+      <input type="hidden" name="<?=htmlspecialchars($k)?>" value="<?=htmlspecialchars($v)?>">
+      <?php endif; endforeach; ?>
+      <label style="font-size:var(--fs-label-sm); color:var(--clr-tertiary); font-weight:600;">Preferred Currency:</label>
+      <select name="set_currency" onchange="this.form.submit()" class="tb-input" style="width:auto; padding:4px 8px; font-size:var(--fs-label-sm);">
+        <option value="PHP" <?=$prefCur==='PHP'?'selected':''?>>PHP (₱)</option>
+        <option value="USD" <?=$prefCur==='USD'?'selected':''?>>USD ($)</option>
+        <option value="KRW" <?=$prefCur==='KRW'?'selected':''?>>KRW (₩)</option>
+      </select>
+    </form>
+  </div>
+</div>
 
 <!-- Hero strip -->
 <div style="padding:24px var(--sp-margin-desktop)">
@@ -181,6 +219,7 @@ renderHead('Live Auctions');
       <?php foreach ($auctions as $a):
         $isUrgent  = (strtotime($a['end_time']) - time()) < 3600;
         $timeLeft  = formatTimeLeft($a['end_time']);
+        $baseCur   = $a['base_currency'] ?? 'PHP';
       ?>
       <div class="tb-card" style="display:flex;flex-direction:column;transition:box-shadow var(--transition)">
         <!-- Image -->
@@ -212,7 +251,9 @@ renderHead('Live Auctions');
           <div class="grid grid-cols-2 gap-2" style="background:var(--clr-bg);border:1px solid var(--clr-outline);border-radius:var(--radius-sm);padding:10px 12px">
             <div>
               <p style="font-size:10px;font-weight:700;color:var(--clr-tertiary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">Current Bid</p>
-              <p style="font-family:'Hanken Grotesk',sans-serif;font-size:var(--fs-headline-sm);font-weight:800;color:var(--clr-text)"><?= convertCurrency((float)$a['current_highest_bid']) ?></p>
+              <p style="font-family:'Hanken Grotesk',sans-serif;font-size:var(--fs-headline-sm);font-weight:800;color:var(--clr-text)">
+                <?= formatPriceMulti((float)$a['current_highest_bid'], $baseCur, $prefCur, $liveRates) ?>
+              </p>
             </div>
             <div>
               <p style="font-size:10px;font-weight:700;color:var(--clr-tertiary);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:2px">Time Left</p>
@@ -220,7 +261,7 @@ renderHead('Live Auctions');
             </div>
           </div>
 
-          <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)"><?= $a['bid_count'] ?> bid<?= $a['bid_count']!==1?'s':'' ?> &bull; Min. increment: <?= convertCurrency((float)$a['min_increment']) ?></p>
+          <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)"><?= $a['bid_count'] ?> bid<?= $a['bid_count']!==1?'s':'' ?> &bull; Min. increment: <?= formatPriceMulti((float)$a['min_increment'], $baseCur, $prefCur, $liveRates) ?></p>
 
           <a href="auction_room.php?id=<?= $a['auction_id'] ?>" class="btn btn-yellow btn-full" style="margin-top:auto">
             <span class="material-symbols-outlined icon-sm">gavel</span>Join Bid

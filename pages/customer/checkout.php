@@ -6,12 +6,37 @@ require_once __DIR__ . '/../../includes/otp.php';
 require_once __DIR__ . '/../../includes/layout.php';
 requireLogin('../login.php');
 
+// --- MULTI-CURRENCY SUPPORT ---
+if (isset($_GET['set_currency']) && in_array($_GET['set_currency'], ['PHP','USD','KRW'])) {
+    $_SESSION['pref_currency'] = $_GET['set_currency'];
+    $qs = $_GET; unset($qs['set_currency']);
+    header('Location: ?' . http_build_query($qs)); exit;
+}
+$prefCur = $_SESSION['pref_currency'] ?? 'PHP';
+$liveRates = getLiveCurrencyRates();
+
+function getConversionRate(string $baseCur, string $prefCur, array $rates): float {
+    $inPhp = $baseCur === 'PHP' ? 1.0 : 1.0 / ($rates[$baseCur] ?? 1.0);
+    return $prefCur === 'PHP' ? $inPhp : $inPhp * ($rates[$prefCur] ?? 1.0);
+}
+function formatPriceMulti(float $amount, string $baseCur, string $prefCur, array $rates): string {
+    $rate = getConversionRate($baseCur, $prefCur, $rates);
+    $converted = $amount * $rate;
+    $syms = ['PHP'=>'₱', 'USD'=>'$', 'KRW'=>'₩'];
+    return $syms[$prefCur] . number_format($converted, $prefCur === 'KRW' ? 0 : 2);
+}
+// ------------------------------
+
 $user    = currentUser();
 $buyerId = $user['buyer_id'] ?? $user['id']; /* session row IS the buyer row */
 
-/* Delivery address is required at payment too
- The address is snapshotted into the order during payment (see after_payment_insert_create_transaction, schema.sql) 
- and not updated from ADDRESSES later, preventing past orders from changing*/
+/* Delivery address is required before payment - not at registration,
+   since forcing an address on someone who's just browsing/bidding is bad
+   UX, but by the time real money is about to move there has to be
+   somewhere to ship to. Snapshotted onto the order at payment time (see
+   after_payment_insert_create_transaction, schema.sql), not re-read live
+   from ADDRESSES later - a buyer editing their address afterward must
+   not retroactively change what a past order says it shipped to. */
 $defaultAddress = DB::fetch('SELECT * FROM ADDRESSES WHERE user_id=? AND user_type="Buyer" AND is_default=1', [$buyerId]);
 $addressErrors = [];
 
@@ -37,11 +62,16 @@ $itemsParam = trim($_GET['items'] ?? '');
 $mode       = $orderId ? 'single' : 'cart';
 
 $errorMsg = '';
-$rows = []; /* normalized: ['listing_id','seller_id','seller_name','title','cover_image','price','order_id' (if already created)] */
+$rows = []; 
+
+$isAuctionWin = false;
+$totalDisplayAmount = 0;
+$displayCurrency = $prefCur;
+$syms = ['PHP'=>'₱', 'USD'=>'$', 'KRW'=>'₩'];
 
 if ($mode === 'single') {
     $order = DB::fetch(
-        "SELECT o.*, l.title, l.price, l.listing_id, COALESCE(se.shop_name, se.username) AS seller_name,
+        "SELECT o.*, l.title, l.price, l.base_currency, l.listing_id, COALESCE(se.shop_name, se.username) AS seller_name,
                 (SELECT image_url FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id ORDER BY is_primary DESC, image_id ASC LIMIT 1) AS cover_image
          FROM ORDERS o
          JOIN LISTINGS l ON o.listing_id=l.listing_id
@@ -51,19 +81,36 @@ if ($mode === 'single') {
     );
     if (!$order) { header('Location: orders.php?tab=topay'); exit; }
 
-    /* Amount owed is the winning bid if this order came from an auction,
-       otherwise the listing's fixed price */
     $winBid = DB::fetch(
-        'SELECT MAX(b.bid_amount) as max_bid FROM BIDDINGS b
+        'SELECT b.bid_amount, b.bid_currency, b.exchange_rate_used FROM BIDDINGS b
          JOIN AUCTIONS a ON b.auction_id=a.auction_id
-         WHERE a.listing_id=? AND b.buyer_id=? AND b.is_deleted=0',
+         WHERE a.listing_id=? AND b.buyer_id=? AND b.is_deleted=0 ORDER BY b.bid_amount DESC LIMIT 1',
         [$order['listing_id'], $buyerId]
     );
-    $amount = (float)($winBid['max_bid'] ?? $order['price'] ?? 0);
+    
+    if ($winBid) {
+        $isAuctionWin = true;
+        // Lock the rate to exactly what they bid
+        $baseAmount = (float)$winBid['bid_amount'];
+        $displayCurrency = $winBid['bid_currency'];
+        $lockedRate = (float)$winBid['exchange_rate_used'];
+        $displayAmount = round($baseAmount * $lockedRate, 2);
+    } else {
+        $baseAmount = (float)$order['price'];
+        $baseCur = $order['base_currency'] ?? 'PHP';
+        $displayCurrency = $prefCur;
+        $liveRate = getConversionRate($baseCur, $displayCurrency, $liveRates);
+        $displayAmount = round($baseAmount * $liveRate, 2);
+    }
+
+    $totalDisplayAmount += $displayAmount;
+
     $rows[] = [
         'order_id' => $orderId, 'listing_id' => $order['listing_id'], 'seller_id' => $order['seller_id'],
         'seller_name' => $order['seller_name'], 'title' => $order['title'],
-        'cover_image' => $order['cover_image'], 'price' => $amount,
+        'cover_image' => $order['cover_image'], 'price' => $baseAmount,
+        'base_currency' => $order['base_currency'] ?? 'PHP',
+        'display_amount' => $displayAmount, 'display_currency' => $displayCurrency
     ];
 } else {
     $listingIds = array_filter(array_map('intval', explode(',', $itemsParam)));
@@ -71,7 +118,7 @@ if ($mode === 'single') {
 
     $placeholders = implode(',', array_fill(0, count($listingIds), '?'));
     $cartRows = DB::fetchAll(
-        "SELECT l.listing_id, l.title, l.price, l.is_active, l.seller_id, COALESCE(se.shop_name, se.username) AS seller_name,
+        "SELECT l.listing_id, l.title, l.price, l.base_currency, l.is_active, l.seller_id, COALESCE(se.shop_name, se.username) AS seller_name,
                 (SELECT image_url FROM LISTING_IMAGES li WHERE li.listing_id=l.listing_id ORDER BY is_primary DESC, image_id ASC LIMIT 1) AS cover_image
          FROM CART_ITEMS ci
          JOIN LISTINGS l ON ci.listing_id=l.listing_id
@@ -80,32 +127,29 @@ if ($mode === 'single') {
         array_merge([$buyerId], $listingIds)
     );
 
-    /* Sold-out or deactivated cart items are silently dropped rather than
-       erroring out, so checkout can still proceed with whatever's left */
     $cartRows = array_filter($cartRows, fn($r) => (int)$r['is_active'] === 1);
     if (empty($cartRows)) { header('Location: orders.php?tab=cart&sold=1'); exit; }
 
     foreach ($cartRows as $r) {
+        $baseCur = $r['base_currency'] ?? 'PHP';
+        $liveRate = getConversionRate($baseCur, $displayCurrency, $liveRates);
+        $displayAmount = round((float)$r['price'] * $liveRate, 2);
+        $totalDisplayAmount += $displayAmount;
+
         $rows[] = [
             'order_id' => null, 'listing_id' => $r['listing_id'], 'seller_id' => $r['seller_id'],
             'seller_name' => $r['seller_name'], 'title' => $r['title'],
             'cover_image' => $r['cover_image'], 'price' => (float)$r['price'],
+            'base_currency' => $baseCur,
+            'display_amount' => $displayAmount, 'display_currency' => $displayCurrency
         ];
     }
-    $amount = array_sum(array_column($rows, 'price'));
 }
 
-/* Grouped by seller for display, so a multi-shop cart shows one block per store */
 $bySeller = [];
 foreach ($rows as $r) { $bySeller[$r['seller_id']]['seller_name'] = $r['seller_name']; $bySeller[$r['seller_id']]['items'][] = $r; }
 
-/* Simulated GCash / Bank Transfer checkout with Email OTP authorization.
-   Step 1 (request_otp) - validate the chosen payment method, email a
-     6-digit code, stash the method/number in session, and show the
-     "Enter OTP" screen instead of charging anything yet.
-   Step 2 (confirm_otp) - verify the code; ONLY on success does the
-     explicit DB transaction below run. */
-$otpStage  = false; /* true = render the "enter OTP" screen instead of the payment form */
+$otpStage  = false; 
 $otpCtx    = $_SESSION['checkout_otp'] ?? null;
 $sameCtx   = $otpCtx && $otpCtx['buyer_id'] === $buyerId && $otpCtx['mode'] === $mode
              && $otpCtx['order_id'] === $orderId && $otpCtx['items'] === $itemsParam;
@@ -149,30 +193,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_otp']) && ver
             $method   = $otpCtx['method'];
             $gcashNum = $otpCtx['gcash'];
 
-            /* ACID: Atomicity - every ORDER/PAYMENT/TRANSACTIONS/CART_ITEMS
-               write for this checkout commits together or not at all */
             $pdo = DB::get();
             $pdo->beginTransaction();
             try {
                 foreach ($rows as $r) {
                     $gatewayRef = 'SIM-' . strtoupper(bin2hex(random_bytes(6)));
+                    $displayAmountPerItem = $r['display_amount'];
 
                     if ($mode === 'single') {
-                        DB::callProc('sp_pay_for_order', [$r['order_id'], $r['listing_id'], $buyerId, $r['price'], $method, $gatewayRef]);
+                        DB::callProc('sp_pay_for_order', [$r['order_id'], $r['listing_id'], $buyerId, $r['price'], $method, $gatewayRef, $displayCurrency, $displayAmountPerItem]);
                         $newOrderId = $r['order_id'];
                     } else {
                         $newOrderId = DB::callProcGetLastId('sp_checkout_listing',
-                            [$r['listing_id'], $buyerId, $r['seller_id'], $r['price'], $method, $gatewayRef]
+                            [$r['listing_id'], $buyerId, $r['seller_id'], $r['price'], $method, $gatewayRef, $displayCurrency, $displayAmountPerItem]
                         );
                     }
 
                     DB::query('INSERT INTO NOTIFICATIONS (seller_id, title, message, notification_type) VALUES (?,?,?,?)',
-                        [$r['seller_id'], 'Payment Received!', 'Payment of ' . convertCurrency($r['price']) . ' received for order #' . $newOrderId . '. Please ship within 48 hours.', 'ORDER']);
+                        [$r['seller_id'], 'Payment Received!', 'Payment received for order #' . $newOrderId . '. Please ship within 48 hours.', 'ORDER']);
                 }
                 $pdo->commit();
                 unset($_SESSION['checkout_otp']);
 
-                /* Send the payment-confirmation emails right now */
+                /* Send the payment-confirmation emails right now, instead of
+                   waiting on layout.php's opportunistic flush on some later
+                   page load - that dependency turned out to be unreliable. */
                 flushEmailQueue(3);
             } catch (\Throwable $e) {
                 $pdo->rollBack();
@@ -188,10 +233,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['request_otp']) && ver
 }
 
 $itemCount = count($rows);
+$formattedTotal = $syms[$displayCurrency] . number_format($totalDisplayAmount, $displayCurrency === 'KRW' ? 0 : 2);
+
 renderHead($mode === 'single' ? 'Checkout - Order #' . $orderId : 'Checkout - ' . $itemCount . ' item' . ($itemCount !== 1 ? 's' : ''));
 ?>
 <body class="flex flex-col min-h-screen" style="background:var(--clr-bg)">
 <?php renderNavbar('orders'); ?>
+
+<!-- Currency Selection Strip -->
+<div style="background:var(--clr-surface-mid); border-bottom:1px solid var(--clr-outline);">
+  <div style="display:flex; justify-content: flex-end; padding: 10px var(--sp-margin-desktop); max-width: var(--sp-container); margin: 0 auto;">
+    <form method="GET" style="display:inline-flex; align-items:center; gap:8px;">
+      <?php foreach($_GET as $k=>$v): if($k!=='set_currency'): ?>
+      <input type="hidden" name="<?=htmlspecialchars($k)?>" value="<?=htmlspecialchars($v)?>">
+      <?php endif; endforeach; ?>
+      <label style="font-size:var(--fs-label-sm); color:var(--clr-tertiary); font-weight:600;">Preferred Currency:</label>
+      <select name="set_currency" onchange="this.form.submit()" class="tb-input" style="width:auto; padding:4px 8px; font-size:var(--fs-label-sm);" <?= $isAuctionWin ? 'disabled' : '' ?>>
+        <option value="PHP" <?=$prefCur==='PHP'?'selected':''?>>PHP (₱)</option>
+        <option value="USD" <?=$prefCur==='USD'?'selected':''?>>USD ($)</option>
+        <option value="KRW" <?=$prefCur==='KRW'?'selected':''?>>KRW (₩)</option>
+      </select>
+    </form>
+  </div>
+</div>
 
 <main style="flex:1">
   <div style="max-width:900px;margin:0 auto;padding:28px var(--sp-margin-desktop) 80px">
@@ -219,7 +283,7 @@ renderHead($mode === 'single' ? 'Checkout - Order #' . $orderId : 'Checkout - ' 
               </div>
               <div style="flex:1">
                 <p style="font-weight:600;font-size:var(--fs-label-md);color:var(--clr-text)"><?= htmlspecialchars($it['title']) ?></p>
-                <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)"><?= convertCurrency($it['price']) ?></p>
+                <p style="font-size:var(--fs-label-sm);color:var(--clr-tertiary)"><?= formatPriceMulti((float)$it['price'], $it['base_currency'], $displayCurrency, $liveRates) ?></p>
               </div>
             </div>
             <?php endforeach; ?>
@@ -227,11 +291,11 @@ renderHead($mode === 'single' ? 'Checkout - Order #' . $orderId : 'Checkout - ' 
           <?php endforeach; ?>
 
           <div style="padding-top:4px;display:flex;flex-direction:column;gap:6px;font-size:var(--fs-label-md)">
-            <div style="display:flex;justify-content:space-between"><span style="color:var(--clr-tertiary)">Item<?= $itemCount!==1?'s':'' ?> Total (<?= $itemCount ?>)</span><span><?= convertCurrency($amount) ?></span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--clr-tertiary)">Item<?= $itemCount!==1?'s':'' ?> Total (<?= $itemCount ?>)</span><span><?= $formattedTotal ?></span></div>
             <div style="display:flex;justify-content:space-between"><span style="color:var(--clr-tertiary)">Platform Fee</span><span style="color:var(--clr-success)">Free</span></div>
             <div style="display:flex;justify-content:space-between"><span style="color:var(--clr-tertiary)">Shipping</span><span style="color:var(--clr-tertiary)">To be arranged</span></div>
             <div style="display:flex;justify-content:space-between;font-weight:700;font-size:var(--fs-body-md);border-top:1px solid var(--clr-outline);padding-top:8px;margin-top:4px">
-              <span>Total Due</span><span style="color:var(--clr-coral)"><?= convertCurrency($amount) ?></span>
+              <span>Total Due</span><span style="color:var(--clr-coral)"><?= $formattedTotal ?></span>
             </div>
           </div>
           <?php if (count($bySeller) > 1): ?>
@@ -239,8 +303,7 @@ renderHead($mode === 'single' ? 'Checkout - Order #' . $orderId : 'Checkout - ' 
           <?php endif; ?>
         </div>
 
-        <!-- Delivery address: required before payment, see the note near
-             $defaultAddress above for why this is snapshotted, not live. -->
+        <!-- Delivery address -->
         <div class="tb-card tb-card-body">
           <p class="tb-section-label">Delivery Address</p>
           <?php if ($addressErrors): ?>
@@ -269,21 +332,6 @@ renderHead($mode === 'single' ? 'Checkout - Order #' . $orderId : 'Checkout - ' 
           </form>
           <?php endif; ?>
         </div>
-
-        <!-- Currency display live rate-->
-        <div class="tb-card tb-card-body">
-          <p class="tb-section-label">View total in another currency</p>
-          <div style="display:flex;gap:8px;margin-bottom:8px">
-            <?php foreach (['PHP','USD','KRW'] as $cur): ?>
-            <button type="button" onclick="showConverted('<?=$cur?>')" class="btn btn-ghost btn-sm"><?=$cur?></button>
-            <?php endforeach; ?>
-          </div>
-          <p id="convertedAmt" style="font-size:var(--fs-body-md);font-weight:700;color:var(--clr-coral);min-height:22px"></p>
-        </div>
-
-        <div style="background:var(--clr-info-bg);border:1px solid #b8d4e8;border-left:3px solid var(--clr-info);border-radius:var(--radius-sm);padding:12px 14px;font-size:var(--fs-label-sm);color:var(--clr-info)">
-          <strong>Escrow Protection:</strong> Payment is held securely until you confirm delivery. Your money is safe.
-        </div>
       </div>
 
       <!-- Payment form / OTP step -->
@@ -293,17 +341,25 @@ renderHead($mode === 'single' ? 'Checkout - Order #' . $orderId : 'Checkout - ' 
         <div class="tb-alert tb-alert-error show" style="margin-bottom:14px"><span class="material-symbols-outlined icon-sm">error</span><?= htmlspecialchars($errorMsg) ?></div>
         <?php endif; ?>
 
+        <?php if ($mode === 'single' && $isAuctionWin): ?>
+        <div style="background:var(--clr-info-bg);border:1px solid #b8d4e8;border-left:3px solid var(--clr-info);border-radius:var(--radius-sm);padding:12px 14px;font-size:var(--fs-label-sm);color:var(--clr-info);margin-bottom:16px">
+          <strong>Auction Rate Locked:</strong> Your winning bid was placed in <?= $displayCurrency ?>. The exchange rate has been securely locked to match your exact bid amount.
+        </div>
+        <?php else: ?>
+        <div style="background:var(--clr-info-bg);border:1px solid #b8d4e8;border-left:3px solid var(--clr-info);border-radius:var(--radius-sm);padding:12px 14px;font-size:var(--fs-label-sm);color:var(--clr-info);margin-bottom:16px">
+          <strong>Live Exchange Rates Applied:</strong> The final checkout amount reflects current live market rates for <?= $displayCurrency ?>.
+        </div>
+        <?php endif; ?>
+
         <?php if ($otpStage && $sameCtx): ?>
         <!-- STEP 2: Enter OTP -->
         <h2 style="font-family:'Hanken Grotesk',sans-serif;font-size:var(--fs-headline-sm);font-weight:700;margin-bottom:8px">Confirm Your Payment</h2>
         <p style="font-size:var(--fs-label-md);color:var(--clr-tertiary);margin-bottom:18px">
           Paying via <strong><?= htmlspecialchars($otpCtx['method']) ?></strong><?= $otpCtx['method']==='GCash' ? ' (' . htmlspecialchars($otpCtx['gcash']) . ')' : '' ?>.
-          We emailed a 6-digit code to <strong><?= htmlspecialchars($user['email']) ?></strong> to authorize this charge of <?= convertCurrency($amount) ?>.
+          We emailed a 6-digit code to <strong><?= htmlspecialchars($user['email']) ?></strong> to authorize this charge of <?= $formattedTotal ?>.
         </p>
 
         <?php
-        /* DEV MODE: see DEV_SHOW_OTP in config.php. Queried fresh so it
-           reflects the current code whether this is the first send or a resend. */
         $devOtpCode = null;
         if (defined('DEV_SHOW_OTP') && DEV_SHOW_OTP) {
             $devRow = DB::fetch(
@@ -331,7 +387,7 @@ renderHead($mode === 'single' ? 'Checkout - Order #' . $orderId : 'Checkout - ' 
           </div>
           <button type="submit" class="btn btn-primary btn-full btn-lg">
             <span class="material-symbols-outlined icon-sm">lock</span>
-            Confirm Payment - <?= convertCurrency($amount) ?>
+            Confirm Payment - <?= $formattedTotal ?>
           </button>
         </form>
         <form method="POST" style="margin-top:10px">
@@ -381,11 +437,13 @@ renderHead($mode === 'single' ? 'Checkout - Order #' . $orderId : 'Checkout - ' 
 
           <button type="submit" class="btn btn-primary btn-full btn-lg" <?= !$defaultAddress ? 'disabled title="Add a delivery address above first"' : '' ?>>
             <span class="material-symbols-outlined icon-sm">mail</span>
-            Send Verification Code - <?= convertCurrency($amount) ?>
+            Send Verification Code - <?= $formattedTotal ?>
           </button>
         </form>
 
-        <p style="font-size:11px;color:var(--clr-tertiary);text-align:center;margin-top:12px">Your payment is protected by ThriftBid until delivery is confirmed. You'll confirm with a one-time code emailed to you before anything is charged.</p>
+        <div style="background:var(--clr-info-bg);border:1px solid #b8d4e8;border-left:3px solid var(--clr-info);border-radius:var(--radius-sm);padding:12px 14px;font-size:var(--fs-label-sm);color:var(--clr-info);margin-top:16px">
+          <strong>Escrow Protection:</strong> Payment is held securely until you confirm delivery. Your money is safe.
+        </div>
         <?php endif; ?>
       </div>
 
@@ -394,13 +452,6 @@ renderHead($mode === 'single' ? 'Checkout - Order #' . $orderId : 'Checkout - ' 
 </main>
 <?php renderFooter(); ?>
 <script>
-const LIVE_AMOUNT_PHP = <?= (float)$amount ?>;
-const LIVE_RATES = <?= json_encode(getLiveCurrencyRates()) ?>;
-const SYMS = {PHP:'₱',USD:'$',KRW:'₩'};
-function showConverted(c){
-  const r = LIVE_AMOUNT_PHP * (LIVE_RATES[c] || 1);
-  document.getElementById('convertedAmt').textContent = SYMS[c] + (c==='KRW' ? Math.round(r).toLocaleString() : r.toFixed(2)) + ' ' + c;
-}
 function updatePaymentUI(){
   ['GCash','Bank'].forEach(v=>{
     const checked=document.getElementById('pm_'+v)?.checked;
