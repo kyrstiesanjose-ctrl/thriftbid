@@ -76,8 +76,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'product_line_id'=> (int)($_POST['product_line_id'] ?? 0),
         'size_id'       => (int)($_POST['size_id'] ?? 0),
         'condition_grade'=> $_POST['condition_grade'] ?? '',
-        'color'         => isset($_POST['color']) ? implode(',', array_intersect((array)$_POST['color'], $predefinedColors)) : null,
-        'material'      => isset($_POST['material']) ? implode(',', array_intersect((array)$_POST['material'], $predefinedMaterials)) : null,
+        'color'         => isset($_POST['color']) ? array_intersect((array)$_POST['color'], $predefinedColors) : [],
+        'material'      => isset($_POST['material']) ? array_intersect((array)$_POST['material'], $predefinedMaterials) : [],
         'target_gender' => $_POST['target_gender'] ?? '',
         'made_in'       => in_array($_POST['made_in'] ?? '', $predefinedCountries, true) ? $_POST['made_in'] : null, 
         'listing_type'  => $_POST['listing_type'] ?? 'fixed',
@@ -124,12 +124,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $isActive = $vals['is_luxury'] ? 0 : 1;
 
         $listingId = DB::insert(
-            'INSERT INTO LISTINGS (title, description, price, original_price, base_currency, condition_grade, color, material, target_gender, made_in, is_active, category_id, seller_id, product_line_id, size_id)
-             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
+            'INSERT INTO LISTINGS (title, description, price, original_price, base_currency, condition_grade, target_gender, made_in, is_active, category_id, seller_id, product_line_id, size_id)
+             VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)',
             [$vals['title'], $vals['description'] ?: null, $price, $vals['original_price'] > 0 ? $vals['original_price'] : null, $vals['base_currency'],
-             $vals['condition_grade'], $vals['color'] ?: null, $vals['material'] ?: null, $vals['target_gender'] ?: null, $vals['made_in'] ?: null,
+             $vals['condition_grade'], $vals['target_gender'] ?: null, $vals['made_in'] ?: null,
              $isActive, $vals['category_id'], $sellerId, $productLineId, $vals['size_id']]
         );
+
+        foreach ($vals['color'] as $colorName) {
+            $colorRow = DB::fetch('SELECT color_id FROM COLORS WHERE color_name=?', [$colorName]);
+            if ($colorRow) DB::query('INSERT INTO LISTING_COLORS (listing_id, color_id) VALUES (?, ?)', [$listingId, $colorRow['color_id']]);
+        }
+        foreach ($vals['material'] as $materialName) {
+            $matRow = DB::fetch('SELECT material_id FROM MATERIALS WHERE material_name=?', [$materialName]);
+            if ($matRow) DB::query('INSERT INTO LISTING_MATERIALS (listing_id, material_id) VALUES (?, ?)', [$listingId, $matRow['material_id']]);
+        }
 
         /* First uploaded photo becomes the cover (is_primary=1) */
         $isPrimary = 1;
@@ -422,14 +431,14 @@ renderHead('Create Listing');
                 <div class="space-y-1">
                   <label class="block text-sm font-medium text-on-surface" style="display:block">Starting Bid <span class="text-thrift-coral">*</span></label>
                   <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">💰</span>
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary"></span>
                     <input class="w-full pl-10 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="start_bid" type="number" min="1" step="0.01" placeholder="0.00" value="<?= $vals['start_bid'] ?? '' ?>">
                   </div>
                 </div>
                 <div class="space-y-1">
                   <label class="block text-sm font-medium text-on-surface" style="display:block">Min. Increment</label>
                   <div class="relative">
-                    <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary">💰</span>
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-tertiary"></span>
                     <input class="w-full pl-10 pr-4 py-3 border border-outline-variant rounded-lg text-sm" name="min_increment" type="number" min="1" step="0.01" value="<?= $vals['min_increment'] ?? '10' ?>">
                   </div>
                 </div>

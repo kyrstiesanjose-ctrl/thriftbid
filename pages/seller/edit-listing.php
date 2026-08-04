@@ -25,7 +25,9 @@ if ($returnUrl !== null && (str_contains($returnUrl, '://') || str_starts_with($
 function loadListing(int $listingId, int $sellerId): array|false {
     return DB::fetch(
         'SELECT l.*, c.name AS cat_name, b.brand_name, pl.brand_id, pl.tier,
-                a.auction_id, a.start_bid, a.min_increment, a.end_time, a.current_highest_bid, a.status AS auction_status
+                a.auction_id, a.start_bid, a.min_increment, a.end_time, a.current_highest_bid, a.status AS auction_status,
+                (SELECT GROUP_CONCAT(c2.color_name) FROM LISTING_COLORS lc JOIN COLORS c2 ON lc.color_id = c2.color_id WHERE lc.listing_id = l.listing_id) AS color,
+                (SELECT GROUP_CONCAT(m.material_name) FROM LISTING_MATERIALS lm JOIN MATERIALS m ON lm.material_id = m.material_id WHERE lm.listing_id = l.listing_id) AS material
          FROM LISTINGS l
          JOIN CATEGORIES c ON l.category_id = c.category_id
          JOIN PRODUCT_LINES pl ON l.product_line_id = pl.product_line_id
@@ -87,8 +89,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
         $catId         = (int)($_POST['category_id'] ?? 0);
         $sizeId        = (int)($_POST['size_id'] ?? 0);
         $condition     = $_POST['condition_grade'] ?? '';
-        $color         = isset($_POST['color']) ? implode(',', array_intersect((array)$_POST['color'], $predefinedColors)) : null;
-        $material      = isset($_POST['material']) ? implode(',', array_intersect((array)$_POST['material'], $predefinedMaterials)) : null;
+
+    $selectedColors    = isset($_POST['color']) ? array_intersect((array)$_POST['color'], $predefinedColors) : [];
+        $selectedMaterials = isset($_POST['material']) ? array_intersect((array)$_POST['material'], $predefinedMaterials) : [];
         $targetGender  = $_POST['target_gender'] ?? '';
         $madeIn        = isset($_POST['made_in']) ? implode(',', array_intersect((array)$_POST['made_in'], $predefinedCountries)) : null;
         $baseCurrency  = $_POST['base_currency'] ?? 'PHP';
@@ -106,10 +109,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save'])) {
 
         if (empty($errors)) {
             DB::query(
-                'UPDATE LISTINGS SET title=?, description=?, category_id=?, size_id=?, condition_grade=?, color=?, material=?, target_gender=?, made_in=?, price=?, original_price=?, base_currency=?, is_active=? WHERE listing_id=? AND seller_id=?',
-                [$title, $description ?: null, $catId, $sizeId, $condition, $color ?: null, $material ?: null, $targetGender ?: null, $madeIn ?: null,
+                'UPDATE LISTINGS SET title=?, description=?, category_id=?, size_id=?, condition_grade=?, target_gender=?, made_in=?, price=?, original_price=?, base_currency=?, is_active=? WHERE listing_id=? AND seller_id=?',
+                [$title, $description ?: null, $catId, $sizeId, $condition, $targetGender ?: null, $madeIn ?: null,
                  $hasAuction ? $listing['price'] : $price, $originalPrice > 0 ? $originalPrice : null, $hasAuction ? $listing['base_currency'] : $baseCurrency, $isActive, $listingId, $sellerId]
             );
+
+            DB::query('DELETE FROM LISTING_COLORS WHERE listing_id=?', [$listingId]);
+            foreach ($selectedColors as $colorName) {
+                $colorRow = DB::fetch('SELECT color_id FROM COLORS WHERE color_name=?', [$colorName]);
+                if ($colorRow) DB::query('INSERT INTO LISTING_COLORS (listing_id, color_id) VALUES (?, ?)', [$listingId, $colorRow['color_id']]);
+            }
+            
+            DB::query('DELETE FROM LISTING_MATERIALS WHERE listing_id=?', [$listingId]);
+            foreach ($selectedMaterials as $materialName) {
+                $matRow = DB::fetch('SELECT material_id FROM MATERIALS WHERE material_name=?', [$materialName]);
+                if ($matRow) DB::query('INSERT INTO LISTING_MATERIALS (listing_id, material_id) VALUES (?, ?)', [$listingId, $matRow['material_id']]);
+            }
+
             if ($hasAuction) {
                 DB::query('UPDATE AUCTIONS SET base_currency=? WHERE listing_id=?', [$baseCurrency, $listingId]);
             }

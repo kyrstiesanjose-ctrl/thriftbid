@@ -392,11 +392,16 @@ if ($tab === 'optimization') {
     )['c'] ?? 0;
 
     /* missing color/gender/material/made_in */
+/* missing color/gender/material/made_in */
     $recDetailsCount = DB::fetch(
         "SELECT COUNT(*) c FROM LISTINGS l
          WHERE l.seller_id=? AND l.deleted_at IS NULL
-           AND (l.color IS NULL OR l.color='' OR l.target_gender IS NULL OR l.target_gender=''
-                OR l.material IS NULL OR l.material='' OR l.made_in IS NULL OR l.made_in='')",
+           AND (
+               NOT EXISTS (SELECT 1 FROM LISTING_COLORS lc WHERE lc.listing_id = l.listing_id) 
+               OR l.target_gender IS NULL OR l.target_gender=''
+               OR NOT EXISTS (SELECT 1 FROM LISTING_MATERIALS lm WHERE lm.listing_id = l.listing_id) 
+               OR l.made_in IS NULL OR l.made_in=''
+           )",
         [$sellerId]
     )['c'] ?? 0;
 

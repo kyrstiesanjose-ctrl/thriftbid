@@ -36,11 +36,13 @@ $missingField = array_values(array_intersect((array)($_GET['missing'] ?? []), ['
 $returnUrl = 'optimization-review.php?' . http_build_query($_GET);
 
 // Base Query: Fetch non-deleted, active listings for current seller
-$baseSql = "SELECT l.listing_id, l.title, l.price, l.color, l.target_gender, l.material, l.made_in,
+$baseSql = "SELECT l.listing_id, l.title, l.price, l.target_gender, l.made_in,
                    c.name AS cat_name,
                    (SELECT COUNT(*) FROM LISTING_IMAGES li WHERE li.listing_id = l.listing_id) AS photo_count,
                    (SELECT image_url FROM LISTING_IMAGES li WHERE li.listing_id = l.listing_id ORDER BY is_primary DESC, image_id ASC LIMIT 1) AS cover_image,
-                   a.auction_id, a.status AS auction_status
+                   a.auction_id, a.status AS auction_status,
+                   (SELECT GROUP_CONCAT(c2.color_name) FROM LISTING_COLORS lc JOIN COLORS c2 ON lc.color_id = c2.color_id WHERE lc.listing_id = l.listing_id) AS color,
+                   (SELECT GROUP_CONCAT(m.material_name) FROM LISTING_MATERIALS lm JOIN MATERIALS m ON lm.material_id = m.material_id WHERE lm.listing_id = l.listing_id) AS material
             FROM LISTINGS l
             JOIN CATEGORIES c ON l.category_id = c.category_id
             LEFT JOIN AUCTIONS a ON a.listing_id = l.listing_id AND a.status = 'Active'
@@ -58,13 +60,17 @@ if ($issue === 'photos') {
     }
 // Prescriptive Filter: Missing Attributes
 } elseif ($issue === 'details') {
-    $fieldMap = ['color' => 'l.color', 'gender' => 'l.target_gender', 'material' => 'l.material', 'made_in' => 'l.made_in'];
+    $fieldMap = [
+        'color'    => '(NOT EXISTS (SELECT 1 FROM LISTING_COLORS lc WHERE lc.listing_id = l.listing_id))', 
+        'gender'   => "(l.target_gender IS NULL OR l.target_gender = '')", 
+        'material' => '(NOT EXISTS (SELECT 1 FROM LISTING_MATERIALS lm WHERE lm.listing_id = l.listing_id))', 
+        'made_in'  => "(l.made_in IS NULL OR l.made_in = '')"
+    ];
     if (!empty($missingField)) {
-        $conds = array_map(fn($f) => "({$fieldMap[$f]} IS NULL OR {$fieldMap[$f]} = '')", $missingField);
+        $conds = array_map(fn($f) => $fieldMap[$f], $missingField);
         $baseSql .= ' AND (' . implode(' OR ', $conds) . ')';
     } else {
-        $baseSql .= " AND (l.color IS NULL OR l.color = '' OR l.target_gender IS NULL OR l.target_gender = ''
-                           OR l.material IS NULL OR l.material = '' OR l.made_in IS NULL OR l.made_in = '')";
+        $baseSql .= " AND (" . implode(' OR ', $fieldMap) . ")";
     }
 // Prescriptive Filter: Pricing Variance across Product Line
 } else { 
